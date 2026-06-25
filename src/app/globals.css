@@ -1,26 +1,172 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0b0c10;
+  --foreground: #f5f6f9;
+  --primary: #1f2833;
+  --primary-accent: #66fcf1;
+  --secondary: #45f3ff;
+  --card-bg: rgba(31, 40, 51, 0.45);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: 'Outfit', 'Inter', sans-serif;
+  
+  --color-accent-teal: var(--primary-accent);
+  --color-accent-blue: var(--secondary);
+  --color-card-dark: var(--primary);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Base resets and animations */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Outfit', 'Inter', sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(11, 12, 16, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(102, 252, 241, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(102, 252, 241, 0.5);
+}
+
+/* Glassmorphism card utilities */
+.glass-panel {
+  background: rgba(20, 24, 33, 0.65);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.glass-panel-hover:hover {
+  border-color: rgba(102, 252, 241, 0.35);
+  box-shadow: 0 8px 32px 0 rgba(102, 252, 241, 0.05);
+  transform: translateY(-2px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Glow effects */
+.glow-accent {
+  box-shadow: 0 0 15px rgba(102, 252, 241, 0.15);
+}
+
+.glow-accent-hover:hover {
+  box-shadow: 0 0 25px rgba(102, 252, 241, 0.35);
+}
+
+/* Curved/Concave aesthetic helpers in spirit of Ena Athletics */
+.concave-left {
+  border-top-left-radius: 100px 30px;
+  border-bottom-left-radius: 100px 30px;
+}
+
+.concave-right {
+  border-top-right-radius: 100px 30px;
+  border-bottom-right-radius: 100px 30px;
+}
+
+/* Premium underline text effect */
+.premium-underline {
+  position: relative;
+}
+
+.premium-underline::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  transform: scaleX(0);
+  height: 1px;
+  bottom: -4px;
+  left: 0;
+  background-color: var(--primary-accent);
+  transform-origin: bottom right;
+  transition: transform 0.25s ease-out;
+}
+
+.premium-underline:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+
+/* Custom pulse glow */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.05);
+  }
+}
+
+.pulse-glow {
+  animation: pulseGlow 4s infinite ease-in-out;
+}
+
+/* Custom buttons */
+.btn-primary {
+  background: linear-gradient(135deg, #1f2833 0%, #0b0c10 100%);
+  border: 1px solid rgba(102, 252, 241, 0.4);
+  color: #66fcf1;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-primary:hover {
+  background: #66fcf1;
+  color: #0b0c10;
+  box-shadow: 0 0 20px rgba(102, 252, 241, 0.4);
+  border-color: #66fcf1;
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Input styles */
+.input-premium {
+  background: rgba(31, 40, 51, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: white;
+  border-radius: 4px;
+  padding: 10px 14px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.input-premium:focus {
+  border-color: #66fcf1;
+  background: rgba(31, 40, 51, 0.5);
+  box-shadow: 0 0 10px rgba(102, 252, 241, 0.1);
 }

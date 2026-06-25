@@ -1,0 +1,326 @@
+{
+  "products": [
+    {
+      "id": "prod_1",
+      "sku": "ENA-AXI-01-BK",
+      "brand": "ENA Athletics",
+      "category": "Footwear",
+      "name": "AXICORE Apex Running Shoe",
+      "description": "Designed with the patent-pending AXICORE energy-management system. Inspired by human tendons and the organic curvature of ancient Greek sculpture, this shoe provides maximum energy response, stability, and sleek comfort for your daily run.",
+      "mrp": 14999,
+      "sellingPrice": 12999,
+      "discountPercentage": 13,
+      "stockQuantity": 45,
+      "color": "Obsidian Black",
+      "material": "Tech-Mesh & Axis TPU",
+      "width": "Standard",
+      "sizes": [
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "images": [
+        "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=600&q=80"
+      ],
+      "isNewArrival": true,
+      "isBestSeller": true,
+      "isTrending": true,
+      "averageRating": 4.8,
+      "reviewsCount": 34
+    },
+    {
+      "id": "prod_2",
+      "sku": "INF-SLI-02-GR",
+      "brand": "Infinity Elite",
+      "category": "Slippers",
+      "name": "CloudSlide Comfort Sandals",
+      "description": "Ultra-soft EVA slider designed for active recovery. Made with eco-friendly cushion technology that contours to your foot bed, delivering premium arch support and effortless relaxation.",
+      "mrp": 2499,
+      "sellingPrice": 1799,
+      "discountPercentage": 28,
+      "stockQuantity": 120,
+      "color": "Sage Green",
+      "material": "Recycled EVA Foam",
+      "width": "Standard",
+      "sizes": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "images": [
+        "https://images.unsplash.com/photo-1603808033192-082d6919d3e1?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=600&q=80"
+      ],
+      "isNewArrival": true,
+      "isBestSeller": false,
+      "isTrending": true,
+      "averageRating": 4.5,
+      "reviewsCount": 89
+    },
+    {
+      "id": "prod_3",
+      "sku": "ENA-AXI-03-WH",
+      "brand": "ENA Athletics",
+      "category": "Footwear",
+      "name": "AXICORE Nimbus Training Shoe",
+      "description": "Understated luxury meets high-performance engineering. Featuring a responsive neutral foam bed and architectural heel stabilization, this shoe offers natural-mechanic alignment for long-distance training.",
+      "mrp": 13999,
+      "sellingPrice": 11899,
+      "discountPercentage": 15,
+      "stockQuantity": 3,
+      "color": "Chalk White",
+      "material": "Eco-Knit & High-Response TPU",
+      "width": "Standard",
+      "sizes": [
+        7,
+        8,
+        9,
+        10
+      ],
+      "images": [
+        "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?auto=format&fit=crop&w=600&q=80"
+      ],
+      "isNewArrival": false,
+      "isBestSeller": true,
+      "isTrending": false,
+      "averageRating": 4.9,
+      "reviewsCount": 22
+    },
+    {
+      "id": "prod_4",
+      "sku": "INF-APP-04-BK",
+      "brand": "Infinity Elite",
+      "category": "Apparel",
+      "name": "Axial Compression Training Tee",
+      "description": "Ergonomic athletic t-shirt made of high-stretch, moisture-wicking synthetic fabric. Styled with minimalist brand detail and athletic fit to complement active movement.",
+      "mrp": 1999,
+      "sellingPrice": 1499,
+      "discountPercentage": 25,
+      "stockQuantity": 65,
+      "color": "Slate Charcoal",
+      "material": "Poly-Spandex Tech Fabric",
+      "width": "Standard",
+      "sizes": [
+        38,
+        40,
+        42,
+        44
+      ],
+      "images": [
+        "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=600&q=80"
+      ],
+      "isNewArrival": true,
+      "isBestSeller": false,
+      "isTrending": true,
+      "averageRating": 4.6,
+      "reviewsCount": 15
+    },
+    {
+      "id": "prod_5",
+      "sku": "INF-ACC-05-BK",
+      "brand": "Infinity Elite",
+      "category": "Accessories",
+      "name": "Sleek Thermal Gym Bottle",
+      "description": "Double-walled vacuum insulated stainless steel water bottle. Keeps liquids ice cold for 24 hours or hot for 12 hours. Sleek minimalist powder-coated finish with leak-proof cap.",
+      "mrp": 1499,
+      "sellingPrice": 999,
+      "discountPercentage": 33,
+      "stockQuantity": 80,
+      "color": "Matte Black",
+      "material": "18/8 Stainless Steel",
+      "width": "Standard",
+      "sizes": [
+        0
+      ],
+      "images": [
+        "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=600&q=80"
+      ],
+      "isNewArrival": false,
+      "isBestSeller": true,
+      "isTrending": true,
+      "averageRating": 4.7,
+      "reviewsCount": 45
+    }
+  ],
+  "coupons": [
+    {
+      "id": "c_1",
+      "code": "INFINITY10",
+      "discountType": "PERCENTAGE",
+      "discountValue": 10,
+      "minOrderValue": 999,
+      "isActive": true
+    },
+    {
+      "id": "c_2",
+      "code": "FIRSTBUY300",
+      "discountType": "FIXED",
+      "discountValue": 300,
+      "minOrderValue": 1999,
+      "isActive": true
+    },
+    {
+      "id": "c_3",
+      "code": "FESTIVE500",
+      "discountType": "FIXED",
+      "discountValue": 500,
+      "minOrderValue": 2999,
+      "isActive": true
+    }
+  ],
+  "orders": [],
+  "users": [
+    {
+      "id": "u_1",
+      "email": "admin@infinitytraders.com",
+      "mobile": "9999999999",
+      "passwordHash": "admin123",
+      "name": "Super Admin",
+      "role": "SUPER_ADMIN",
+      "addresses": [
+        {
+          "id": "addr_1",
+          "street": "Infinity HQ, Bank More",
+          "city": "Dhanbad",
+          "state": "Jharkhand",
+          "pincode": "826001",
+          "isDefault": true
+        }
+      ],
+      "wishlist": [],
+      "recentlyViewed": [],
+      "createdAt": "2026-06-24T20:42:46.760Z"
+    },
+    {
+      "id": "u_2",
+      "email": "manager@infinitytraders.com",
+      "mobile": "8888888888",
+      "passwordHash": "manager123",
+      "name": "Store Manager",
+      "role": "STORE_MANAGER",
+      "addresses": [],
+      "wishlist": [],
+      "recentlyViewed": [],
+      "createdAt": "2026-06-24T20:42:46.761Z"
+    },
+    {
+      "id": "u_3",
+      "email": "marketing@infinitytraders.com",
+      "mobile": "7777777777",
+      "passwordHash": "market123",
+      "name": "Marketing Head",
+      "role": "MARKETING_MANAGER",
+      "addresses": [],
+      "wishlist": [],
+      "recentlyViewed": [],
+      "createdAt": "2026-06-24T20:42:46.761Z"
+    },
+    {
+      "id": "u_4",
+      "email": "demo@customer.com",
+      "mobile": "9876543210",
+      "passwordHash": "customer123",
+      "name": "Rohan Sharma",
+      "role": "CUSTOMER",
+      "addresses": [
+        {
+          "id": "addr_2",
+          "street": "Flat 402, Royal Residency, Bank More",
+          "city": "Dhanbad",
+          "state": "Jharkhand",
+          "pincode": "826001",
+          "isDefault": true
+        },
+        {
+          "id": "addr_3",
+          "street": "12, Park Street",
+          "city": "Kolkata",
+          "state": "West Bengal",
+          "pincode": "700016",
+          "isDefault": false
+        }
+      ],
+      "wishlist": [
+        "prod_1",
+        "prod_3"
+      ],
+      "recentlyViewed": [
+        "prod_1",
+        "prod_2",
+        "prod_3"
+      ],
+      "createdAt": "2026-06-24T20:42:46.761Z"
+    }
+  ],
+  "pincodes": [
+    {
+      "pincode": "826001",
+      "serviceable": true,
+      "estimatedDays": 2,
+      "state": "Jharkhand"
+    },
+    {
+      "pincode": "826002",
+      "serviceable": true,
+      "estimatedDays": 2,
+      "state": "Jharkhand"
+    },
+    {
+      "pincode": "828111",
+      "serviceable": true,
+      "estimatedDays": 3,
+      "state": "Jharkhand"
+    },
+    {
+      "pincode": "110001",
+      "serviceable": true,
+      "estimatedDays": 4,
+      "state": "Delhi"
+    },
+    {
+      "pincode": "400001",
+      "serviceable": true,
+      "estimatedDays": 4,
+      "state": "Maharashtra"
+    },
+    {
+      "pincode": "700001",
+      "serviceable": true,
+      "estimatedDays": 3,
+      "state": "West Bengal"
+    },
+    {
+      "pincode": "560001",
+      "serviceable": true,
+      "estimatedDays": 5,
+      "state": "Karnataka"
+    },
+    {
+      "pincode": "600001",
+      "serviceable": true,
+      "estimatedDays": 5,
+      "state": "Tamil Nadu"
+    }
+  ],
+  "auditLogs": [
+    {
+      "id": "log_1",
+      "userId": "u_1",
+      "userEmail": "admin@infinitytraders.com",
+      "action": "DB_INITIALIZATION",
+      "details": "Database seeded with default products, users, and pincodes.",
+      "timestamp": "2026-06-24T20:42:46.809Z"
+    }
+  ],
+  "settings": {
+    "standardShippingFee": 99,
+    "freeShippingThreshold": 999
+  }
+}
