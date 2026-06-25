@@ -1,7 +1,8 @@
 import { db } from '@/lib/db';
 import { notFound } from 'next/navigation';
-import { FileText, Printer, Check } from 'lucide-react';
+import { FileText, Check } from 'lucide-react';
 import Link from 'next/link';
+import PrintButton from '@/components/PrintButton';
 
 export const revalidate = 0;
 
@@ -42,14 +43,7 @@ export default async function InvoicePage({ params }: Props) {
           >
             Dashboard
           </Link>
-          <button
-            onClick={() => {
-              if (typeof window !== 'undefined') window.print();
-            }}
-            className="px-4 py-2 bg-black hover:bg-transparent text-white hover:text-black border border-black rounded-full text-[10px] font-bold flex items-center gap-1.5 transition-all uppercase tracking-widest"
-          >
-            <Printer className="w-3.5 h-3.5" /> Print / Save PDF
-          </button>
+          <PrintButton />
         </div>
       </div>
 

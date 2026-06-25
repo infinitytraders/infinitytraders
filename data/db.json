@@ -132,7 +132,7 @@
       "mrp": 1499,
       "sellingPrice": 999,
       "discountPercentage": 33,
-      "stockQuantity": 80,
+      "stockQuantity": 79,
       "color": "Matte Black",
       "material": "18/8 Stainless Steel",
       "width": "Standard",
@@ -175,7 +175,39 @@
       "isActive": true
     }
   ],
-  "orders": [],
+  "orders": [
+    {
+      "customerName": "Syed Ismail Zabiulla",
+      "customerEmail": "syedismailart@gmail.com",
+      "customerMobile": "9538921426",
+      "shippingAddress": {
+        "street": "2, Murugesh Mudaliar Road",
+        "city": "Bengaluru",
+        "state": "Karnataka",
+        "pincode": "560005"
+      },
+      "items": [
+        {
+          "productId": "prod_5",
+          "name": "Sleek Thermal Gym Bottle",
+          "brand": "Infinity Elite",
+          "image": "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=600&q=80",
+          "quantity": 1,
+          "size": 8,
+          "price": 999
+        }
+      ],
+      "orderValue": 999,
+      "gstAmount": 152,
+      "shippingCharges": 0,
+      "finalAmount": 999,
+      "paymentMethod": "COD",
+      "id": "ORD_1782426465281",
+      "orderStatus": "PENDING",
+      "paymentStatus": "PENDING",
+      "createdAt": "2026-06-25T22:27:45.281Z"
+    }
+  ],
   "users": [
     {
       "id": "u_1",
@@ -317,6 +349,14 @@
       "action": "DB_INITIALIZATION",
       "details": "Database seeded with default products, users, and pincodes.",
       "timestamp": "2026-06-24T20:42:46.809Z"
+    },
+    {
+      "id": "log_1782426465296",
+      "userId": "guest",
+      "userEmail": "syedismailart@gmail.com",
+      "action": "ORDER_CREATE_GUEST",
+      "details": "Guest created order: ORD_1782426465281 for amount ₹999",
+      "timestamp": "2026-06-25T22:27:45.297Z"
     }
   ],
   "settings": {
