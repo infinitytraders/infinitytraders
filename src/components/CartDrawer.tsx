@@ -62,7 +62,7 @@ export default function CartDrawer() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setCartOpen(false)}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/35 backdrop-blur-xs z-50"
           />
 
           {/* Drawer */}
@@ -71,21 +71,21 @@ export default function CartDrawer() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 bottom-0 right-0 w-full sm:w-[500px] bg-[#0b0c10] border-l border-white/5 z-50 flex flex-col shadow-2xl"
+            className="fixed top-0 bottom-0 right-0 w-full sm:w-[500px] bg-[#f4f3ef] border-l border-black/5 z-50 flex flex-col shadow-2xl"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-white/5 p-6">
+            <div className="flex items-center justify-between border-b border-black/5 p-6 bg-[#f4f3ef]">
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold tracking-wider uppercase text-white">Your Bag</h2>
-                <span className="bg-white/10 text-white/70 text-xs px-2 py-0.5 rounded-full">
+                <h2 className="text-sm font-extrabold tracking-widest uppercase text-black">Your Shopping Bag</h2>
+                <span className="bg-black text-white text-[9px] font-bold px-2.5 py-0.5 rounded-full">
                   {totalItems} {totalItems === 1 ? 'item' : 'items'}
                 </span>
               </div>
               <button
                 onClick={() => setCartOpen(false)}
-                className="text-white/60 hover:text-white transition-colors p-1"
+                className="text-black/55 hover:text-black transition-colors p-1"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -93,20 +93,20 @@ export default function CartDrawer() {
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               {/* Shipping Progress Bar */}
               {subtotal > 0 && (
-                <div className="bg-[#1f2833]/30 border border-white/5 rounded-md p-4 space-y-2">
-                  <div className="flex items-center gap-2 text-xs tracking-wider uppercase font-light text-white/80">
-                    <Truck className="w-4 h-4 text-accent-teal" />
+                <div className="bg-white border border-black/5 rounded-2xl p-4 space-y-2 shadow-xs">
+                  <div className="flex items-center gap-2 text-[10px] tracking-wider uppercase font-bold text-black">
+                    <Truck className="w-3.5 h-3.5 text-black" />
                     {shippingCharges === 0 ? (
-                      <span>Congrats! You qualify for <strong className="text-accent-teal">Free Shipping</strong></span>
+                      <span>Congrats! You qualify for <strong className="underline">Free Shipping</strong></span>
                     ) : (
                       <span>
-                        Add <strong>₹{shippingSettings.freeShippingThreshold - subtotal}</strong> more for free shipping
+                        Add <strong>₹{(shippingSettings.freeShippingThreshold - subtotal).toLocaleString('en-IN')}</strong> more for free shipping
                       </span>
                     )}
                   </div>
-                  <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-black/5 h-1.5 rounded-full overflow-hidden">
                     <div
-                      className="bg-accent-teal h-full transition-all duration-500"
+                      className="bg-black h-full transition-all duration-500"
                       style={{ width: `${freeShippingProgress}%` }}
                     />
                   </div>
@@ -115,14 +115,14 @@ export default function CartDrawer() {
 
               {/* Items List */}
               {cart.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
-                  <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-white/30">
-                    <X className="w-8 h-8" />
+                <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+                  <div className="w-12 h-12 rounded-full bg-black/5 flex items-center justify-center text-black/35">
+                    <X className="w-5 h-5" />
                   </div>
-                  <p className="text-white/50 font-light tracking-wide">Your shopping cart is currently empty.</p>
+                  <p className="text-black/50 font-light tracking-wide text-xs">Your shopping cart is currently empty.</p>
                   <button
                     onClick={() => setCartOpen(false)}
-                    className="btn-primary px-6 py-2.5 text-xs uppercase tracking-widest font-semibold"
+                    className="bg-black hover:bg-transparent text-white hover:text-black border border-black px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all"
                   >
                     Continue Shopping
                   </button>
@@ -132,11 +132,10 @@ export default function CartDrawer() {
                   {cart.map((item, index) => (
                     <div
                       key={`${item.product.id}-${item.size}-${index}`}
-                      className="flex gap-4 bg-[#1f2833]/20 border border-white/5 p-3 rounded-md hover:border-white/10 transition-colors"
+                      className="flex gap-4 bg-white border border-black/5 p-4 rounded-2xl hover:shadow-sm transition-all shadow-xs"
                     >
                       {/* Product Image */}
-                      <div className="w-20 h-24 bg-[#1f2833]/40 rounded-md overflow-hidden flex-shrink-0 relative">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <div className="w-20 h-24 bg-[#fcfbf9] rounded-xl overflow-hidden flex-shrink-0 relative border border-black/5">
                         <img
                           src={item.product.images[0]}
                           alt={item.product.name}
@@ -149,39 +148,39 @@ export default function CartDrawer() {
                         <div>
                           <div className="flex justify-between items-start gap-1">
                             <div>
-                              <span className="text-[10px] uppercase tracking-widest font-semibold text-accent-teal">
+                              <span className="text-[9px] uppercase tracking-widest font-bold text-black/45 block">
                                 {item.product.brand}
                               </span>
-                              <h3 className="text-sm font-medium text-white line-clamp-1">
+                              <h3 className="text-xs font-extrabold text-black line-clamp-1">
                                 {item.product.name}
                               </h3>
                             </div>
                             <button
                               onClick={() => removeFromCart(item.product.id, item.size)}
-                              className="text-white/40 hover:text-red-400 transition-colors p-1"
+                              className="text-black/40 hover:text-red-600 transition-colors p-1"
                               aria-label="Remove Item"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
-                          <div className="text-[11px] text-white/50 font-light mt-1">
-                            Size: <span className="text-white font-medium">UK {item.size}</span>
+                          <div className="text-[10px] text-black/50 font-bold mt-1 uppercase tracking-wider">
+                            Size: <span className="text-black font-extrabold">UK {item.size}</span>
                           </div>
                         </div>
 
                         <div className="flex justify-between items-center mt-2">
                           {/* Quantity Selector */}
-                          <div className="flex items-center border border-white/10 rounded overflow-hidden">
+                          <div className="flex items-center border border-black/10 rounded-full bg-white p-0.5">
                             <button
                               onClick={() => updateQuantity(item.product.id, item.size, item.quantity - 1)}
-                              className="px-2 py-1 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors"
+                              className="w-6 h-6 rounded-full hover:bg-black/5 flex items-center justify-center text-black/75 transition-colors"
                             >
                               <Minus className="w-3 h-3" />
                             </button>
-                            <span className="px-3 text-xs text-white font-medium">{item.quantity}</span>
+                            <span className="px-2.5 text-xs text-black font-extrabold">{item.quantity}</span>
                             <button
                               onClick={() => updateQuantity(item.product.id, item.size, item.quantity + 1)}
-                              className="px-2 py-1 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors"
+                              className="w-6 h-6 rounded-full hover:bg-black/5 flex items-center justify-center text-black/75 transition-colors"
                             >
                               <Plus className="w-3 h-3" />
                             </button>
@@ -189,11 +188,11 @@ export default function CartDrawer() {
 
                           {/* Price */}
                           <div className="text-right">
-                            <span className="text-sm font-semibold text-white">
+                            <span className="text-sm font-extrabold text-black">
                               ₹{(item.product.sellingPrice * item.quantity).toLocaleString('en-IN')}
                             </span>
                             {item.product.mrp > item.product.sellingPrice && (
-                              <div className="text-[10px] text-white/45 line-through">
+                              <div className="text-[10px] text-black/40 line-through font-semibold">
                                 ₹{(item.product.mrp * item.quantity).toLocaleString('en-IN')}
                               </div>
                             )}
@@ -208,9 +207,9 @@ export default function CartDrawer() {
               {cart.length > 0 && (
                 <>
                   {/* Pincode Checker */}
-                  <div className="border-t border-white/5 pt-5 space-y-3">
-                    <h4 className="text-xs uppercase tracking-widest font-semibold text-white/80 flex items-center gap-1.5">
-                      <MapPin className="w-4 h-4 text-accent-teal" /> Delivery Pincode Check
+                  <div className="border-t border-black/5 pt-5 space-y-3">
+                    <h4 className="text-[10px] uppercase tracking-widest font-extrabold text-black/60 flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-black" /> Delivery Pincode Check
                     </h4>
                     <form onSubmit={handleCheckPincode} className="flex gap-2">
                       <input
@@ -219,12 +218,12 @@ export default function CartDrawer() {
                         placeholder="Enter 6-digit Pincode"
                         value={pincode}
                         onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
-                        className="flex-1 input-premium text-xs"
+                        className="flex-1 border border-black/10 focus:border-black rounded-full px-4 py-2 text-xs outline-none bg-white transition-all text-black"
                       />
                       <button
                         type="submit"
                         disabled={checkingPin || pincode.length !== 6}
-                        className="btn-secondary px-4 py-2 text-xs uppercase tracking-widest font-semibold disabled:opacity-50 disabled:pointer-events-none"
+                        className="bg-black hover:bg-transparent text-white hover:text-black border border-black px-4 py-2 rounded-full text-xs uppercase tracking-widest font-bold disabled:opacity-50 transition-all"
                       >
                         Check
                       </button>
@@ -232,24 +231,24 @@ export default function CartDrawer() {
 
                     {pincodeStatus.checked && (
                       <div
-                        className={`text-xs p-2.5 rounded flex items-start gap-2 border ${
+                        className={`text-xs p-3 rounded-xl flex items-start gap-2 border ${
                           pincodeStatus.serviceable
-                            ? 'bg-[#10b981]/5 border-[#10b981]/25 text-[#10b981]'
-                            : 'bg-red-500/5 border-red-500/20 text-red-400'
+                            ? 'bg-teal-500/5 border-teal-500/10 text-teal-800'
+                            : 'bg-red-500/5 border-red-500/10 text-red-800'
                         }`}
                       >
                         {pincodeStatus.serviceable ? (
                           <>
-                            <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                            <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5 text-teal-700" />
                             <div>
-                              <p className="font-semibold">Serviceable to {pincodeStatus.state}</p>
-                              <p className="text-[10px] opacity-80 mt-0.5">Estimated delivery: {pincodeStatus.days} working days.</p>
+                              <p className="font-extrabold uppercase tracking-wider text-[10px]">Serviceable to {pincodeStatus.state}</p>
+                              <p className="text-[10px] opacity-80 mt-0.5 font-light">Estimated delivery: {pincodeStatus.days} working days.</p>
                             </div>
                           </>
                         ) : (
                           <>
-                            <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                            <span>{pincodeStatus.error || 'Delivery unavailable to this location.'}</span>
+                            <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5 text-red-700" />
+                            <span className="font-semibold">{pincodeStatus.error || 'Delivery unavailable to this location.'}</span>
                           </>
                         )}
                       </div>
@@ -257,15 +256,15 @@ export default function CartDrawer() {
                   </div>
 
                   {/* Promo Code Form */}
-                  <div className="border-t border-white/5 pt-5 space-y-3">
-                    <h4 className="text-xs uppercase tracking-widest font-semibold text-white/80 flex items-center gap-1.5">
-                      <Tag className="w-4 h-4 text-accent-teal" /> Promotional Coupon
+                  <div className="border-t border-black/5 pt-5 space-y-3">
+                    <h4 className="text-[10px] uppercase tracking-widest font-extrabold text-black/60 flex items-center gap-1.5">
+                      <Tag className="w-3.5 h-3.5 text-black" /> Promotional Coupon
                     </h4>
                     {coupon ? (
-                      <div className="bg-[#1f2833]/40 border border-accent-teal/20 rounded p-3 flex justify-between items-center">
+                      <div className="bg-white border border-black/5 rounded-2xl p-3 flex justify-between items-center shadow-xs">
                         <div>
-                          <span className="text-xs font-bold text-accent-teal">{coupon.code}</span>
-                          <span className="text-[10px] text-white/50 block">
+                          <span className="text-xs font-extrabold text-black uppercase tracking-wider">{coupon.code}</span>
+                          <span className="text-[10px] text-black/50 block font-medium">
                             Applied:{' '}
                             {coupon.discountType === 'PERCENTAGE'
                               ? `${coupon.discountValue}% Off`
@@ -274,7 +273,7 @@ export default function CartDrawer() {
                         </div>
                         <button
                           onClick={removeCoupon}
-                          className="text-red-400 hover:text-red-300 text-xs font-medium uppercase tracking-wider"
+                          className="text-red-600 hover:text-red-700 text-xs font-bold uppercase tracking-wider underline"
                         >
                           Remove
                         </button>
@@ -286,12 +285,12 @@ export default function CartDrawer() {
                           placeholder="Coupon Code"
                           value={couponInput}
                           onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
-                          className="flex-1 input-premium text-xs"
+                          className="flex-1 border border-black/10 focus:border-black rounded-full px-4 py-2 text-xs outline-none bg-white transition-all text-black"
                         />
                         <button
                           type="submit"
                           disabled={!couponInput.trim()}
-                          className="btn-secondary px-4 py-2 text-xs uppercase tracking-widest font-semibold"
+                          className="bg-black hover:bg-transparent text-white hover:text-black border border-black px-4 py-2 rounded-full text-xs uppercase tracking-widest font-bold disabled:opacity-50 transition-all"
                         >
                           Apply
                         </button>
@@ -299,7 +298,7 @@ export default function CartDrawer() {
                     )}
 
                     {couponError && (
-                      <div className="text-xs text-red-400 flex items-center gap-1.5">
+                      <div className="text-xs text-red-600 flex items-center gap-1.5 font-bold">
                         <AlertTriangle className="w-3.5 h-3.5" /> {couponError}
                       </div>
                     )}
@@ -310,47 +309,47 @@ export default function CartDrawer() {
 
             {/* Footer Summary & Checkout */}
             {cart.length > 0 && (
-              <div className="bg-[#141821] border-t border-white/5 p-6 space-y-4">
-                <div className="space-y-2 text-sm text-white/70 font-light">
+              <div className="bg-white border-t border-black/5 p-6 space-y-4 shadow-xl">
+                <div className="space-y-2 text-xs text-black/70 font-bold">
                   <div className="flex justify-between">
-                    <span>Subtotal</span>
-                    <span className="text-white font-medium">₹{subtotal.toLocaleString('en-IN')}</span>
+                    <span className="uppercase tracking-wider">Subtotal</span>
+                    <span className="text-black font-extrabold">₹{subtotal.toLocaleString('en-IN')}</span>
                   </div>
-                  <div className="flex justify-between text-xs text-white/50 italic pl-2 border-l border-white/10">
+                  <div className="flex justify-between text-[10px] text-black/45 italic pl-2 border-l border-black/10 font-medium">
                     <span>Included GST (18%)</span>
                     <span>₹{gstAmount.toLocaleString('en-IN')}</span>
                   </div>
                   {couponDiscount > 0 && (
-                    <div className="flex justify-between text-accent-teal">
-                      <span>Coupon Discount</span>
-                      <span>- ₹{couponDiscount.toLocaleString('en-IN')}</span>
+                    <div className="flex justify-between text-teal-800">
+                      <span className="uppercase tracking-wider font-extrabold">Coupon Discount</span>
+                      <span className="font-extrabold">- ₹{couponDiscount.toLocaleString('en-IN')}</span>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <span>Shipping Charges</span>
-                    <span className="text-white font-medium">
+                    <span className="uppercase tracking-wider">Shipping Charges</span>
+                    <span className="text-black font-extrabold">
                       {shippingCharges === 0 ? (
-                        <span className="text-accent-teal font-semibold">FREE</span>
+                        <span className="text-teal-800 underline font-extrabold">FREE</span>
                       ) : (
                         `₹${shippingCharges}`
                       )}
                     </span>
                   </div>
-                  <div className="border-t border-white/5 my-2 pt-2 flex justify-between text-base font-semibold text-white">
-                    <span className="uppercase tracking-wider">Total</span>
-                    <span className="text-accent-teal text-lg">₹{finalAmount.toLocaleString('en-IN')}</span>
+                  <div className="border-t border-black/5 my-2 pt-2.5 flex justify-between text-sm font-extrabold text-black uppercase tracking-wider">
+                    <span>Total</span>
+                    <span className="text-black text-base font-extrabold">₹{finalAmount.toLocaleString('en-IN')}</span>
                   </div>
                 </div>
 
                 <Link
                   href="/checkout"
                   onClick={() => setCartOpen(false)}
-                  className="btn-primary w-full text-center block py-3.5 text-xs font-bold uppercase tracking-widest rounded"
+                  className="bg-black hover:bg-transparent text-white hover:text-black border border-black w-full text-center block py-4 text-xs font-bold uppercase tracking-widest rounded-full transition-all"
                 >
                   Proceed to Checkout
                 </Link>
 
-                <p className="text-[10px] text-center text-white/30 tracking-wider">
+                <p className="text-[9px] text-center text-black/35 tracking-widest uppercase font-bold">
                   Inclusive of all taxes. Secured transactions processed in INR.
                 </p>
               </div>

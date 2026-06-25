@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import type { Product } from '@/lib/db';
 import { useCart } from '@/context/CartContext';
 import { toggleWishlistAction, recordRecentlyViewedAction } from '@/app/actions';
-import { Star, Truck, Check, Heart, HelpCircle, ArrowRight, Share2, Plus, Minus, ShieldAlert } from 'lucide-react';
+import { Star, Truck, Heart, Share2, Plus, Minus, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -75,16 +75,16 @@ export default function ProductDetailClient({ product, recommendations, initialU
   const productGst = Math.round(product.sellingPrice - product.sellingPrice / 1.18);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16 bg-[#f4f3ef]">
       {/* Breadcrumbs */}
-      <nav className="text-xs uppercase tracking-widest text-white/40 flex items-center gap-2">
-        <Link href="/" className="hover:text-accent-teal transition-colors">Home</Link>
+      <nav className="text-[10px] uppercase tracking-[0.2em] text-black/45 flex items-center gap-2">
+        <Link href="/" className="hover:text-black font-semibold transition-colors">Home</Link>
         <span>/</span>
-        <Link href="/shop" className="hover:text-accent-teal transition-colors">Shop</Link>
+        <Link href="/shop" className="hover:text-black font-semibold transition-colors">Shop</Link>
         <span>/</span>
-        <Link href={`/shop?category=${product.category}`} className="hover:text-accent-teal transition-colors">{product.category}</Link>
+        <Link href={`/shop?category=${product.category}`} className="hover:text-black font-semibold transition-colors">{product.category}</Link>
         <span>/</span>
-        <span className="text-white/70 line-clamp-1">{product.name}</span>
+        <span className="text-black/80 font-bold line-clamp-1">{product.name}</span>
       </nav>
 
       {/* Main Container */}
@@ -97,26 +97,24 @@ export default function ProductDetailClient({ product, recommendations, initialU
               <button
                 key={idx}
                 onClick={() => setSelectedImage(img)}
-                className={`aspect-square w-full rounded-md bg-[#1f2833]/30 border overflow-hidden transition-colors ${
-                  selectedImage === img ? 'border-accent-teal' : 'border-white/5 hover:border-white/20'
+                className={`aspect-square w-full rounded-xl bg-white border overflow-hidden transition-all ${
+                  selectedImage === img ? 'border-black ring-1 ring-black' : 'border-black/5 hover:border-black/20'
                 }`}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={img} alt={`${product.name} thumb ${idx}`} className="w-full h-full object-cover" />
               </button>
             ))}
           </div>
 
           {/* Main Selected Image */}
-          <div className="md:col-span-10 aspect-[4/5] bg-[#1f2833]/25 border border-white/5 rounded-lg overflow-hidden relative">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+          <div className="md:col-span-10 aspect-[4/5] bg-white border border-black/5 rounded-2xl overflow-hidden relative shadow-xs">
             <img
               src={selectedImage}
               alt={product.name}
               className="w-full h-full object-cover"
             />
             {product.discountPercentage > 0 && (
-              <span className="absolute top-4 right-4 bg-accent-teal text-black text-xs font-bold px-3 py-1 rounded">
+              <span className="absolute top-4 right-4 bg-black text-white text-[9px] font-extrabold px-3 py-1 rounded-full z-10">
                 {product.discountPercentage}% OFF
               </span>
             )}
@@ -128,11 +126,10 @@ export default function ProductDetailClient({ product, recommendations, initialU
               <button
                 key={idx}
                 onClick={() => setSelectedImage(img)}
-                className={`w-16 h-20 rounded bg-[#1f2833]/30 border overflow-hidden ${
-                  selectedImage === img ? 'border-accent-teal' : 'border-white/5'
+                className={`w-16 h-20 rounded-xl bg-white border overflow-hidden ${
+                  selectedImage === img ? 'border-black ring-1 ring-black' : 'border-black/5'
                 }`}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={img} alt={`${product.name} thumb ${idx}`} className="w-full h-full object-cover" />
               </button>
             ))}
@@ -142,53 +139,53 @@ export default function ProductDetailClient({ product, recommendations, initialU
         {/* Right Column: Pricing & Options */}
         <div className="lg:col-span-5 space-y-6">
           <div>
-            <span className="text-xs uppercase tracking-[0.25em] text-accent-teal font-semibold">
+            <span className="text-[10px] uppercase tracking-[0.3em] text-black/55 font-bold">
               {product.brand}
             </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-widest text-white uppercase mt-1">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wider text-black uppercase mt-1">
               {product.name}
             </h1>
-            <span className="text-[10px] text-white/40 tracking-wider block mt-1">SKU: {product.sku}</span>
+            <span className="text-[9px] text-black/40 tracking-wider block mt-1">SKU: {product.sku}</span>
           </div>
 
           {/* Rating */}
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5">
               {Array.from({ length: 5 }).map((_, i) => (
                 <Star
                   key={i}
-                  className={`w-4 h-4 ${
+                  className={`w-3.5 h-3.5 ${
                     i < Math.round(product.averageRating)
-                      ? 'text-accent-teal fill-accent-teal'
-                      : 'text-white/20'
+                      ? 'text-black fill-black'
+                      : 'text-black/10'
                   }`}
                 />
               ))}
-              <span className="text-xs text-white font-medium ml-1">{product.averageRating}</span>
+              <span className="text-xs text-black font-extrabold ml-1">{product.averageRating}</span>
             </div>
-            <span className="text-xs text-white/50 border-l border-white/15 pl-4">
-              {product.reviewsCount} customer reviews
+            <span className="text-xs text-black/40 border-l border-black/10 pl-4 font-medium">
+              {product.reviewsCount} reviews
             </span>
           </div>
 
           {/* Pricing Box */}
-          <div className="bg-[#1f2833]/15 border border-white/5 p-4 rounded-lg space-y-2">
+          <div className="bg-white border border-black/5 p-5 rounded-2xl space-y-2.5 shadow-xs">
             <div className="flex items-baseline gap-3">
-              <span className="text-2xl font-extrabold text-accent-teal">
+              <span className="text-2xl font-extrabold text-black">
                 ₹{product.sellingPrice.toLocaleString('en-IN')}
               </span>
               {product.mrp > product.sellingPrice && (
                 <>
-                  <span className="text-sm text-white/40 line-through">
+                  <span className="text-xs text-black/40 line-through font-medium">
                     MRP ₹{product.mrp.toLocaleString('en-IN')}
                   </span>
-                  <span className="text-xs text-[#10b981] font-semibold">
+                  <span className="text-xs text-teal-800 font-extrabold">
                     Save ₹{(product.mrp - product.sellingPrice).toLocaleString('en-IN')}
                   </span>
                 </>
               )}
             </div>
-            <p className="text-[11px] text-white/50 leading-tight">
+            <p className="text-[10px] text-black/50 leading-relaxed font-light">
               MRP inclusive of all Indian taxes. GST breakdown (18% value: ~₹{productGst.toLocaleString('en-IN')}) shown transparently in cart.
             </p>
           </div>
@@ -196,13 +193,13 @@ export default function ProductDetailClient({ product, recommendations, initialU
           {/* Sizing Grid (Indian sizes) */}
           {product.category === 'Footwear' || product.category === 'Slippers' ? (
             <div className="space-y-3">
-              <div className="flex justify-between items-center text-xs tracking-wider uppercase font-semibold text-white/80">
-                <span>Select Shoe Size (UK / Indian Standards)</span>
+              <div className="flex justify-between items-center text-xs tracking-wider uppercase font-extrabold text-black/85">
+                <span>Select Shoe Size (UK / India)</span>
                 <button
                   onClick={() => setShowSizeGuide(true)}
-                  className="text-accent-teal hover:underline text-[10px] font-medium"
+                  className="text-black underline text-[9px] font-extrabold"
                 >
-                  Size Guide & Conversions
+                  Size Conversions
                 </button>
               </div>
               <div className="grid grid-cols-5 gap-2">
@@ -210,10 +207,10 @@ export default function ProductDetailClient({ product, recommendations, initialU
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`py-2 text-center text-xs border rounded transition-colors ${
+                    className={`py-2.5 text-center text-xs border rounded-xl transition-all font-semibold ${
                       selectedSize === size
-                        ? 'border-accent-teal bg-accent-teal text-background font-bold'
-                        : 'border-white/10 text-white/80 hover:border-white/30'
+                        ? 'border-black bg-black text-white'
+                        : 'border-black/10 bg-white text-black hover:border-black/20'
                     }`}
                   >
                     UK {size}
@@ -223,18 +220,18 @@ export default function ProductDetailClient({ product, recommendations, initialU
             </div>
           ) : product.category === 'Apparel' ? (
             <div className="space-y-3">
-              <div className="text-xs tracking-wider uppercase font-semibold text-white/80">
-                Select Chest Size (Chest Inches)
+              <div className="text-xs tracking-wider uppercase font-extrabold text-black/85">
+                Select Chest Size
               </div>
               <div className="grid grid-cols-4 gap-2">
                 {product.sizes.map((size) => (
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`py-2 text-center text-xs border rounded transition-colors ${
+                    className={`py-2.5 text-center text-xs border rounded-xl transition-all font-semibold ${
                       selectedSize === size
-                        ? 'border-accent-teal bg-accent-teal text-background font-bold'
-                        : 'border-white/10 text-white/80 hover:border-white/30'
+                        ? 'border-black bg-black text-white'
+                        : 'border-black/10 bg-white text-black hover:border-black/20'
                     }`}
                   >
                     Size {size}
@@ -246,8 +243,8 @@ export default function ProductDetailClient({ product, recommendations, initialU
 
           {/* Width selection (shoes specific) */}
           {(product.category === 'Footwear' || product.category === 'Slippers') && (
-            <div className="space-y-2">
-              <span className="text-xs uppercase tracking-wider font-semibold text-white/80 block">
+            <div className="space-y-3">
+              <span className="text-xs uppercase tracking-wider font-extrabold text-black/85 block">
                 Shoe Width Configuration
               </span>
               <div className="flex gap-2">
@@ -255,10 +252,10 @@ export default function ProductDetailClient({ product, recommendations, initialU
                   <button
                     key={w}
                     onClick={() => setSelectedWidth(w)}
-                    className={`px-4 py-1.5 text-xs border rounded uppercase tracking-widest ${
+                    className={`px-5 py-2 text-xs border rounded-full uppercase tracking-widest font-bold transition-all ${
                       selectedWidth === w
-                        ? 'border-accent-teal text-accent-teal bg-accent-teal/10 font-semibold'
-                        : 'border-white/10 text-white/70 hover:border-white/20'
+                        ? 'border-black bg-black text-white'
+                        : 'border-black/10 bg-white text-black hover:border-black/20'
                     }`}
                   >
                     {w}
@@ -269,19 +266,19 @@ export default function ProductDetailClient({ product, recommendations, initialU
           )}
 
           {/* Quantity selector */}
-          <div className="space-y-2">
-            <span className="text-xs uppercase tracking-wider font-semibold text-white/80 block">Quantity</span>
-            <div className="flex items-center border border-white/10 rounded w-28 overflow-hidden bg-white/5">
+          <div className="space-y-3">
+            <span className="text-xs uppercase tracking-wider font-extrabold text-black/85 block">Quantity</span>
+            <div className="flex items-center border border-black/10 rounded-full w-32 overflow-hidden bg-white shadow-xs p-1">
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="px-3 py-2 hover:bg-white/10 text-white/70 hover:text-white transition-colors"
+                className="w-8 h-8 rounded-full hover:bg-black/5 flex items-center justify-center text-black/75 transition-colors"
               >
                 <Minus className="w-3.5 h-3.5" />
               </button>
-              <span className="flex-1 text-center text-xs text-white font-medium">{quantity}</span>
+              <span className="flex-1 text-center text-xs text-black font-extrabold">{quantity}</span>
               <button
                 onClick={() => setQuantity(quantity + 1)}
-                className="px-3 py-2 hover:bg-white/10 text-white/70 hover:text-white transition-colors"
+                className="w-8 h-8 rounded-full hover:bg-black/5 flex items-center justify-center text-black/75 transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
               </button>
@@ -289,18 +286,18 @@ export default function ProductDetailClient({ product, recommendations, initialU
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
             {product.stockQuantity > 0 ? (
               <>
                 <button
                   onClick={() => addToCart(product, quantity, selectedSize)}
-                  className="flex-1 btn-primary py-3.5 text-xs font-bold uppercase tracking-widest rounded flex items-center justify-center gap-2"
+                  className="flex-1 bg-black hover:bg-transparent text-white hover:text-black border border-black py-4 text-xs font-bold uppercase tracking-widest rounded-full transition-all"
                 >
                   Add to Bag
                 </button>
                 <button
                   onClick={handleBuyNow}
-                  className="flex-1 bg-white hover:bg-white/90 text-background py-3.5 text-xs font-bold uppercase tracking-widest rounded transition-colors text-center"
+                  className="flex-1 bg-white hover:bg-black text-black hover:text-white border border-black/10 hover:border-black py-4 text-xs font-bold uppercase tracking-widest rounded-full transition-all text-center"
                 >
                   Buy It Now
                 </button>
@@ -308,7 +305,7 @@ export default function ProductDetailClient({ product, recommendations, initialU
             ) : (
               <button
                 disabled
-                className="w-full bg-white/5 border border-white/10 text-white/30 py-3.5 text-xs uppercase tracking-widest font-bold rounded cursor-not-allowed text-center"
+                className="w-full bg-black/5 border border-black/5 text-black/30 py-4 text-xs uppercase tracking-widest font-bold rounded-full cursor-not-allowed text-center"
               >
                 Out of Stock
               </button>
@@ -316,21 +313,21 @@ export default function ProductDetailClient({ product, recommendations, initialU
 
             <button
               onClick={handleWishlistToggle}
-              className={`p-3.5 border rounded transition-colors flex items-center justify-center ${
+              className={`p-4 border rounded-full transition-colors flex items-center justify-center ${
                 wishlisted
-                  ? 'border-red-500/35 bg-red-500/10 text-red-400'
-                  : 'border-white/10 text-white/70 hover:border-white/20 hover:text-white'
+                  ? 'border-red-200 bg-red-50 text-red-600'
+                  : 'border-black/10 bg-white text-black hover:border-black/25'
               }`}
               aria-label="Wishlist"
             >
-              <Heart className={`w-5 h-5 ${wishlisted ? 'fill-red-400' : ''}`} />
+              <Heart className={`w-4 h-4 ${wishlisted ? 'fill-red-600' : ''}`} />
             </button>
           </div>
 
           {/* Pincode Checker */}
-          <div className="border-t border-white/5 pt-5 space-y-3">
-            <span className="text-xs uppercase tracking-wider font-semibold text-white/80 block flex items-center gap-1.5">
-              <Truck className="w-4 h-4 text-accent-teal" /> Check Availability & Delivery Speed
+          <div className="border-t border-black/5 pt-5 space-y-3">
+            <span className="text-xs uppercase tracking-wider font-extrabold text-black/85 block flex items-center gap-1.5">
+              <Truck className="w-4 h-4 text-black" /> Check Availability & Delivery Speed
             </span>
             <form onSubmit={handlePincodeCheck} className="flex gap-2">
               <input
@@ -339,12 +336,12 @@ export default function ProductDetailClient({ product, recommendations, initialU
                 placeholder="Enter 6-digit Pincode"
                 value={pincode}
                 onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
-                className="flex-1 input-premium text-xs"
+                className="flex-1 border border-black/10 focus:border-black rounded-full px-4 py-2.5 text-xs outline-none bg-white transition-all"
               />
               <button
                 type="submit"
                 disabled={checkingPin || pincode.length !== 6}
-                className="btn-secondary px-4 py-2 text-xs uppercase tracking-widest font-semibold"
+                className="bg-black hover:bg-transparent text-white hover:text-black border border-black px-5 py-2.5 rounded-full text-xs uppercase tracking-widest font-bold disabled:opacity-50 transition-all"
               >
                 Check
               </button>
@@ -352,32 +349,32 @@ export default function ProductDetailClient({ product, recommendations, initialU
 
             {pincodeStatus.checked && (
               <div
-                className={`text-xs p-3 rounded flex items-start gap-2 border ${
+                className={`text-xs p-4 rounded-xl border flex items-start gap-2 ${
                   pincodeStatus.serviceable
-                    ? 'bg-[#10b981]/5 border-[#10b981]/25 text-[#10b981]'
-                    : 'bg-red-500/5 border-red-500/20 text-red-400'
+                    ? 'bg-teal-500/5 border-teal-500/10 text-teal-800'
+                    : 'bg-red-500/5 border-red-500/10 text-red-800'
                 }`}
               >
                 {pincodeStatus.serviceable ? (
                   <div>
-                    <p className="font-semibold">Estimated transit: {pincodeStatus.days} days</p>
+                    <p className="font-extrabold uppercase tracking-wider text-[10px]">Estimated transit: {pincodeStatus.days} days</p>
                     <p className="text-[10px] opacity-80 mt-0.5">Dispatched via premium express from Dhanbad HQ.</p>
                   </div>
                 ) : (
-                  <span>{pincodeStatus.error || 'Delivery unavailable to this pincode.'}</span>
+                  <span className="font-semibold">{pincodeStatus.error || 'Delivery unavailable to this pincode.'}</span>
                 )}
               </div>
             )}
           </div>
 
           {/* Social Share & Brand disclosure */}
-          <div className="flex justify-between items-center text-xs text-white/40 pt-4 border-t border-white/5">
-            <span className="flex items-center gap-1.5">
-              <ShieldAlert className="w-3.5 h-3.5 text-accent-teal" /> 100% Genuine Distributor Stock
+          <div className="flex justify-between items-center text-xs text-black/40 pt-4 border-t border-black/5">
+            <span className="flex items-center gap-1.5 font-medium">
+              <ShieldAlert className="w-3.5 h-3.5 text-black" /> 100% Genuine Distributor Stock
             </span>
             <button
               onClick={handleShare}
-              className="hover:text-white transition-colors flex items-center gap-1"
+              className="hover:text-black font-semibold transition-colors flex items-center gap-1"
             >
               <Share2 className="w-3.5 h-3.5" />
               {copiedLink ? 'Link Copied!' : 'Share Product'}
@@ -387,8 +384,8 @@ export default function ProductDetailClient({ product, recommendations, initialU
       </div>
 
       {/* Tabs / Product Specification Details */}
-      <div className="border-t border-white/5 pt-10">
-        <div className="flex border-b border-white/5 gap-6">
+      <div className="border-t border-black/5 pt-10">
+        <div className="flex border-b border-black/5 gap-6">
           {[
             { id: 'desc', label: 'Description' },
             { id: 'specs', label: 'Specifications' },
@@ -397,19 +394,19 @@ export default function ProductDetailClient({ product, recommendations, initialU
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`pb-4 text-xs uppercase tracking-widest font-semibold transition-all relative ${
-                activeTab === tab.id ? 'text-accent-teal' : 'text-white/50 hover:text-white'
+              className={`pb-4 text-xs uppercase tracking-widest font-extrabold transition-all relative ${
+                activeTab === tab.id ? 'text-black' : 'text-black/40 hover:text-black'
               }`}
             >
               {tab.label}
               {activeTab === tab.id && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent-teal" />
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-black" />
               )}
             </button>
           ))}
         </div>
 
-        <div className="py-6 text-sm text-white/70 font-light leading-relaxed max-w-4xl space-y-4">
+        <div className="py-6 text-sm text-black/70 font-light leading-relaxed max-w-4xl space-y-4">
           {activeTab === 'desc' && (
             <div className="space-y-3">
               <p>{product.description}</p>
@@ -420,27 +417,27 @@ export default function ProductDetailClient({ product, recommendations, initialU
           )}
 
           {activeTab === 'specs' && (
-            <table className="w-full text-xs uppercase tracking-wider text-white/80">
+            <table className="w-full text-xs uppercase tracking-wider text-black/85">
               <tbody>
-                <tr className="border-b border-white/5">
-                  <td className="py-2.5 font-semibold text-white/40">Brand</td>
-                  <td className="py-2.5">{product.brand}</td>
+                <tr className="border-b border-black/5">
+                  <td className="py-3.5 font-bold text-black/40">Brand</td>
+                  <td className="py-3.5 font-medium">{product.brand}</td>
                 </tr>
-                <tr className="border-b border-white/5">
-                  <td className="py-2.5 font-semibold text-white/40">SKU</td>
-                  <td className="py-2.5">{product.sku}</td>
+                <tr className="border-b border-black/5">
+                  <td className="py-3.5 font-bold text-black/40">SKU</td>
+                  <td className="py-3.5 font-medium">{product.sku}</td>
                 </tr>
-                <tr className="border-b border-white/5">
-                  <td className="py-2.5 font-semibold text-white/40">Material</td>
-                  <td className="py-2.5">{product.material}</td>
+                <tr className="border-b border-black/5">
+                  <td className="py-3.5 font-bold text-black/40">Material</td>
+                  <td className="py-3.5 font-medium">{product.material}</td>
                 </tr>
-                <tr className="border-b border-white/5">
-                  <td className="py-2.5 font-semibold text-white/40">Color</td>
-                  <td className="py-2.5">{product.color}</td>
+                <tr className="border-b border-black/5">
+                  <td className="py-3.5 font-bold text-black/40">Color</td>
+                  <td className="py-3.5 font-medium">{product.color}</td>
                 </tr>
-                <tr className="border-b border-white/5">
-                  <td className="py-2.5 font-semibold text-white/40">Fit Width</td>
-                  <td className="py-2.5">{product.width} Fit</td>
+                <tr className="border-b border-black/5">
+                  <td className="py-3.5 font-bold text-black/40">Fit Width</td>
+                  <td className="py-3.5 font-medium">{product.width} Fit</td>
                 </tr>
               </tbody>
             </table>
@@ -461,41 +458,41 @@ export default function ProductDetailClient({ product, recommendations, initialU
 
       {/* Recommendations Slider */}
       {recommendations.length > 0 && (
-        <div className="border-t border-white/5 pt-12 space-y-8">
+        <div className="border-t border-black/5 pt-12 space-y-8">
           <div className="space-y-1">
-            <span className="text-xs uppercase tracking-[0.4em] text-accent-teal font-semibold">Recommendations</span>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-widest uppercase text-white">You May Also Like</h2>
+            <span className="text-xs uppercase tracking-[0.3em] text-black/50 font-semibold">Recommendations</span>
+            <h2 className="text-xl sm:text-2xl font-extrabold tracking-wider text-black uppercase">You May Also Like</h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {recommendations.map((rec) => (
               <div
                 key={rec.id}
-                className="group bg-[#141821]/45 border border-white/5 rounded-lg overflow-hidden flex flex-col justify-between hover:border-white/15 transition-all duration-300"
+                className="group bg-white border border-black/5 rounded-2xl overflow-hidden flex flex-col justify-between hover:shadow-md transition-all duration-300 shadow-xs"
               >
-                <Link href={`/product/${rec.id}`} className="block relative aspect-[4/5] bg-white/5 overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                <Link href={`/product/${rec.id}`} className="block relative aspect-[4/5] bg-white overflow-hidden border-b border-black/5">
                   <img
                     src={rec.images[0]}
                     alt={rec.name}
-                    className="w-full h-full object-cover transition-transform duration-750 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-103"
                   />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <span className="btn-primary px-3 py-1.5 text-[9px] uppercase tracking-widest font-semibold rounded">
-                      Details
-                    </span>
-                  </div>
+                  <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </Link>
 
-                <div className="p-4 space-y-2">
-                  <span className="text-[9px] uppercase tracking-widest text-accent-teal font-semibold block">{rec.brand}</span>
-                  <Link
-                    href={`/product/${rec.id}`}
-                    className="text-xs font-semibold text-white hover:text-accent-teal transition-colors line-clamp-1"
-                  >
-                    {rec.name}
-                  </Link>
-                  <span className="text-xs font-bold text-white block">₹{rec.sellingPrice.toLocaleString('en-IN')}</span>
+                <div className="p-5 space-y-3">
+                  <div>
+                    <span className="text-[9px] uppercase tracking-widest text-black/45 font-bold block">{rec.brand}</span>
+                    <Link
+                      href={`/product/${rec.id}`}
+                      className="text-sm font-extrabold text-black hover:underline transition-all line-clamp-1 mt-1"
+                    >
+                      {rec.name}
+                    </Link>
+                  </div>
+                  <div className="flex justify-between items-center pt-2 border-t border-black/5">
+                    <span className="text-sm font-extrabold text-black">₹{rec.sellingPrice.toLocaleString('en-IN')}</span>
+                    <span className="text-[9px] bg-black text-white px-3 py-1 rounded-full font-bold uppercase tracking-widest">Details</span>
+                  </div>
                 </div>
               </div>
             ))}
@@ -508,66 +505,66 @@ export default function ProductDetailClient({ product, recommendations, initialU
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
             onClick={() => setShowSizeGuide(false)}
-            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/40 backdrop-blur-xs"
           />
-          <div className="relative bg-[#141821] border border-white/10 rounded-lg p-6 sm:p-8 max-w-lg w-full overflow-y-auto max-h-[90vh] space-y-6 z-10">
-            <div className="flex justify-between items-center border-b border-white/5 pb-4">
-              <h3 className="text-sm uppercase tracking-widest font-bold text-white">Shoe Size Conversion Guide</h3>
+          <div className="relative bg-[#f4f3ef] border border-black/5 rounded-2xl p-6 sm:p-8 max-w-lg w-full overflow-y-auto max-h-[90vh] space-y-6 z-10 shadow-2xl">
+            <div className="flex justify-between items-center border-b border-black/5 pb-4">
+              <h3 className="text-xs uppercase tracking-widest font-extrabold text-black">Shoe Size Conversion Guide</h3>
               <button
                 onClick={() => setShowSizeGuide(false)}
-                className="text-white/60 hover:text-white text-xs uppercase tracking-wider font-semibold"
+                className="text-black/50 hover:text-black text-xs uppercase tracking-wider font-extrabold"
               >
                 Close
               </button>
             </div>
 
-            <div className="space-y-4 text-xs font-light text-white/70 leading-relaxed">
+            <div className="space-y-4 text-xs font-light text-black/70 leading-relaxed">
               <p>
                 Infinity Traders uses <strong>UK / Indian Standard Shoe Sizes</strong>. Convert to US/EU equivalents or check foot lengths in Centimeters below:
               </p>
 
               <table className="w-full text-center border-collapse">
                 <thead>
-                  <tr className="border-b border-white/10 text-white font-semibold">
-                    <th className="py-2">UK / India</th>
-                    <th className="py-2">US (Men)</th>
-                    <th className="py-2">EU Equivalent</th>
-                    <th className="py-2">Foot Length (cm)</th>
+                  <tr className="border-b border-black/10 text-black font-extrabold uppercase text-[10px] tracking-wider">
+                    <th className="py-2.5">UK / India</th>
+                    <th className="py-2.5">US (Men)</th>
+                    <th className="py-2.5">EU Equivalent</th>
+                    <th className="py-2.5">Length (cm)</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5 text-[11px]">
+                <tbody className="divide-y divide-black/5 text-[11px] font-medium text-black">
                   <tr>
-                    <td className="py-2 font-bold text-accent-teal">UK 6</td>
+                    <td className="py-2 font-bold text-black">UK 6</td>
                     <td className="py-2">US 7</td>
                     <td className="py-2">EU 40</td>
                     <td className="py-2">25.0 cm</td>
                   </tr>
                   <tr>
-                    <td className="py-2 font-bold text-accent-teal">UK 7</td>
+                    <td className="py-2 font-bold text-black">UK 7</td>
                     <td className="py-2">US 8</td>
                     <td className="py-2">EU 41</td>
                     <td className="py-2">25.8 cm</td>
                   </tr>
                   <tr>
-                    <td className="py-2 font-bold text-accent-teal">UK 8</td>
+                    <td className="py-2 font-bold text-black">UK 8</td>
                     <td className="py-2">US 9</td>
                     <td className="py-2">EU 42</td>
                     <td className="py-2">26.6 cm</td>
                   </tr>
                   <tr>
-                    <td className="py-2 font-bold text-accent-teal">UK 9</td>
+                    <td className="py-2 font-bold text-black">UK 9</td>
                     <td className="py-2">US 10</td>
                     <td className="py-2">EU 43</td>
                     <td className="py-2">27.5 cm</td>
                   </tr>
                   <tr>
-                    <td className="py-2 font-bold text-accent-teal">UK 10</td>
+                    <td className="py-2 font-bold text-black">UK 10</td>
                     <td className="py-2">US 11</td>
                     <td className="py-2">EU 44</td>
                     <td className="py-2">28.3 cm</td>
                   </tr>
                   <tr>
-                    <td className="py-2 font-bold text-accent-teal">UK 11</td>
+                    <td className="py-2 font-bold text-black">UK 11</td>
                     <td className="py-2">US 12</td>
                     <td className="py-2">EU 45</td>
                     <td className="py-2">29.1 cm</td>
@@ -575,8 +572,8 @@ export default function ProductDetailClient({ product, recommendations, initialU
                 </tbody>
               </table>
 
-              <div className="bg-[#1f2833]/30 border border-white/5 p-3.5 rounded text-[11px] leading-relaxed">
-                <span className="font-semibold text-white block mb-1">How to Measure:</span>
+              <div className="bg-white border border-black/5 p-4 rounded-xl text-[11px] leading-relaxed text-black/85">
+                <span className="font-bold text-black block mb-1">How to Measure:</span>
                 Place your heel against a flat wall, draw a line at the longest toe, and measure distance in centimeters. Choose the corresponding size. Standard fit supports standard width configuration.
               </div>
             </div>

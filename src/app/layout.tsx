@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full scroll-smooth">
-      <body className="min-h-full flex flex-col bg-[#0b0c10] text-[#f5f6f9] antialiased">
+      <body className="min-h-full flex flex-col bg-[#f4f3ef] text-black antialiased">
         <LanguageProvider>
           <CartProvider>
             <Header />

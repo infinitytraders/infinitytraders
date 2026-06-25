@@ -51,17 +51,15 @@ function ShopContent() {
   // Extract unique options for filters
   const categories = ['All', ...new Set(products.map((p) => p.category))];
   const brands = ['All', ...new Set(products.map((p) => p.brand))];
-  // Gather all unique sizes and sort them
   const allSizes = [
     'All',
     ...Array.from(new Set(products.flatMap((p) => p.sizes))).sort((a, b) => a - b),
-  ].filter(s => s !== 0); // Remove 0 size
+  ].filter(s => s !== 0);
 
   // Filter and Sort Engine
   useEffect(() => {
     let result = [...products];
 
-    // Search Query (Typo-tolerant/Substring check)
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       result = result.filter(
@@ -74,27 +72,21 @@ function ShopContent() {
       );
     }
 
-    // Category Filter
     if (selectedCategory !== 'All') {
       result = result.filter((p) => p.category === selectedCategory);
     }
 
-    // Brand Filter
     if (selectedBrand !== 'All') {
       result = result.filter((p) => p.brand === selectedBrand);
     }
 
-    // Size Filter
     if (selectedSize !== 'All') {
       result = result.filter((p) => p.sizes.includes(Number(selectedSize)));
     }
 
-    // Price Filter
     result = result.filter((p) => p.sellingPrice <= maxPrice);
 
-    // Sorting Engine
     if (sortBy === 'newest') {
-      // Seed products have isNewArrival, we sort new arrivals first
       result.sort((a, b) => (b.isNewArrival ? 1 : 0) - (a.isNewArrival ? 1 : 0));
     } else if (sortBy === 'price-low') {
       result.sort((a, b) => a.sellingPrice - b.sellingPrice);
@@ -120,14 +112,14 @@ function ShopContent() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 bg-[#f4f3ef]">
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/5 pb-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-black/5 pb-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-widest text-white uppercase">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wider text-black uppercase">
             Product Catalog
           </h1>
-          <p className="text-xs text-white/50 font-light mt-1 uppercase tracking-wider">
+          <p className="text-[10px] text-black/50 font-bold mt-1 uppercase tracking-widest">
             Showing {filteredProducts.length} of {products.length} active articles
           </p>
         </div>
@@ -140,14 +132,14 @@ function ShopContent() {
               placeholder="Search by name, SKU, brand..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full input-premium pl-10 py-2 text-xs"
+              className="w-full border border-black/10 focus:border-black rounded-full pl-10 pr-4 py-2.5 text-xs outline-none bg-white transition-all text-black"
             />
-            <Search className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-black/45 absolute left-3.5 top-1/2 -translate-y-1/2" />
           </div>
 
           <button
             onClick={() => setShowFiltersMobile(true)}
-            className="lg:hidden btn-secondary p-2.5 rounded flex items-center gap-1.5 text-xs uppercase font-semibold tracking-wider"
+            className="lg:hidden bg-white border border-black/10 text-black px-4 py-2.5 rounded-full flex items-center gap-1.5 text-xs uppercase font-extrabold tracking-widest transition-all"
           >
             <SlidersHorizontal className="w-4 h-4" /> Filters
           </button>
@@ -156,14 +148,14 @@ function ShopContent() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* DESKTOP SIDEBAR FILTERS */}
-        <aside className="hidden lg:block lg:col-span-3 space-y-6 bg-[#141821]/30 border border-white/5 p-6 rounded-lg sticky top-28">
-          <div className="flex justify-between items-center border-b border-white/5 pb-4">
-            <h2 className="text-xs uppercase tracking-widest font-bold text-white flex items-center gap-2">
-              <SlidersHorizontal className="w-4 h-4 text-accent-teal" /> Filters
+        <aside className="hidden lg:block lg:col-span-3 space-y-6 bg-white border border-black/5 p-6 rounded-2xl sticky top-28 shadow-xs">
+          <div className="flex justify-between items-center border-b border-black/5 pb-4">
+            <h2 className="text-[10px] uppercase tracking-widest font-extrabold text-black flex items-center gap-2">
+              <SlidersHorizontal className="w-4 h-4 text-black" /> Filters
             </h2>
             <button
               onClick={clearFilters}
-              className="text-[10px] text-accent-teal hover:text-white transition-colors uppercase tracking-wider font-semibold"
+              className="text-[9px] text-black hover:underline transition-all uppercase tracking-widest font-extrabold"
             >
               Reset All
             </button>
@@ -171,14 +163,14 @@ function ShopContent() {
 
           {/* Category Filter */}
           <div className="space-y-2">
-            <h3 className="text-[11px] uppercase tracking-wider font-semibold text-white/70">Category</h3>
-            <div className="flex flex-col gap-1.5">
+            <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black/45">Category</h3>
+            <div className="flex flex-col gap-1">
               {categories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`text-left text-xs py-1 transition-colors uppercase tracking-wider font-light ${
-                    selectedCategory === cat ? 'text-accent-teal font-semibold' : 'text-white/60 hover:text-white'
+                  className={`text-left text-xs py-1 transition-all uppercase tracking-wider font-semibold ${
+                    selectedCategory === cat ? 'text-black font-extrabold underline' : 'text-black/60 hover:text-black'
                   }`}
                 >
                   {cat}
@@ -188,15 +180,15 @@ function ShopContent() {
           </div>
 
           {/* Brand Filter */}
-          <div className="space-y-2 border-t border-white/5 pt-4">
-            <h3 className="text-[11px] uppercase tracking-wider font-semibold text-white/70">Brand</h3>
-            <div className="flex flex-col gap-1.5">
+          <div className="space-y-2 border-t border-black/5 pt-4">
+            <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black/45">Brand</h3>
+            <div className="flex flex-col gap-1">
               {brands.map((b) => (
                 <button
                   key={b}
                   onClick={() => setSelectedBrand(b)}
-                  className={`text-left text-xs py-1 transition-colors uppercase tracking-wider font-light ${
-                    selectedBrand === b ? 'text-accent-teal font-semibold' : 'text-white/60 hover:text-white'
+                  className={`text-left text-xs py-1 transition-all uppercase tracking-wider font-semibold ${
+                    selectedBrand === b ? 'text-black font-extrabold underline' : 'text-black/60 hover:text-black'
                   }`}
                 >
                   {b}
@@ -206,30 +198,30 @@ function ShopContent() {
           </div>
 
           {/* Size Filter */}
-          <div className="space-y-3 border-t border-white/5 pt-4">
-            <h3 className="text-[11px] uppercase tracking-wider font-semibold text-white/70">Indian shoe size</h3>
+          <div className="space-y-3 border-t border-black/5 pt-4">
+            <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black/45">Shoe size (UK)</h3>
             <div className="grid grid-cols-4 gap-1.5">
               {allSizes.map((size) => (
                 <button
                   key={size.toString()}
                   onClick={() => setSelectedSize(size as any)}
-                  className={`py-1.5 text-center text-xs border rounded transition-colors ${
+                  className={`py-2 text-center text-[10px] border rounded-xl font-bold transition-all ${
                     selectedSize === size
-                      ? 'border-accent-teal bg-accent-teal text-background font-semibold'
-                      : 'border-white/10 text-white/70 hover:border-white/30 hover:text-white'
+                      ? 'border-black bg-black text-white'
+                      : 'border-black/10 bg-white text-black hover:border-black/25'
                   }`}
                 >
-                  {size === 'All' ? 'All' : `UK ${size}`}
+                  {size === 'All' ? 'ALL' : size}
                 </button>
               ))}
             </div>
           </div>
 
           {/* Price Range Slider */}
-          <div className="space-y-3 border-t border-white/5 pt-4">
-            <div className="flex justify-between items-center text-[11px] uppercase tracking-wider font-semibold text-white/70">
+          <div className="space-y-3 border-t border-black/5 pt-4">
+            <div className="flex justify-between items-center text-[10px] uppercase tracking-wider font-extrabold text-black/45">
               <span>Max Price</span>
-              <span className="text-accent-teal">₹{maxPrice.toLocaleString('en-IN')}</span>
+              <span className="text-black font-extrabold">₹{maxPrice.toLocaleString('en-IN')}</span>
             </div>
             <input
               type="range"
@@ -238,17 +230,17 @@ function ShopContent() {
               step={100}
               value={maxPrice}
               onChange={(e) => setMaxPrice(Number(e.target.value))}
-              className="w-full accent-accent-teal bg-white/10 rounded h-1 cursor-pointer"
+              className="w-full accent-black bg-black/10 rounded h-1 cursor-pointer"
             />
           </div>
 
           {/* Sorting Option */}
-          <div className="space-y-3 border-t border-white/5 pt-4">
-            <h3 className="text-[11px] uppercase tracking-wider font-semibold text-white/70">Sort By</h3>
+          <div className="space-y-3 border-t border-black/5 pt-4">
+            <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black/45">Sort By</h3>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="w-full bg-[#141821] border border-white/10 rounded p-2 text-xs text-white/80 focus:border-accent-teal focus:outline-none"
+              className="w-full bg-[#fdfdfd] border border-black/10 rounded-xl p-2.5 text-xs text-black font-semibold focus:border-black focus:outline-none"
             >
               <option value="newest">New Arrivals</option>
               <option value="best-selling">Best Sellers</option>
@@ -264,18 +256,18 @@ function ShopContent() {
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="bg-[#141821]/20 border border-white/5 h-96 rounded-lg animate-pulse" />
+                <div key={i} className="bg-white border border-black/5 h-96 rounded-2xl animate-pulse" />
               ))}
             </div>
           ) : filteredProducts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 bg-[#141821]/15 border border-white/5 rounded-lg">
-              <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-white/30">
+            <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 bg-white border border-black/5 rounded-2xl">
+              <div className="w-16 h-16 rounded-full bg-black/5 flex items-center justify-center text-black/35">
                 <Grid className="w-8 h-8" />
               </div>
-              <p className="text-white/50 font-light tracking-wide">No articles matches your selected filter criteria.</p>
+              <p className="text-black/50 font-light tracking-wide">No articles matches your selected filter criteria.</p>
               <button
                 onClick={clearFilters}
-                className="btn-secondary px-5 py-2.5 text-xs uppercase tracking-widest font-semibold"
+                className="bg-black hover:bg-transparent text-white hover:text-black border border-black py-2.5 px-6 rounded-full text-xs uppercase tracking-widest font-bold transition-all"
               >
                 Clear All Filters
               </button>
@@ -285,65 +277,60 @@ function ShopContent() {
               {filteredProducts.map((product) => (
                 <div
                   key={product.id}
-                  className="group bg-[#141821]/45 border border-white/5 rounded-lg overflow-hidden flex flex-col justify-between hover:border-white/15 transition-all duration-300"
+                  className="group bg-white border border-black/5 rounded-2xl overflow-hidden flex flex-col justify-between hover:shadow-md transition-all duration-300 shadow-xs"
                 >
-                  <Link href={`/product/${product.id}`} className="block relative aspect-[4/5] bg-white/5 overflow-hidden">
+                  <Link href={`/product/${product.id}`} className="block relative aspect-[4/5] bg-white overflow-hidden border-b border-black/5">
                     {product.stockQuantity <= 3 && product.stockQuantity > 0 && (
-                      <span className="absolute top-3 left-3 bg-warning text-black text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded z-10 animate-pulse">
+                      <span className="absolute top-3 left-3 bg-[#d97706] text-white text-[8px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full z-10">
                         Low Stock
                       </span>
                     )}
                     {product.stockQuantity === 0 && (
-                      <span className="absolute top-3 left-3 bg-danger text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded z-10">
+                      <span className="absolute top-3 left-3 bg-red-600/90 text-white text-[8px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full z-10">
                         Out of Stock
                       </span>
                     )}
                     {product.discountPercentage > 0 && (
-                      <span className="absolute top-3 right-3 bg-accent-teal text-black text-[10px] font-extrabold px-2 py-0.5 rounded z-10">
+                      <span className="absolute top-3 right-3 bg-black text-white text-[8px] font-bold px-2.5 py-1 rounded-full z-10">
                         {product.discountPercentage}% OFF
                       </span>
                     )}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={product.images[0]}
                       alt={product.name}
-                      className="w-full h-full object-cover transition-transform duration-750 group-hover:scale-105"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-103"
                     />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <span className="btn-primary px-4 py-2 text-[10px] uppercase tracking-widest font-semibold rounded">
-                        View Details
-                      </span>
-                    </div>
+                    <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </Link>
 
-                  <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
+                  <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
                     <div>
-                      <div className="flex justify-between items-center text-[9px] uppercase tracking-widest text-accent-teal font-semibold">
+                      <div className="flex justify-between items-center text-[9px] uppercase tracking-widest text-black/45 font-bold">
                         <span>{product.brand}</span>
-                        <span className="text-white/40">{product.category}</span>
+                        <span>{product.category}</span>
                       </div>
                       <Link
                         href={`/product/${product.id}`}
-                        className="block text-sm font-semibold text-white mt-1 hover:text-accent-teal transition-colors line-clamp-1"
+                        className="block text-sm font-extrabold text-black mt-1 hover:underline transition-colors line-clamp-1"
                       >
                         {product.name}
                       </Link>
-                      <p className="text-[11px] text-white/50 font-light line-clamp-2 mt-1.5 leading-relaxed">
+                      <p className="text-[11px] text-black/60 font-light line-clamp-2 mt-1.5 leading-relaxed">
                         {product.description}
                       </p>
                     </div>
 
-                    <div className="space-y-3 pt-3 border-t border-white/5">
-                      <div className="flex justify-between items-end">
-                        <div className="flex items-center gap-1">
-                          <Star className="w-3 h-3 text-accent-teal fill-accent-teal" />
-                          <span className="text-[11px] text-white font-medium">{product.averageRating}</span>
-                          <span className="text-[9px] text-white/40">({product.reviewsCount})</span>
+                    <div className="space-y-3 pt-3 border-t border-black/5">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-1 bg-black/5 px-2 py-0.5 rounded-full">
+                          <Star className="w-3 h-3 text-black fill-black" />
+                          <span className="text-[10px] text-black font-extrabold">{product.averageRating}</span>
+                          <span className="text-[9px] text-black/50">({product.reviewsCount})</span>
                         </div>
                         <div className="text-right">
-                          <span className="text-xs font-bold text-white">₹{product.sellingPrice.toLocaleString('en-IN')}</span>
+                          <span className="text-sm font-extrabold text-black">₹{product.sellingPrice.toLocaleString('en-IN')}</span>
                           {product.mrp > product.sellingPrice && (
-                            <span className="text-[10px] text-white/40 line-through block">
+                            <span className="text-[10px] text-black/40 line-through block font-medium">
                               ₹{product.mrp.toLocaleString('en-IN')}
                             </span>
                           )}
@@ -353,14 +340,14 @@ function ShopContent() {
                       {product.stockQuantity > 0 ? (
                         <button
                           onClick={() => addToCart(product, 1, product.sizes[0] || 8)}
-                          className="w-full btn-secondary py-2 text-[9px] uppercase tracking-widest font-semibold flex items-center justify-center gap-1.5 rounded"
+                          className="w-full bg-black hover:bg-transparent text-white hover:text-black border border-black py-2.5 text-[9px] uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 rounded-full transition-all"
                         >
                           <ShoppingCart className="w-3 h-3" /> Add to Bag
                         </button>
                       ) : (
                         <button
                           disabled
-                          className="w-full bg-white/5 border border-white/10 text-white/30 py-2 text-[9px] uppercase tracking-widest font-semibold rounded cursor-not-allowed"
+                          className="w-full bg-black/5 border border-black/5 text-black/30 py-2.5 text-[9px] uppercase tracking-widest font-bold rounded-full cursor-not-allowed"
                         >
                           Out of Stock
                         </button>
@@ -377,22 +364,20 @@ function ShopContent() {
       {/* MOBILE FILTERS SIDE PANEL */}
       {showFiltersMobile && (
         <div className="fixed inset-0 z-50 lg:hidden flex justify-end">
-          {/* Backdrop */}
           <div
             onClick={() => setShowFiltersMobile(false)}
-            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/40 backdrop-blur-xs"
           />
 
-          {/* Panel */}
-          <div className="relative w-80 max-w-[85vw] h-full bg-[#0b0c10] border-l border-white/5 p-6 flex flex-col justify-between overflow-y-auto z-10 space-y-6">
+          <div className="relative w-80 max-w-[85vw] h-full bg-[#f4f3ef] border-l border-black/5 p-6 flex flex-col justify-between overflow-y-auto z-10 space-y-6 shadow-2xl">
             <div className="space-y-6">
-              <div className="flex justify-between items-center border-b border-white/5 pb-4">
-                <h2 className="text-xs uppercase tracking-widest font-bold text-white flex items-center gap-2">
-                  <SlidersHorizontal className="w-4 h-4 text-accent-teal" /> Filters
+              <div className="flex justify-between items-center border-b border-black/5 pb-4">
+                <h2 className="text-[10px] uppercase tracking-widest font-extrabold text-black flex items-center gap-2">
+                  <SlidersHorizontal className="w-4 h-4 text-black" /> Filters
                 </h2>
                 <button
                   onClick={() => setShowFiltersMobile(false)}
-                  className="text-white/60 hover:text-white transition-colors"
+                  className="text-black/50 hover:text-black transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -400,16 +385,16 @@ function ShopContent() {
 
               {/* Mobile Category */}
               <div className="space-y-2">
-                <h3 className="text-[11px] uppercase tracking-wider font-semibold text-white/70">Category</h3>
+                <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black/45">Category</h3>
                 <div className="flex flex-wrap gap-1.5">
                   {categories.map((cat) => (
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
-                      className={`text-xs px-3 py-1.5 border rounded uppercase tracking-wider transition-colors ${
+                      className={`text-[10px] px-3.5 py-1.5 border rounded-full uppercase tracking-wider transition-colors font-bold ${
                         selectedCategory === cat
-                          ? 'border-accent-teal text-accent-teal font-semibold'
-                          : 'border-white/10 text-white/60'
+                          ? 'border-black bg-black text-white'
+                          : 'border-black/10 bg-white text-black hover:border-black/25'
                       }`}
                     >
                       {cat}
@@ -419,17 +404,17 @@ function ShopContent() {
               </div>
 
               {/* Mobile Brand */}
-              <div className="space-y-2 border-t border-white/5 pt-4">
-                <h3 className="text-[11px] uppercase tracking-wider font-semibold text-white/70">Brand</h3>
+              <div className="space-y-2 border-t border-black/5 pt-4">
+                <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black/45">Brand</h3>
                 <div className="flex flex-wrap gap-1.5">
                   {brands.map((b) => (
                     <button
                       key={b}
                       onClick={() => setSelectedBrand(b)}
-                      className={`text-xs px-3 py-1.5 border rounded uppercase tracking-wider transition-colors ${
+                      className={`text-[10px] px-3.5 py-1.5 border rounded-full uppercase tracking-wider transition-colors font-bold ${
                         selectedBrand === b
-                          ? 'border-accent-teal text-accent-teal font-semibold'
-                          : 'border-white/10 text-white/60'
+                          ? 'border-black bg-black text-white'
+                          : 'border-black/10 bg-white text-black hover:border-black/25'
                       }`}
                     >
                       {b}
@@ -439,30 +424,30 @@ function ShopContent() {
               </div>
 
               {/* Mobile Size */}
-              <div className="space-y-3 border-t border-white/5 pt-4">
-                <h3 className="text-[11px] uppercase tracking-wider font-semibold text-white/70">Indian shoe size</h3>
+              <div className="space-y-3 border-t border-black/5 pt-4">
+                <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black/45">Shoe size (UK)</h3>
                 <div className="grid grid-cols-4 gap-1.5">
                   {allSizes.map((size) => (
                     <button
                       key={size.toString()}
                       onClick={() => setSelectedSize(size as any)}
-                      className={`py-1.5 text-center text-xs border rounded transition-colors ${
+                      className={`py-2.5 text-center text-[10px] border rounded-xl font-bold transition-all ${
                         selectedSize === size
-                          ? 'border-accent-teal bg-accent-teal text-background font-semibold'
-                          : 'border-white/10 text-white/70'
+                          ? 'border-black bg-black text-white'
+                          : 'border-black/10 bg-white text-black hover:border-black/25'
                       }`}
                     >
-                      {size === 'All' ? 'All' : `UK ${size}`}
+                      {size === 'All' ? 'ALL' : size}
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Mobile Price */}
-              <div className="space-y-3 border-t border-white/5 pt-4">
-                <div className="flex justify-between items-center text-[11px] uppercase tracking-wider font-semibold text-white/70">
+              <div className="space-y-3 border-t border-black/5 pt-4">
+                <div className="flex justify-between items-center text-[10px] uppercase tracking-wider font-extrabold text-black/45">
                   <span>Max Price</span>
-                  <span className="text-accent-teal">₹{maxPrice.toLocaleString('en-IN')}</span>
+                  <span className="text-black font-extrabold">₹{maxPrice.toLocaleString('en-IN')}</span>
                 </div>
                 <input
                   type="range"
@@ -471,17 +456,17 @@ function ShopContent() {
                   step={100}
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(Number(e.target.value))}
-                  className="w-full accent-accent-teal bg-white/10 rounded h-1 cursor-pointer"
+                  className="w-full accent-black bg-black/10 rounded h-1 cursor-pointer"
                 />
               </div>
 
               {/* Mobile Sorting */}
-              <div className="space-y-3 border-t border-white/5 pt-4">
-                <h3 className="text-[11px] uppercase tracking-wider font-semibold text-white/70">Sort By</h3>
+              <div className="space-y-3 border-t border-black/5 pt-4">
+                <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black/45">Sort By</h3>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full bg-[#141821] border border-white/10 rounded p-2.5 text-xs text-white"
+                  className="w-full bg-[#fdfdfd] border border-black/10 rounded-xl p-2.5 text-xs text-black font-semibold focus:border-black focus:outline-none"
                 >
                   <option value="newest">New Arrivals</option>
                   <option value="best-selling">Best Sellers</option>
@@ -492,16 +477,16 @@ function ShopContent() {
               </div>
             </div>
 
-            <div className="flex gap-2 border-t border-white/5 pt-4">
+            <div className="flex gap-2 border-t border-black/5 pt-4">
               <button
                 onClick={clearFilters}
-                className="flex-1 btn-secondary py-2.5 text-[10px] uppercase tracking-widest font-semibold text-center"
+                className="flex-1 bg-white hover:bg-black/5 border border-black/15 text-black py-3 text-[10px] font-extrabold uppercase tracking-widest rounded-full transition-all text-center"
               >
                 Clear
               </button>
               <button
                 onClick={() => setShowFiltersMobile(false)}
-                className="flex-1 btn-primary py-2.5 text-[10px] uppercase tracking-widest font-semibold text-center rounded"
+                className="flex-1 bg-black hover:bg-transparent text-white hover:text-black border border-black py-3 text-[10px] font-extrabold uppercase tracking-widest rounded-full transition-all text-center"
               >
                 Apply
               </button>
@@ -516,7 +501,7 @@ function ShopContent() {
 export default function ShopPage() {
   return (
     <Suspense fallback={
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center uppercase tracking-widest text-xs text-white/50 font-light">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center uppercase tracking-widest text-[10px] text-black/50 font-bold bg-[#f4f3ef]">
         Loading catalog...
       </div>
     }>
