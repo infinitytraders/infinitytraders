@@ -4,6 +4,7 @@ import ProductDetailClient from '@/components/ProductDetailClient';
 import { notFound } from 'next/navigation';
 
 export const revalidate = 0;
+export const runtime = 'edge';
 
 interface Props {
   params: Promise<{ id: string }>;

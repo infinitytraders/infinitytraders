@@ -5,6 +5,7 @@ import Link from 'next/link';
 import PrintButton from '@/components/PrintButton';
 
 export const revalidate = 0;
+export const runtime = 'edge';
 
 interface Props {
   params: Promise<{ id: string }>;
