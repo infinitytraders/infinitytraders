@@ -91,15 +91,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
             </a>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.8 }}
-            transition={{ duration: 1, delay: 0.4 }}
-            className="text-white text-xs tracking-[0.3em] uppercase pt-12 flex items-center justify-center gap-1.5 font-semibold"
-          >
-            <span>Born of Jharkhand</span>
-            <span className="text-sm">🇮🇳</span>
-          </motion.div>
+
         </div>
       </section>
 
