@@ -395,6 +395,38 @@ export async function getOrdersAction(): Promise<{ success: boolean; orders?: Or
   }
 }
 
+export async function trackOrderAction(
+  orderId: string,
+  emailOrMobile: string
+): Promise<{ success: boolean; order?: Order; error?: string }> {
+  try {
+    if (!orderId || !emailOrMobile) {
+      return { success: false, error: 'Order ID and Email/Mobile are required.' };
+    }
+
+    const order = await db.getOrderById(orderId.trim());
+    if (!order) {
+      return { success: false, error: 'Order not found. Check Order ID.' };
+    }
+
+    const inputClean = emailOrMobile.trim().toLowerCase();
+    const orderEmailClean = order.customerEmail.toLowerCase();
+    const orderMobileClean = order.customerMobile.replace(/\D/g, '');
+    const inputMobileClean = inputClean.replace(/\D/g, '');
+
+    const emailMatch = orderEmailClean === inputClean;
+    const mobileMatch = orderMobileClean === inputMobileClean && inputMobileClean.length >= 10;
+
+    if (!emailMatch && !mobileMatch) {
+      return { success: false, error: 'Contact details do not match this order.' };
+    }
+
+    return { success: true, order };
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Error looking up order.' };
+  }
+}
+
 // --- USER PROFILE & WISHLIST ACTIONS ---
 export async function toggleWishlistAction(productId: string): Promise<{ success: boolean; wishlist?: string[]; error?: string }> {
   try {

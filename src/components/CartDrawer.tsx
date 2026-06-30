@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { X, Plus, Minus, Trash2, Tag, Truck, CheckCircle2, AlertTriangle, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -29,6 +30,7 @@ export default function CartDrawer() {
     pincodeStatus,
     checkPincodeServiceability
   } = useCart();
+  const { t } = useLanguage();
 
   const [couponInput, setCouponInput] = useState('');
   const [checkingPin, setCheckingPin] = useState(false);
@@ -76,9 +78,9 @@ export default function CartDrawer() {
             {/* Header */}
             <div className="flex items-center justify-between border-b border-black/5 p-6 bg-[#f4f3ef]">
               <div className="flex items-center gap-2">
-                <h2 className="text-sm font-extrabold tracking-widest uppercase text-black">Your Shopping Bag</h2>
+                <h2 className="text-sm font-extrabold tracking-widest uppercase text-black">{t('cart.title')}</h2>
                 <span className="bg-black text-white text-[9px] font-bold px-2.5 py-0.5 rounded-full">
-                  {totalItems} {totalItems === 1 ? 'item' : 'items'}
+                  {totalItems} {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'उत्पाद' : (totalItems === 1 ? 'item' : 'items')}
                 </span>
               </div>
               <button
@@ -97,10 +99,10 @@ export default function CartDrawer() {
                   <div className="flex items-center gap-2 text-[10px] tracking-wider uppercase font-bold text-black">
                     <Truck className="w-3.5 h-3.5 text-black" />
                     {shippingCharges === 0 ? (
-                      <span>Congrats! You qualify for <strong className="underline">Free Shipping</strong></span>
+                      <span>{t('cart.freeShipping')}</span>
                     ) : (
                       <span>
-                        Add <strong>₹{(shippingSettings.freeShippingThreshold - subtotal).toLocaleString('en-IN')}</strong> more for free shipping
+                        {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'मुफ्त शिपिंग के लिए ₹' + (shippingSettings.freeShippingThreshold - subtotal).toLocaleString('en-IN') + ' और जोड़ें।' : 'Add ₹' + (shippingSettings.freeShippingThreshold - subtotal).toLocaleString('en-IN') + ' more for free shipping'}
                       </span>
                     )}
                   </div>
@@ -119,12 +121,12 @@ export default function CartDrawer() {
                   <div className="w-12 h-12 rounded-full bg-black/5 flex items-center justify-center text-black/35">
                     <X className="w-5 h-5" />
                   </div>
-                  <p className="text-black/50 font-light tracking-wide text-xs">Your shopping cart is currently empty.</p>
+                  <p className="text-black/50 font-light tracking-wide text-xs">{t('cart.empty')}</p>
                   <button
                     onClick={() => setCartOpen(false)}
                     className="bg-black hover:bg-transparent text-white hover:text-black border border-black px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all"
                   >
-                    Continue Shopping
+                    {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'खरीदारी जारी रखें' : 'Continue Shopping'}
                   </button>
                 </div>
               ) : (
@@ -164,7 +166,7 @@ export default function CartDrawer() {
                             </button>
                           </div>
                           <div className="text-[10px] text-black/50 font-bold mt-1 uppercase tracking-wider">
-                            Size: <span className="text-black font-extrabold">UK {item.size}</span>
+                            {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'साइज़: UK ' : 'Size: UK '}<span className="text-black font-extrabold">{item.size}</span>
                           </div>
                         </div>
 
@@ -209,13 +211,13 @@ export default function CartDrawer() {
                   {/* Pincode Checker */}
                   <div className="border-t border-black/5 pt-5 space-y-3">
                     <h4 className="text-[10px] uppercase tracking-widest font-extrabold text-black/60 flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5 text-black" /> Delivery Pincode Check
+                      <MapPin className="w-3.5 h-3.5 text-black" /> {t('prod.pincode.title')}
                     </h4>
                     <form onSubmit={handleCheckPincode} className="flex gap-2">
                       <input
                         type="text"
                         maxLength={6}
-                        placeholder="Enter 6-digit Pincode"
+                        placeholder={t('prod.pincode.placeholder')}
                         value={pincode}
                         onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
                         className="flex-1 border border-black/10 focus:border-black rounded-full px-4 py-2 text-xs outline-none bg-white transition-all text-black"
@@ -225,7 +227,7 @@ export default function CartDrawer() {
                         disabled={checkingPin || pincode.length !== 6}
                         className="bg-black hover:bg-transparent text-white hover:text-black border border-black px-4 py-2 rounded-full text-xs uppercase tracking-widest font-bold disabled:opacity-50 transition-all"
                       >
-                        Check
+                        {t('prod.pincode.check')}
                       </button>
                     </form>
 
@@ -241,14 +243,14 @@ export default function CartDrawer() {
                           <>
                             <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5 text-teal-700" />
                             <div>
-                              <p className="font-extrabold uppercase tracking-wider text-[10px]">Serviceable to {pincodeStatus.state}</p>
-                              <p className="text-[10px] opacity-80 mt-0.5 font-light">Estimated delivery: {pincodeStatus.days} working days.</p>
+                              <p className="font-extrabold uppercase tracking-wider text-[10px]">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सेवा योग्य: ' : 'Serviceable to '}{pincodeStatus.state}</p>
+                              <p className="text-[10px] opacity-80 mt-0.5 font-light">{t('prod.pincode.serviceable')} {pincodeStatus.days} {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'कार्य दिवस' : 'working days'}.</p>
                             </div>
                           </>
                         ) : (
                           <>
                             <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5 text-red-700" />
-                            <span className="font-semibold">{pincodeStatus.error || 'Delivery unavailable to this location.'}</span>
+                            <span className="font-semibold">{t('prod.pincode.unserviceable')}</span>
                           </>
                         )}
                       </div>
@@ -258,14 +260,14 @@ export default function CartDrawer() {
                   {/* Promo Code Form */}
                   <div className="border-t border-black/5 pt-5 space-y-3">
                     <h4 className="text-[10px] uppercase tracking-widest font-extrabold text-black/60 flex items-center gap-1.5">
-                      <Tag className="w-3.5 h-3.5 text-black" /> Promotional Coupon
+                      <Tag className="w-3.5 h-3.5 text-black" /> {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'प्रमोशनल कूपन' : 'Promotional Coupon'}
                     </h4>
                     {coupon ? (
                       <div className="bg-white border border-black/5 rounded-2xl p-3 flex justify-between items-center shadow-xs">
                         <div>
                           <span className="text-xs font-extrabold text-black uppercase tracking-wider">{coupon.code}</span>
                           <span className="text-[10px] text-black/50 block font-medium">
-                            Applied:{' '}
+                            {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'लागू: ' : 'Applied:{' }
                             {coupon.discountType === 'PERCENTAGE'
                               ? `${coupon.discountValue}% Off`
                               : `₹${coupon.discountValue} Off`}
@@ -275,14 +277,14 @@ export default function CartDrawer() {
                           onClick={removeCoupon}
                           className="text-red-600 hover:text-red-700 text-xs font-bold uppercase tracking-wider underline"
                         >
-                          Remove
+                          {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'हटाएं' : 'Remove'}
                         </button>
                       </div>
                     ) : (
                       <form onSubmit={handleApplyCoupon} className="flex gap-2">
                         <input
                           type="text"
-                          placeholder="Coupon Code"
+                          placeholder={t('checkout.coupon.placeholder')}
                           value={couponInput}
                           onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
                           className="flex-1 border border-black/10 focus:border-black rounded-full px-4 py-2 text-xs outline-none bg-white transition-all text-black"
@@ -292,7 +294,7 @@ export default function CartDrawer() {
                           disabled={!couponInput.trim()}
                           className="bg-black hover:bg-transparent text-white hover:text-black border border-black px-4 py-2 rounded-full text-xs uppercase tracking-widest font-bold disabled:opacity-50 transition-all"
                         >
-                          Apply
+                          {t('checkout.coupon.apply')}
                         </button>
                       </form>
                     )}
@@ -312,31 +314,31 @@ export default function CartDrawer() {
               <div className="bg-white border-t border-black/5 p-6 space-y-4 shadow-xl">
                 <div className="space-y-2 text-xs text-black/70 font-bold">
                   <div className="flex justify-between">
-                    <span className="uppercase tracking-wider">Subtotal</span>
+                    <span className="uppercase tracking-wider">{t('cart.subtotal')}</span>
                     <span className="text-black font-extrabold">₹{subtotal.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex justify-between text-[10px] text-black/45 italic pl-2 border-l border-black/10 font-medium">
-                    <span>Included GST (18%)</span>
+                    <span>{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'शामिल जीएसटी (18%)' : 'Included GST (18%)'}</span>
                     <span>₹{gstAmount.toLocaleString('en-IN')}</span>
                   </div>
                   {couponDiscount > 0 && (
                     <div className="flex justify-between text-teal-800">
-                      <span className="uppercase tracking-wider font-extrabold">Coupon Discount</span>
+                      <span className="uppercase tracking-wider font-extrabold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'कूपन छूट' : 'Coupon Discount'}</span>
                       <span className="font-extrabold">- ₹{couponDiscount.toLocaleString('en-IN')}</span>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <span className="uppercase tracking-wider">Shipping Charges</span>
+                    <span className="uppercase tracking-wider">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'शिपिंग शुल्क' : 'Shipping Charges'}</span>
                     <span className="text-black font-extrabold">
                       {shippingCharges === 0 ? (
-                        <span className="text-teal-800 underline font-extrabold">FREE</span>
+                        <span className="text-teal-800 underline font-extrabold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'मुफ़्त' : 'FREE'}</span>
                       ) : (
                         `₹${shippingCharges}`
                       )}
                     </span>
                   </div>
                   <div className="border-t border-black/5 my-2 pt-2.5 flex justify-between text-sm font-extrabold text-black uppercase tracking-wider">
-                    <span>Total</span>
+                    <span>{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'कुल' : 'Total'}</span>
                     <span className="text-black text-base font-extrabold">₹{finalAmount.toLocaleString('en-IN')}</span>
                   </div>
                 </div>
@@ -346,7 +348,7 @@ export default function CartDrawer() {
                   onClick={() => setCartOpen(false)}
                   className="bg-black hover:bg-transparent text-white hover:text-black border border-black w-full text-center block py-4 text-xs font-bold uppercase tracking-widest rounded-full transition-all"
                 >
-                  Proceed to Checkout
+                  {t('cart.checkout')}
                 </Link>
 
                 <p className="text-[9px] text-center text-black/35 tracking-widest uppercase font-bold">

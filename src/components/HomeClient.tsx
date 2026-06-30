@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import type { Product } from '@/lib/db';
 import { useCart } from '@/context/CartContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { ArrowRight, ShoppingCart, Star, CheckCircle, ShieldAlert, Send } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -13,6 +14,7 @@ interface HomeClientProps {
 
 export default function HomeClient({ initialProducts }: HomeClientProps) {
   const { addToCart, pincode, setPincode, pincodeStatus, checkPincodeServiceability } = useCart();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'new' | 'best' | 'trending'>('new');
   const [checkingPin, setCheckingPin] = useState(false);
   const [newsletterEmail, setNewsletterEmail] = useState('');
@@ -43,15 +45,15 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
   return (
     <div className="space-y-24 pb-24 bg-[#f4f3ef]">
       {/* 1. HERO SECTION (ENA Style) */}
-      <section className="relative h-[95vh] flex flex-col justify-end overflow-hidden -mt-24 pb-16 px-4 sm:px-6 lg:px-8">
+      <section className="relative h-screen -mt-24 flex flex-col justify-end overflow-hidden pb-28 sm:pb-32 px-4 sm:px-6 lg:px-8">
         {/* Background Image / Overlay */}
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-black/15 z-10" />
           <img
             src="/hero_runner.png"
-            alt="Athletic runner hero"
+            alt="Athletic runners hero"
             className="w-full h-full object-cover filter brightness-95 contrast-105"
-            style={{ objectPosition: 'center 8%' }}
+            style={{ objectPosition: 'center 35%' }}
           />
         </div>
 
@@ -64,10 +66,10 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
             className="space-y-2"
           >
             <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white uppercase leading-none">
-              INFINITY ATHLETICS
+              {t('home.hero.title')}
             </h1>
             <p className="text-sm sm:text-base text-white/90 font-light tracking-[0.25em] uppercase">
-              Distributor of Natural Mechanics
+              {t('home.hero.subtitle')}
             </p>
           </motion.div>
 
@@ -81,13 +83,13 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
               href="/shop"
               className="bg-black text-white hover:bg-white hover:text-black border border-black/10 px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all"
             >
-              Shop Collection
+              {t('home.hero.cta')}
             </Link>
             <a
               href="#brand-story"
               className="bg-white/80 backdrop-blur-md text-black hover:bg-black hover:text-white px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all"
             >
-              Learn More
+              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'अधिक जानें' : 'Learn More'}
             </a>
           </motion.div>
 
@@ -107,15 +109,15 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
         <div className="relative inline-block">
           {/* Overlay large outline text */}
           <span className="absolute -top-10 left-1/2 -translate-x-1/2 text-6xl sm:text-9xl outline-text pointer-events-none select-none tracking-widest opacity-25">
-            ABOUT
+            {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'परिचय' : 'ABOUT'}
           </span>
           <h2 className="text-xl sm:text-3xl font-extrabold tracking-[0.15em] text-black uppercase relative z-10">
-            Born of Jharkhand
+            {t('home.whyTraders')}
           </h2>
         </div>
 
         <p className="text-sm sm:text-base text-black/75 font-light leading-loose max-w-2xl mx-auto tracking-wide">
-          Infinity Traders reflects the timeless harmony between body and environment, a principle rooted in distributors of elite footwear. As India's distribution source for premium athletic brands, we deliver high-performance gear guided by Natural Mechanics: performance that moves in sync with the body, not against it.
+          {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'इन्फिनिटी ट्रेडर्स शरीर और पर्यावरण के बीच शाश्वत सामंजस्य को दर्शाता है, एक ऐसा सिद्धांत जो विशिष्ट जूतों के वितरकों में निहित है। प्रीमियम एथलेटिक ब्रांडों के लिए भारत के वितरण स्रोत के रूप में, हम प्राकृतिक यांत्रिकी द्वारा निर्देशित उच्च-प्रदर्शन गियर प्रदान करते हैं: प्रदर्शन जो शरीर के साथ तालमेल बिठाता है, उसके खिलाफ नहीं।' : 'Infinity Traders reflects the timeless harmony between body and environment, a principle rooted in distributors of elite footwear. As India\'s distribution source for premium athletic brands, we deliver high-performance gear guided by Natural Mechanics: performance that moves in sync with the body, not against it.'}
         </p>
 
         {/* Pedestal Rock & Shoe Shot */}
@@ -140,21 +142,21 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
         <div className="space-y-6">
           <div className="space-y-1">
             <span className="text-xs uppercase tracking-[0.3em] text-black/50 font-semibold block">
-              CURATED PREMIUM ATHLETICS
+              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'क्यूरेटेड प्रीमियम एथलेटिक्स' : 'CURATED PREMIUM ATHLETICS'}
             </span>
             <h3 className="text-2xl sm:text-4xl font-extrabold tracking-wider text-black uppercase">
-              Engineered for Motion
+              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'गति के लिए इंजीनियर' : 'Engineered for Motion'}
             </h3>
           </div>
           <p className="text-sm text-black/70 font-light leading-loose tracking-wide">
-            At the core of our curation lies high-performance engineering from the world's leading brands: Nike, Adidas, Puma, Skechers, and Reebok. Every article of footwear, apparel, and training accessory is hand-picked to deliver maximum energy return, ergonomic movement, and long-term durability. Experience motion that flows naturally: stable, efficient, and powerful.
+            {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'हमारे क्यूरेशन के केंद्र में दुनिया के अग्रणी ब्रांडों: नाइके, एडिडास, प्यूमा, स्केचर्स और रीबॉक से उच्च प्रदर्शन वाली इंजीनियरिंग है। जूतों, परिधानों और प्रशिक्षण के सामानों की प्रत्येक वस्तु को अधिकतम ऊर्जा वापसी, एर्गोनोमिक गतिशीलता और दीर्घकालिक स्थायित्व प्रदान करने के लिए चुना गया है।' : 'At the core of our curation lies high-performance engineering from the world\'s leading brands: Nike, Adidas, Puma, Skechers, and Reebok. Every article of footwear, apparel, and training accessory is hand-picked to deliver maximum energy return, ergonomic movement, and long-term durability.'}
           </p>
           <div className="pt-2">
             <Link
               href="/shop"
               className="bg-black text-white hover:bg-transparent hover:text-black border border-black px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all"
             >
-              Explore Products
+              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'उत्पाद देखें' : 'Explore Products'}
             </Link>
           </div>
         </div>
@@ -180,19 +182,19 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 bg-white border border-black/5 p-8 rounded-2xl text-center shadow-xs">
           <div className="space-y-1">
             <span className="text-black block text-2xl sm:text-3xl font-extrabold tracking-wide">100%</span>
-            <span className="text-[9px] uppercase tracking-widest text-black/50 font-semibold">GST Compliant Invoice</span>
+            <span className="text-[9px] uppercase tracking-widest text-black/50 font-semibold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'जीएसटी अनुपालन चालान' : 'GST Compliant Invoice'}</span>
           </div>
           <div className="space-y-1 border-l border-black/5">
             <span className="text-black block text-2xl sm:text-3xl font-extrabold tracking-wide">₹999</span>
-            <span className="text-[9px] uppercase tracking-widest text-black/50 font-semibold">Free Shipping Threshold</span>
+            <span className="text-[9px] uppercase tracking-widest text-black/50 font-semibold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'मुफ़्त शिपिंग सीमा' : 'Free Shipping Threshold'}</span>
           </div>
           <div className="space-y-1 border-t md:border-t-0 md:border-l border-black/5 pt-4 md:pt-0">
             <span className="text-black block text-2xl sm:text-3xl font-extrabold tracking-wide">7 Days</span>
-            <span className="text-[9px] uppercase tracking-widest text-black/50 font-semibold">Hassle-free Exchange</span>
+            <span className="text-[9px] uppercase tracking-widest text-black/50 font-semibold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'परेशानी मुक्त विनिमय' : 'Hassle-free Exchange'}</span>
           </div>
           <div className="space-y-1 border-t md:border-t-0 border-l border-black/5 pt-4 md:pt-0">
             <span className="text-black block text-2xl sm:text-3xl font-extrabold tracking-wide">PAN India</span>
-            <span className="text-[9px] uppercase tracking-widest text-black/50 font-semibold">Express Delivery</span>
+            <span className="text-[9px] uppercase tracking-widest text-black/50 font-semibold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'एक्सप्रेस वितरण' : 'Express Delivery'}</span>
           </div>
         </div>
       </motion.section>
@@ -206,35 +208,35 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12"
       >
         <div className="text-center space-y-2">
-          <span className="text-xs uppercase tracking-[0.3em] text-black/50 font-semibold">Collections</span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-wider text-black uppercase">Browse Categories</h2>
+          <span className="text-xs uppercase tracking-[0.3em] text-black/50 font-semibold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'संग्रह' : 'Collections'}</span>
+          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-wider text-black uppercase">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'श्रेणियां ब्राउज़ करें' : 'Browse Categories'}</h2>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
             {
-              name: 'Footwear',
+              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'जूते (Footwear)' : 'Footwear',
               img: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=600&q=80',
               link: '/shop?category=Footwear',
-              desc: 'High-performance running'
+              desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'उच्च प्रदर्शन रनिंग' : 'High-performance running'
             },
             {
-              name: 'Slippers & Slides',
+              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'स्लीपर्स और स्लाइड्स' : 'Slippers & Slides',
               img: 'https://images.unsplash.com/photo-1603808033192-082d6919d3e1?auto=format&fit=crop&w=600&q=80',
               link: '/shop?category=Slippers',
-              desc: 'Recovery slides'
+              desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'रिकवरी स्लाइड्स' : 'Recovery slides'
             },
             {
-              name: 'Apparel',
+              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'परिधान (Apparel)' : 'Apparel',
               img: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=600&q=80',
               link: '/shop?category=Apparel',
-              desc: 'Active comfort sportswear'
+              desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सक्रिय आराम स्पोर्ट्सवियर' : 'Active comfort sportswear'
             },
             {
-              name: 'Accessories',
+              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सहायक उपकरण' : 'Accessories',
               img: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=600&q=80',
               link: '/shop?category=Accessories',
-              desc: 'Training accessories'
+              desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'प्रशिक्षण सहायक उपकरण' : 'Training accessories'
             }
           ].map((cat) => (
             <Link
@@ -269,16 +271,16 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
       >
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6 border-b border-black/5 pb-6">
           <div className="space-y-1 text-center sm:text-left">
-            <span className="text-xs uppercase tracking-[0.3em] text-black/50 font-semibold">Curation</span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-wider text-black uppercase">Featured Products</h2>
+            <span className="text-xs uppercase tracking-[0.3em] text-black/50 font-semibold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'क्यूरेशन' : 'Curation'}</span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-wider text-black uppercase">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'विशेष उत्पाद' : 'Featured Products'}</h2>
           </div>
 
           {/* Filter Tabs (Capsules) */}
           <div className="flex gap-1.5 bg-white border border-black/5 p-1 rounded-full shadow-xs max-w-full overflow-x-auto no-scrollbar">
             {[
-              { id: 'new', label: 'New Arrivals' },
-              { id: 'best', label: 'Best Sellers' },
-              { id: 'trending', label: 'Trending' }
+              { id: 'new', label: t('home.newArrivals') },
+              { id: 'best', label: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'बेस्ट सेलर्स' : 'Best Sellers' },
+              { id: 'trending', label: t('home.trending') }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -310,17 +312,17 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
               <Link href={`/product/${product.id}`} className="block relative aspect-[4/5] bg-[#fcfbf9] overflow-hidden border-b border-black/5">
                 {product.stockQuantity <= 3 && product.stockQuantity > 0 && (
                   <span className="absolute top-3 left-3 bg-[#d97706] text-white text-[8px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full z-10">
-                    Low Stock
+                    {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'कम स्टॉक' : 'Low Stock'}
                   </span>
                 )}
                 {product.stockQuantity === 0 && (
                   <span className="absolute top-3 left-3 bg-red-600/90 text-white text-[8px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full z-10">
-                    Out of Stock
+                    {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'आउट ऑफ स्टॉक' : 'Out of Stock'}
                   </span>
                 )}
                 {product.discountPercentage > 0 && (
                   <span className="absolute top-3 right-3 bg-black text-white text-[8px] font-bold px-2.5 py-1 rounded-full z-10">
-                    {product.discountPercentage}% OFF
+                    {product.discountPercentage}% {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'छूट' : 'OFF'}
                   </span>
                 )}
                 <img
@@ -372,7 +374,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
                       onClick={() => addToCart(product, 1, product.sizes[0] || 8)}
                       className="w-full bg-black hover:bg-transparent text-white hover:text-black border border-black py-2.5 text-[10px] uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 rounded-full transition-all"
                     >
-                      <ShoppingCart className="w-3.5 h-3.5" /> Add to Bag
+                      <ShoppingCart className="w-3.5 h-3.5" /> {t('prod.addToCart')}
                     </button>
                   ) : (
                     <button
@@ -380,7 +382,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
                       disabled
                       className="w-full bg-black/5 border border-black/5 text-black/30 py-2.5 text-[10px] uppercase tracking-widest font-bold rounded-full cursor-not-allowed"
                     >
-                      Out of Stock
+                      {t('prod.outOfStock')}
                     </button>
                   )}
                 </div>
@@ -402,10 +404,10 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
           <div className="space-y-2">
             <span className="text-xs uppercase tracking-[0.3em] text-black/50 font-semibold block">Shipping Depot</span>
             <h3 className="text-xl sm:text-2xl font-extrabold tracking-wider text-black uppercase">
-              Check Serviceability & Delivery Time
+              {t('prod.pincode.title')}
             </h3>
             <p className="text-xs text-black/60 font-light max-w-md mx-auto leading-relaxed">
-              Infinity Traders ships high-performance footwear and recovery sliders across India from our distribution depot in Dhanbad, Jharkhand. Verify estimated delivery speed for your area below.
+              {t('home. JharkhandDepot.desc')}
             </p>
           </div>
 
@@ -414,7 +416,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
               suppressHydrationWarning
               type="text"
               maxLength={6}
-              placeholder="Enter your 6-digit Indian Pincode"
+              placeholder={t('prod.pincode.placeholder')}
               value={pincode}
               onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
               className="flex-1 border border-black/10 hover:border-black/25 focus:border-black rounded-full px-5 py-3 text-center tracking-widest text-xs outline-none bg-[#fdfdfd] transition-all"
@@ -425,7 +427,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
               disabled={checkingPin || pincode.length !== 6}
               className="bg-black hover:bg-transparent text-white hover:text-black border border-black py-3 px-6 text-xs uppercase tracking-widest font-bold disabled:opacity-50 disabled:pointer-events-none rounded-full transition-all"
             >
-              Check Availability
+              {t('prod.pincode.check')}
             </button>
           </form>
 
@@ -442,12 +444,12 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
                   <>
                     <CheckCircle className="w-5 h-5 text-teal-700" />
                     <div>
-                      <p className="text-xs font-extrabold uppercase tracking-wider">Serviceable Destination</p>
+                      <p className="text-xs font-extrabold uppercase tracking-wider">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सेवा योग्य गंतव्य' : 'Serviceable Destination'}</p>
                       <p className="text-[11px] opacity-90 mt-1">
-                        Shipping Route: Dhanbad &rarr; {pincodeStatus.state}
+                        {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'शिपिंग मार्ग' : 'Shipping Route'}: Dhanbad &rarr; {pincodeStatus.state}
                       </p>
                       <p className="text-[11px] font-bold mt-1">
-                        Estimated Transit Time: {pincodeStatus.days} Working Days
+                        {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'अनुमानित पारगमन समय' : 'Estimated Transit Time'}: {pincodeStatus.days} {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'कार्य दिवस' : 'Working Days'}
                       </p>
                     </div>
                   </>
@@ -455,9 +457,9 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
                   <>
                     <ShieldAlert className="w-5 h-5 text-red-700" />
                     <div>
-                      <p className="text-xs font-extrabold uppercase tracking-wider">Unserviceable Area</p>
+                      <p className="text-xs font-extrabold uppercase tracking-wider">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'असेवा योग्य क्षेत्र' : 'Unserviceable Area'}</p>
                       <p className="text-[11px] opacity-90 mt-1">
-                        {pincodeStatus.error || 'Delivery not available to this location.'}
+                        {pincodeStatus.error || (t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'इस स्थान पर डिलीवरी उपलब्ध नहीं है।' : 'Delivery not available to this location.')}
                       </p>
                     </div>
                   </>
@@ -477,8 +479,8 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12"
       >
         <div className="text-center space-y-2">
-          <span className="text-xs uppercase tracking-[0.3em] text-black/50 font-semibold">Reviews</span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-wider text-black uppercase">Verified Athlete Experiences</h2>
+          <span className="text-xs uppercase tracking-[0.3em] text-black/50 font-semibold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'समीक्षाएं' : 'Reviews'}</span>
+          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-wider text-black uppercase">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सत्यापित एथलीट अनुभव' : 'Verified Athlete Experiences'}</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -487,22 +489,22 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
               name: 'Dr. Vivek Sengupta',
               city: 'Jamshedpur',
               rating: 5,
-              title: 'Best slides for recovery',
-              quote: 'As a surgeon, I stand for hours. The Adidas Adilette Comfort Slides are a game changer. The EVA foam feels exactly like walking on clouds, and the arch support is perfect. Incredible service!'
+              title: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'रिकवरी के लिए बेस्ट स्लाइड्स' : 'Best slides for recovery',
+              quote: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'एक सर्जन के रूप में, मैं घंटों खड़ा रहता हूँ। एडिडास एडिलेट कम्फर्ट स्लाइड्स बहुत बेहतरीन हैं। ईवीए फोम बिल्कुल बादलों पर चलने जैसा महसूस होता है।' : 'As a surgeon, I stand for hours. The Adidas Adilette Comfort Slides are a game changer. The EVA foam feels exactly like walking on clouds, and the arch support is perfect. Incredible service!'
             },
             {
               name: 'Anjali Sharma',
               city: 'Ranchi',
               rating: 5,
-              title: 'Remarkable running support',
-              quote: 'My Nike Air Zoom Pegasus running shoes arrived in just 2 days. The energy bounce-back is unlike any standard sports brand. Understated design, pure premium material. Recommend 100%.'
+              title: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'उल्लेखनीय रनिंग सपोर्ट' : 'Remarkable running support',
+              quote: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'मेरे नाइके एयर ज़ूम पेगासस रनिंग जूते सिर्फ २ दिनों में आ गए। ऊर्जा वापसी किसी भी सामान्य स्पोर्ट्स ब्रांड से अलग है।' : 'My Nike Air Zoom Pegasus running shoes arrived in just 2 days. The energy bounce-back is unlike any standard sports brand. Understated design, pure premium material. Recommend 100%.'
             },
             {
               name: 'Kabir Verma',
               city: 'Dhanbad',
               rating: 5,
-              title: 'Top customer service & GST billing',
-              quote: 'I purchased footwear for my corporate club. The checkout computed a transparent GST breakdown, generated a clean commercial invoice, and processed standard delivery within 24 hours. A first-rate distributor.'
+              title: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'शीर्ष ग्राहक सेवा और जीएसटी बिलिंग' : 'Top customer service & GST billing',
+              quote: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'मैंने अपने कॉर्पोरेट क्लब के लिए जूते खरीदे। चेकआउट ने एक पारदर्शी जीएसटी विवरण की गणना की, एक साफ चालान तैयार किया, और २४ घंटों के भीतर डिलीवरी की।' : 'I purchased footwear for my corporate club. The checkout computed a transparent GST breakdown, generated a clean commercial invoice, and processed standard delivery within 24 hours. A first-rate distributor.'
             }
           ].map((rev, i) => (
             <div key={i} className="bg-white border border-black/5 p-6 rounded-2xl space-y-4 shadow-xs">
@@ -535,17 +537,17 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
       >
         <div className="relative rounded-2xl overflow-hidden py-16 px-6 sm:px-12 lg:px-24 bg-white border border-black/5 text-center space-y-6 shadow-xs">
-          <span className="text-xs uppercase tracking-[0.3em] text-black/50 font-semibold block">Join the Club</span>
+          <span className="text-xs uppercase tracking-[0.3em] text-black/50 font-semibold block">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'क्लब में शामिल हों' : 'Join the Club'}</span>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-wider text-black uppercase max-w-xl mx-auto leading-tight">
-            Subscribe to our News & Campaigns
+            {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'हमारे समाचार और अभियानों की सदस्यता लें' : 'Subscribe to our News & Campaigns'}
           </h2>
           <p className="text-xs text-black/60 font-light max-w-md mx-auto leading-relaxed">
-            Register your email to receive notice on product launches, coupon promotions, and active-recovery tips from Infinity Traders.
+            {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'इन्फिनिटी ट्रेडर्स से उत्पाद लॉन्च, कूपन प्रचार और सक्रिय-रिकवरी युक्तियों पर सूचना प्राप्त करने के लिए अपना ईमेल पंजीकृत करें।' : 'Register your email to receive notice on product launches, coupon promotions, and active-recovery tips from Infinity Traders.'}
           </p>
 
           {newsletterSubscribed ? (
             <div className="max-w-md mx-auto bg-teal-500/5 border border-teal-500/10 p-4 rounded-xl flex items-center justify-between text-left text-teal-800">
-              <span className="text-[10px] font-extrabold tracking-wider uppercase">Thank you! You have subscribed successfully.</span>
+              <span className="text-[10px] font-extrabold tracking-wider uppercase">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'धन्यवाद! आपने सफलतापूर्वक सदस्यता ले ली है।' : 'Thank you! You have subscribed successfully.'}</span>
               <CheckCircle className="w-5 h-5 text-teal-700" />
             </div>
           ) : (
@@ -554,7 +556,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
                 suppressHydrationWarning
                 type="email"
                 required
-                placeholder="Enter your email address"
+                placeholder={t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'अपना ईमेल पता दर्ज करें' : 'Enter your email address'}
                 value={newsletterEmail}
                 onChange={(e) => setNewsletterEmail(e.target.value)}
                 className="flex-1 border border-black/10 hover:border-black/25 focus:border-black rounded-full px-5 py-3 text-xs outline-none bg-[#fdfdfd] transition-all"
@@ -564,7 +566,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
                 type="submit"
                 className="bg-black hover:bg-transparent text-white hover:text-black border border-black py-3 px-6 text-[10px] uppercase tracking-widest font-bold rounded-full transition-all flex items-center justify-center gap-1.5"
               >
-                Subscribe <Send className="w-3.5 h-3.5" />
+                {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सदस्यता लें' : 'Subscribe'} <Send className="w-3.5 h-3.5" />
               </button>
             </form>
           )}
@@ -575,31 +577,31 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
       <footer className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-black/5 pt-12 text-center text-xs text-black/45 space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-left pb-8 border-b border-black/5">
           <div className="space-y-3">
-            <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-black">About Infinity Traders</h4>
+            <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-black">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'इन्फिनिटी ट्रेडर्स के बारे में' : 'About Infinity Traders'}</h4>
             <p className="text-xs font-light text-black/75 leading-relaxed max-w-xs">
-              Based in Dhanbad, Jharkhand, Infinity Traders is an official multi-brand distributor specializing in premium, biomechanically-sound footwear, slides, apparel, and running gear.
+              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'धनबाद, झारखंड में स्थित, इन्फिनिटी ट्रेडर्स एक आधिकारिक मल्टी-ब्रांड वितरक है जो प्रीमियम जूतों, स्लाइड्स, परिधान और रनिंग गियर में विशेषज्ञता रखता है।' : 'Based in Dhanbad, Jharkhand, Infinity Traders is an official multi-brand distributor specializing in premium, biomechanically-sound footwear, slides, apparel, and running gear.'}
             </p>
           </div>
           <div className="space-y-3">
-            <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-black">Contact & Support</h4>
+            <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-black">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'संपर्क और सहायता' : 'Contact & Support'}</h4>
             <p className="text-xs font-light text-black/75 leading-relaxed">
-              HQ: Bank More, Dhanbad, Jharkhand - 826001<br />
-              Email: info@infinitytraders.com<br />
-              Phone: +91 99999 99999
+              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'मुख्यालय: बैंक मोड़, धनबाद, झारखंड - ८२६००१' : 'HQ: Bank More, Dhanbad, Jharkhand - 826001'}<br />
+              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'ईमेल' : 'Email'}: info@infinitytraders.com<br />
+              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'फ़ोन' : 'Phone'}: +91 99999 99999
             </p>
           </div>
           <div className="space-y-3">
-            <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-black">Compliances</h4>
+            <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-black">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'अनुपालन' : 'Compliances'}</h4>
             <p className="text-xs font-light text-black/75 leading-relaxed">
               GSTIN: 20ABCDE1234F1Z5<br />
-              HSN Code Footwear: Chapter 64<br />
-              Indian Tax Invoice Compliant (CGST/SGST/IGST breakdown at checkout)
+              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'एचएसएन कोड जूते' : 'HSN Code Footwear'}: Chapter 64<br />
+              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'भारतीय कर चालान अनुपालन (चेकआउट पर सीजीएसटी/एसजीएसटी/आईजीएसटी विवरण)' : 'Indian Tax Invoice Compliant (CGST/SGST/IGST breakdown at checkout)'}
             </p>
           </div>
         </div>
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-black/35 text-[9px] tracking-widest uppercase">
-          <span>&copy; {new Date().getFullYear()} Infinity Traders. All Rights Reserved.</span>
-          <span>Designed & Engineered in India</span>
+          <span>&copy; {new Date().getFullYear()} Infinity Traders. {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सर्वाधिकार सुरक्षित।' : 'All Rights Reserved.'}</span>
+          <span>{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'भारत में डिज़ाइन और निर्मित' : 'Designed & Engineered in India'}</span>
         </div>
       </footer>
     </div>

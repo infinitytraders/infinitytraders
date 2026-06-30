@@ -33,6 +33,7 @@ export default function Header() {
   }, []);
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const isTransparent = pathname === '/' && !scrolled;
 
   const handleLogout = async () => {
     await logoutAction();
@@ -69,15 +70,34 @@ export default function Header() {
               </button>
 
               <Link href="/" className="flex items-center gap-2 group">
-                <svg className="w-8 h-8 text-black" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M30 35 C15 35 15 65 30 65 C45 65 55 35 70 35 C85 35 85 65 70 65 C55 65 45 35 30 35 Z" 
-                    stroke="currentColor" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                <svg
+                  className={`w-8 h-8 transition-colors ${isTransparent ? 'text-white' : 'text-black'}`}
+                  viewBox="0 0 100 100"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M30 35 C15 35 15 65 30 65 C45 65 55 35 70 35 C85 35 85 65 70 65 C55 65 45 35 30 35 Z"
+                    stroke="currentColor"
+                    strokeWidth="12"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                  />
                 </svg>
                 <div className="flex flex-col leading-none">
-                  <span className="text-[12px] font-extrabold tracking-[0.2em] text-black uppercase">
+                  <span
+                    className={`text-[12px] font-extrabold tracking-[0.2em] uppercase transition-colors ${
+                      isTransparent ? 'text-white' : 'text-black'
+                    }`}
+                  >
                     INFINITY
                   </span>
-                  <span className="text-[8px] font-light tracking-[0.25em] text-black/60 uppercase mt-0.5">
+                  <span
+                    className={`text-[8px] font-light tracking-[0.25em] uppercase mt-0.5 transition-colors ${
+                      isTransparent ? 'text-white/70' : 'text-black/60'
+                    }`}
+                  >
                     TRADERS
                   </span>
                 </div>
@@ -170,14 +190,20 @@ export default function Header() {
                         href="/account"
                         className="block px-4 py-2 text-[10px] text-black/70 hover:bg-black/5 hover:text-black tracking-widest uppercase font-semibold"
                       >
-                        Dashboard
+                        {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'डैशबोर्ड' : 'Dashboard'}
+                      </Link>
+                      <Link
+                        href="/track"
+                        className="block px-4 py-2 text-[10px] text-black/70 hover:bg-black/5 hover:text-black tracking-widest uppercase font-semibold border-t border-black/5"
+                      >
+                        {t('nav.track')}
                       </Link>
                       {user.role !== 'CUSTOMER' && (
                         <Link
                           href="/admin"
                           className="block px-4 py-2 text-[10px] text-black/70 hover:bg-black/5 hover:text-black tracking-widest uppercase font-semibold"
                         >
-                          Admin Control
+                          {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'एडमिन कंट्रोल' : 'Admin Control'}
                         </Link>
                       )}
                       <hr className="border-black/5 my-1" />
@@ -185,7 +211,7 @@ export default function Header() {
                         onClick={handleLogout}
                         className="w-full text-left block px-4 py-2 text-[10px] text-red-600 hover:bg-black/5 tracking-widest uppercase font-semibold"
                       >
-                        Logout
+                        {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'लॉगआउट' : 'Logout'}
                       </button>
                     </div>
                   </div>
@@ -196,13 +222,13 @@ export default function Header() {
                     href="/account"
                     className="bg-black border border-black text-white hover:bg-transparent hover:text-black px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all"
                   >
-                    Login
+                    {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'लॉगिन' : 'Login'}
                   </Link>
                   <Link
                     href="/account?signup=true"
                     className="bg-white border border-black/10 hover:border-black text-black px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all"
                   >
-                    Sign up
+                    {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'साइन अप' : 'Sign up'}
                   </Link>
                 </div>
               )}
@@ -276,14 +302,21 @@ export default function Header() {
                 {user ? (
                   <div className="flex flex-col gap-3">
                     <div className="text-[10px] text-black/50 tracking-wider">
-                      Logged in as <span className="text-black font-semibold">{user.name}</span>
+                      {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'के रूप में लॉग इन किया ' : 'Logged in as '}<span className="text-black font-semibold">{user.name}</span>
                     </div>
                     <Link
                       href="/account"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="btn-secondary w-full text-center py-2 text-[10px] uppercase tracking-widest font-bold"
+                      className="btn-secondary w-full text-center py-2 text-[10px] uppercase tracking-widest font-bold animate-fadeIn"
                     >
                       {t('nav.account')}
+                    </Link>
+                    <Link
+                      href="/track"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="btn-secondary w-full text-center py-2 text-[10px] uppercase tracking-widest font-bold animate-fadeIn"
+                    >
+                      {t('nav.track')}
                     </Link>
                     <button
                       onClick={() => {
@@ -292,7 +325,7 @@ export default function Header() {
                       }}
                       className="w-full text-center py-2 text-[10px] uppercase tracking-widest text-red-600 border border-red-200 bg-red-50 hover:bg-red-100 transition-colors rounded-full font-bold"
                     >
-                      Logout
+                      {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'लॉगआउट' : 'Logout'}
                     </button>
                   </div>
                 ) : (
@@ -302,14 +335,14 @@ export default function Header() {
                       onClick={() => setMobileMenuOpen(false)}
                       className="btn-primary w-full text-center py-2.5 text-[10px] font-bold uppercase tracking-widest"
                     >
-                      Login
+                      {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'लॉगिन' : 'Login'}
                     </Link>
                     <Link
                       href="/account"
                       onClick={() => setMobileMenuOpen(false)}
                       className="btn-secondary w-full text-center py-2.5 text-[10px] font-bold uppercase tracking-widest"
                     >
-                      Sign up
+                      {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'साइन अप' : 'Sign up'}
                     </Link>
                   </div>
                 )}

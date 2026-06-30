@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Product } from '@/lib/db';
 import { useCart } from '@/context/CartContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { toggleWishlistAction, recordRecentlyViewedAction } from '@/app/actions';
 import { Star, Truck, Heart, Share2, Plus, Minus, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
@@ -16,6 +17,7 @@ interface ProductDetailClientProps {
 
 export default function ProductDetailClient({ product, recommendations, initialUser }: ProductDetailClientProps) {
   const { addToCart, pincode, setPincode, pincodeStatus, checkPincodeServiceability } = useCart();
+  const { t, tp, tc } = useLanguage();
   const router = useRouter();
 
   // Image Selection
@@ -78,13 +80,13 @@ export default function ProductDetailClient({ product, recommendations, initialU
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16 bg-[#f4f3ef]">
       {/* Breadcrumbs */}
       <nav className="text-[10px] uppercase tracking-[0.2em] text-black/45 flex items-center gap-2">
-        <Link href="/" className="hover:text-black font-semibold transition-colors">Home</Link>
+        <Link href="/" className="hover:text-black font-semibold transition-colors">{t('nav.home')}</Link>
         <span>/</span>
-        <Link href="/shop" className="hover:text-black font-semibold transition-colors">Shop</Link>
+        <Link href="/shop" className="hover:text-black font-semibold transition-colors">{t('nav.shop')}</Link>
         <span>/</span>
-        <Link href={`/shop?category=${product.category}`} className="hover:text-black font-semibold transition-colors">{product.category}</Link>
+        <Link href={`/shop?category=${product.category}`} className="hover:text-black font-semibold transition-colors">{tc(product.category)}</Link>
         <span>/</span>
-        <span className="text-black/80 font-bold line-clamp-1">{product.name}</span>
+        <span className="text-black/80 font-bold line-clamp-1">{tp(product.id, 'name', product.name)}</span>
       </nav>
 
       {/* Main Container */}
@@ -101,7 +103,7 @@ export default function ProductDetailClient({ product, recommendations, initialU
                   selectedImage === img ? 'border-black ring-1 ring-black' : 'border-black/5 hover:border-black/20'
                 }`}
               >
-                <img src={img} alt={`${product.name} thumb ${idx}`} className="w-full h-full object-cover" />
+                <img src={img} alt={`${tp(product.id, 'name', product.name)} thumb ${idx}`} className="w-full h-full object-cover" />
               </button>
             ))}
           </div>
@@ -110,12 +112,12 @@ export default function ProductDetailClient({ product, recommendations, initialU
           <div className="md:col-span-10 aspect-[4/5] bg-white border border-black/5 rounded-2xl overflow-hidden relative shadow-xs">
             <img
               src={selectedImage}
-              alt={product.name}
+              alt={tp(product.id, 'name', product.name)}
               className="w-full h-full object-cover"
             />
             {product.discountPercentage > 0 && (
               <span className="absolute top-4 right-4 bg-black text-white text-[9px] font-extrabold px-3 py-1 rounded-full z-10">
-                {product.discountPercentage}% OFF
+                {product.discountPercentage}% {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'छूट' : 'OFF'}
               </span>
             )}
           </div>
@@ -130,7 +132,7 @@ export default function ProductDetailClient({ product, recommendations, initialU
                   selectedImage === img ? 'border-black ring-1 ring-black' : 'border-black/5'
                 }`}
               >
-                <img src={img} alt={`${product.name} thumb ${idx}`} className="w-full h-full object-cover" />
+                <img src={img} alt={`${tp(product.id, 'name', product.name)} thumb ${idx}`} className="w-full h-full object-cover" />
               </button>
             ))}
           </div>
@@ -143,7 +145,7 @@ export default function ProductDetailClient({ product, recommendations, initialU
               {product.brand}
             </span>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wider text-black uppercase mt-1">
-              {product.name}
+              {tp(product.id, 'name', product.name)}
             </h1>
             <span className="text-[9px] text-black/40 tracking-wider block mt-1">SKU: {product.sku}</span>
           </div>
@@ -164,7 +166,7 @@ export default function ProductDetailClient({ product, recommendations, initialU
               <span className="text-xs text-black font-extrabold ml-1">{product.averageRating}</span>
             </div>
             <span className="text-xs text-black/40 border-l border-black/10 pl-4 font-medium">
-              {product.reviewsCount} reviews
+              {product.reviewsCount} {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'समीक्षाएं' : 'reviews'}
             </span>
           </div>
 
@@ -180,13 +182,15 @@ export default function ProductDetailClient({ product, recommendations, initialU
                     MRP ₹{product.mrp.toLocaleString('en-IN')}
                   </span>
                   <span className="text-xs text-teal-800 font-extrabold">
-                    Save ₹{(product.mrp - product.sellingPrice).toLocaleString('en-IN')}
+                    {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'बचत ₹' : 'Save ₹'}{(product.mrp - product.sellingPrice).toLocaleString('en-IN')}
                   </span>
                 </>
               )}
             </div>
             <p className="text-[10px] text-black/50 leading-relaxed font-light">
-              MRP inclusive of all Indian taxes. GST breakdown (18% value: ~₹{productGst.toLocaleString('en-IN')}) shown transparently in cart.
+              {t('home.newArrivals') === 'नए जूते (New Arrivals)'
+                ? `अधिकतम खुदरा मूल्य (MRP) सभी भारतीय करों सहित। 18% जीएसटी का विवरण (~₹${productGst.toLocaleString('en-IN')}) कार्ट में प्रदर्शित किया गया है।`
+                : `MRP inclusive of all Indian taxes. GST breakdown (18% value: ~₹${productGst.toLocaleString('en-IN')}) shown transparently in cart.`}
             </p>
           </div>
 
@@ -194,12 +198,12 @@ export default function ProductDetailClient({ product, recommendations, initialU
           {product.category === 'Footwear' || product.category === 'Slippers' ? (
             <div className="space-y-3">
               <div className="flex justify-between items-center text-xs tracking-wider uppercase font-extrabold text-black/85">
-                <span>Select Shoe Size (UK / India)</span>
+                <span>{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'जूते का आकार चुनें (UK / भारत)' : 'Select Shoe Size (UK / India)'}</span>
                 <button
                   onClick={() => setShowSizeGuide(true)}
                   className="text-black underline text-[9px] font-extrabold"
                 >
-                  Size Conversions
+                  {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'आकार चार्ट (Conversions)' : 'Size Conversions'}
                 </button>
               </div>
               <div className="grid grid-cols-5 gap-2">
@@ -221,7 +225,7 @@ export default function ProductDetailClient({ product, recommendations, initialU
           ) : product.category === 'Apparel' ? (
             <div className="space-y-3">
               <div className="text-xs tracking-wider uppercase font-extrabold text-black/85">
-                Select Chest Size
+                {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'चेस्ट साइज चुनें' : 'Select Chest Size'}
               </div>
               <div className="grid grid-cols-4 gap-2">
                 {product.sizes.map((size) => (
@@ -234,7 +238,7 @@ export default function ProductDetailClient({ product, recommendations, initialU
                         : 'border-black/10 bg-white text-black hover:border-black/20'
                     }`}
                   >
-                    Size {size}
+                    {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'साइज़' : 'Size'} {size}
                   </button>
                 ))}
               </div>
@@ -245,7 +249,7 @@ export default function ProductDetailClient({ product, recommendations, initialU
           {(product.category === 'Footwear' || product.category === 'Slippers') && (
             <div className="space-y-3">
               <span className="text-xs uppercase tracking-wider font-extrabold text-black/85 block">
-                Shoe Width Configuration
+                {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'जूते की चौड़ाई की सेटिंग' : 'Shoe Width Configuration'}
               </span>
               <div className="flex gap-2">
                 {['Standard', 'Wide'].map((w) => (
@@ -258,7 +262,9 @@ export default function ProductDetailClient({ product, recommendations, initialU
                         : 'border-black/10 bg-white text-black hover:border-black/20'
                     }`}
                   >
-                    {w}
+                    {w === 'Standard'
+                      ? (t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'मानक (Standard)' : 'Standard')
+                      : (t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'चौड़ा (Wide)' : 'Wide')}
                   </button>
                 ))}
               </div>
@@ -267,7 +273,9 @@ export default function ProductDetailClient({ product, recommendations, initialU
 
           {/* Quantity selector */}
           <div className="space-y-3">
-            <span className="text-xs uppercase tracking-wider font-extrabold text-black/85 block">Quantity</span>
+            <span className="text-xs uppercase tracking-wider font-extrabold text-black/85 block">
+              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'मात्रा (Quantity)' : 'Quantity'}
+            </span>
             <div className="flex items-center border border-black/10 rounded-full w-32 overflow-hidden bg-white shadow-xs p-1">
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -293,13 +301,13 @@ export default function ProductDetailClient({ product, recommendations, initialU
                   onClick={() => addToCart(product, quantity, selectedSize)}
                   className="flex-1 bg-black hover:bg-transparent text-white hover:text-black border border-black py-4 text-xs font-bold uppercase tracking-widest rounded-full transition-all"
                 >
-                  Add to Bag
+                  {t('prod.addToCart')}
                 </button>
                 <button
                   onClick={handleBuyNow}
                   className="flex-1 bg-white hover:bg-black text-black hover:text-white border border-black/10 hover:border-black py-4 text-xs font-bold uppercase tracking-widest rounded-full transition-all text-center"
                 >
-                  Buy It Now
+                  {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'अभी खरीदें' : 'Buy It Now'}
                 </button>
               </>
             ) : (
@@ -307,7 +315,7 @@ export default function ProductDetailClient({ product, recommendations, initialU
                 disabled
                 className="w-full bg-black/5 border border-black/5 text-black/30 py-4 text-xs uppercase tracking-widest font-bold rounded-full cursor-not-allowed text-center"
               >
-                Out of Stock
+                {t('prod.outOfStock')}
               </button>
             )}
 
@@ -327,13 +335,13 @@ export default function ProductDetailClient({ product, recommendations, initialU
           {/* Pincode Checker */}
           <div className="border-t border-black/5 pt-5 space-y-3">
             <span className="text-xs uppercase tracking-wider font-extrabold text-black/85 block flex items-center gap-1.5">
-              <Truck className="w-4 h-4 text-black" /> Check Availability & Delivery Speed
+              <Truck className="w-4 h-4 text-black" /> {t('prod.pincode.title')}
             </span>
             <form onSubmit={handlePincodeCheck} className="flex gap-2">
               <input
                 type="text"
                 maxLength={6}
-                placeholder="Enter 6-digit Pincode"
+                placeholder={t('prod.pincode.placeholder')}
                 value={pincode}
                 onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
                 className="flex-1 border border-black/10 focus:border-black rounded-full px-4 py-2.5 text-xs outline-none bg-white transition-all"
@@ -343,7 +351,7 @@ export default function ProductDetailClient({ product, recommendations, initialU
                 disabled={checkingPin || pincode.length !== 6}
                 className="bg-black hover:bg-transparent text-white hover:text-black border border-black px-5 py-2.5 rounded-full text-xs uppercase tracking-widest font-bold disabled:opacity-50 transition-all"
               >
-                Check
+                {t('prod.pincode.check')}
               </button>
             </form>
 
@@ -357,11 +365,13 @@ export default function ProductDetailClient({ product, recommendations, initialU
               >
                 {pincodeStatus.serviceable ? (
                   <div>
-                    <p className="font-extrabold uppercase tracking-wider text-[10px]">Estimated transit: {pincodeStatus.days} days</p>
-                    <p className="text-[10px] opacity-80 mt-0.5">Dispatched via premium express from Dhanbad HQ.</p>
+                    <p className="font-extrabold uppercase tracking-wider text-[10px]">{t('prod.pincode.serviceable')} {pincodeStatus.days} {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'दिन' : 'days'}</p>
+                    <p className="text-[10px] opacity-80 mt-0.5">
+                      {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'धनबाद मुख्यालय से प्रीमियम एक्सप्रेस के माध्यम से भेजा गया।' : 'Dispatched via premium express from Dhanbad HQ.'}
+                    </p>
                   </div>
                 ) : (
-                  <span className="font-semibold">{pincodeStatus.error || 'Delivery unavailable to this pincode.'}</span>
+                  <span className="font-semibold">{t('prod.pincode.unserviceable')}</span>
                 )}
               </div>
             )}
@@ -370,14 +380,17 @@ export default function ProductDetailClient({ product, recommendations, initialU
           {/* Social Share & Brand disclosure */}
           <div className="flex justify-between items-center text-xs text-black/40 pt-4 border-t border-black/5">
             <span className="flex items-center gap-1.5 font-medium">
-              <ShieldAlert className="w-3.5 h-3.5 text-black" /> 100% Genuine Distributor Stock
+              <ShieldAlert className="w-3.5 h-3.5 text-black" />
+              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? '100% असली डिस्ट्रीब्यूटर स्टॉक' : '100% Genuine Distributor Stock'}
             </span>
             <button
               onClick={handleShare}
               className="hover:text-black font-semibold transition-colors flex items-center gap-1"
             >
               <Share2 className="w-3.5 h-3.5" />
-              {copiedLink ? 'Link Copied!' : 'Share Product'}
+              {copiedLink
+                ? (t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'लिंक कॉपी हो गया!' : 'Link Copied!')
+                : (t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'उत्पाद साझा करें' : 'Share Product')}
             </button>
           </div>
         </div>
@@ -387,9 +400,9 @@ export default function ProductDetailClient({ product, recommendations, initialU
       <div className="border-t border-black/5 pt-10">
         <div className="flex border-b border-black/5 gap-6">
           {[
-            { id: 'desc', label: 'Description' },
-            { id: 'specs', label: 'Specifications' },
-            { id: 'returns', label: 'Returns & Exchange' }
+            { id: 'desc', label: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'विवरण' : 'Description' },
+            { id: 'specs', label: t('prod.specification') },
+            { id: 'returns', label: t('prod.shipping') }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -409,9 +422,11 @@ export default function ProductDetailClient({ product, recommendations, initialU
         <div className="py-6 text-sm text-black/70 font-light leading-relaxed max-w-4xl space-y-4">
           {activeTab === 'desc' && (
             <div className="space-y-3">
-              <p>{product.description}</p>
+              <p>{tp(product.id, 'desc', product.description)}</p>
               <p>
-                Engineered with high premium technical synthetic composition, the material holds structured contour layouts for support and flexibility. Inspired by structural mechanics of human geometry.
+                {t('home.newArrivals') === 'नए जूते (New Arrivals)'
+                  ? 'उच्च प्रीमियम तकनीकी सिंथेटिक संरचना के साथ इंजीनियर, सामग्री समर्थन और लचीलेपन के लिए संरचित रूपरेखा लेआउट रखती है। मानव ज्यामिति के संरचनात्मक यांत्रिकी से प्रेरित।'
+                  : 'Engineered with high premium technical synthetic composition, the material holds structured contour layouts for support and flexibility. Inspired by structural mechanics of human geometry.'}
               </p>
             </div>
           )}
@@ -424,20 +439,24 @@ export default function ProductDetailClient({ product, recommendations, initialU
                   <td className="py-3.5 font-medium">{product.brand}</td>
                 </tr>
                 <tr className="border-b border-black/5">
-                  <td className="py-3.5 font-bold text-black/40">SKU</td>
+                  <td className="py-3.5 font-bold text-black/40">{t('prod.specs.sku')}</td>
                   <td className="py-3.5 font-medium">{product.sku}</td>
                 </tr>
                 <tr className="border-b border-black/5">
-                  <td className="py-3.5 font-bold text-black/40">Material</td>
-                  <td className="py-3.5 font-medium">{product.material}</td>
+                  <td className="py-3.5 font-bold text-black/40">{t('prod.specs.material')}</td>
+                  <td className="py-3.5 font-medium">{tp(product.id, 'material', product.material)}</td>
                 </tr>
                 <tr className="border-b border-black/5">
-                  <td className="py-3.5 font-bold text-black/40">Color</td>
-                  <td className="py-3.5 font-medium">{product.color}</td>
+                  <td className="py-3.5 font-bold text-black/40">{t('prod.specs.color')}</td>
+                  <td className="py-3.5 font-medium">{tp(product.id, 'color', product.color)}</td>
                 </tr>
                 <tr className="border-b border-black/5">
-                  <td className="py-3.5 font-bold text-black/40">Fit Width</td>
-                  <td className="py-3.5 font-medium">{product.width} Fit</td>
+                  <td className="py-3.5 font-bold text-black/40">{t('prod.specs.width')}</td>
+                  <td className="py-3.5 font-medium">
+                    {product.width === 'Standard'
+                      ? (t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'मानक' : 'Standard')
+                      : (t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'चौड़ा' : 'Wide')} {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'फिट' : 'Fit'}
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -446,10 +465,14 @@ export default function ProductDetailClient({ product, recommendations, initialU
           {activeTab === 'returns' && (
             <div className="space-y-3">
               <p>
-                Infinity Traders offers a 7-day hassle-free exchange and return window for unworn items in original box packaging.
+                {t('home.newArrivals') === 'नए जूते (New Arrivals)'
+                  ? 'इन्फिनिटी ट्रेडर्स पूरे भारत में एक्सप्रेस शिपिंग प्रदान करता है। सभी उत्पाद डिलीवरी से पहले हमारी गुणवत्ता नियंत्रण टीम द्वारा पूरी तरह से जाँचे जाते हैं।'
+                  : 'Infinity Traders offers express shipping across India. All articles undergo thorough quality inspection before dispatch to ensure absolute premium standards.'}
               </p>
               <p>
-                Simply trigger a return request inside your Account Dashboard, or reach out to our Customer Support. Pickup is fully coordinated by our regional logistics partners in India.
+                {t('home.newArrivals') === 'नए जूते (New Arrivals)'
+                  ? 'हम एक डिस्ट्रीब्यूटर-डायरेक्ट चैनल हैं, इसलिए ऑर्डर प्लेस होने के बाद कोई भी रिटर्न, एक्सचेंज या रिफंड स्वीकार नहीं किया जाता है।'
+                  : 'As we operate direct-to-consumer premium liquidation distributions, we do not accept returns, exchanges, or refunds once an order is placed.'}
               </p>
             </div>
           )}
@@ -460,8 +483,12 @@ export default function ProductDetailClient({ product, recommendations, initialU
       {recommendations.length > 0 && (
         <div className="border-t border-black/5 pt-12 space-y-8">
           <div className="space-y-1">
-            <span className="text-xs uppercase tracking-[0.3em] text-black/50 font-semibold">Recommendations</span>
-            <h2 className="text-xl sm:text-2xl font-extrabold tracking-wider text-black uppercase">You May Also Like</h2>
+            <span className="text-xs uppercase tracking-[0.3em] text-black/50 font-semibold">
+              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सिफारिशें' : 'Recommendations'}
+            </span>
+            <h2 className="text-xl sm:text-2xl font-extrabold tracking-wider text-black uppercase">
+              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'आपको ये भी पसंद आ सकते हैं' : 'You May Also Like'}
+            </h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -473,7 +500,7 @@ export default function ProductDetailClient({ product, recommendations, initialU
                 <Link href={`/product/${rec.id}`} className="block relative aspect-[4/5] bg-white overflow-hidden border-b border-black/5">
                   <img
                     src={rec.images[0]}
-                    alt={rec.name}
+                    alt={tp(rec.id, 'name', rec.name)}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-103"
                   />
                   <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -486,12 +513,14 @@ export default function ProductDetailClient({ product, recommendations, initialU
                       href={`/product/${rec.id}`}
                       className="text-sm font-extrabold text-black hover:underline transition-all line-clamp-1 mt-1"
                     >
-                      {rec.name}
+                      {tp(rec.id, 'name', rec.name)}
                     </Link>
                   </div>
                   <div className="flex justify-between items-center pt-2 border-t border-black/5">
                     <span className="text-sm font-extrabold text-black">₹{rec.sellingPrice.toLocaleString('en-IN')}</span>
-                    <span className="text-[9px] bg-black text-white px-3 py-1 rounded-full font-bold uppercase tracking-widest">Details</span>
+                    <span className="text-[9px] bg-black text-white px-3 py-1 rounded-full font-bold uppercase tracking-widest">
+                      {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'विवरण' : 'Details'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -509,27 +538,31 @@ export default function ProductDetailClient({ product, recommendations, initialU
           />
           <div className="relative bg-[#f4f3ef] border border-black/5 rounded-2xl p-6 sm:p-8 max-w-lg w-full overflow-y-auto max-h-[90vh] space-y-6 z-10 shadow-2xl">
             <div className="flex justify-between items-center border-b border-black/5 pb-4">
-              <h3 className="text-xs uppercase tracking-widest font-extrabold text-black">Shoe Size Conversion Guide</h3>
+              <h3 className="text-xs uppercase tracking-widest font-extrabold text-black">
+                {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'जूता आकार रूपांतरण गाइड' : 'Shoe Size Conversion Guide'}
+              </h3>
               <button
                 onClick={() => setShowSizeGuide(false)}
                 className="text-black/50 hover:text-black text-xs uppercase tracking-wider font-extrabold"
               >
-                Close
+                {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'बंद करें' : 'Close'}
               </button>
             </div>
 
             <div className="space-y-4 text-xs font-light text-black/70 leading-relaxed">
               <p>
-                Infinity Traders uses <strong>UK / Indian Standard Shoe Sizes</strong>. Convert to US/EU equivalents or check foot lengths in Centimeters below:
+                {t('home.newArrivals') === 'नए जूते (New Arrivals)'
+                  ? 'इन्फिनिटी ट्रेडर्स यूके / भारतीय मानक जूता आकारों का उपयोग करता है। नीचे दिए गए यूएस/ईयू समकक्षों में बदलें या सेंटीमीटर में पैरों की लंबाई जांचें:'
+                  : 'Infinity Traders uses UK / Indian Standard Shoe Sizes. Convert to US/EU equivalents or check foot lengths in Centimeters below:'}
               </p>
 
               <table className="w-full text-center border-collapse">
                 <thead>
                   <tr className="border-b border-black/10 text-black font-extrabold uppercase text-[10px] tracking-wider">
-                    <th className="py-2.5">UK / India</th>
-                    <th className="py-2.5">US (Men)</th>
-                    <th className="py-2.5">EU Equivalent</th>
-                    <th className="py-2.5">Length (cm)</th>
+                    <th className="py-2.5">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'यूके / भारत' : 'UK / India'}</th>
+                    <th className="py-2.5">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'यूएस (पुरुष)' : 'US (Men)'}</th>
+                    <th className="py-2.5">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'ईयू समकक्ष' : 'EU Equivalent'}</th>
+                    <th className="py-2.5">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'लंबाई (सेंटीमीटर)' : 'Length (cm)'}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-black/5 text-[11px] font-medium text-black">
@@ -573,8 +606,12 @@ export default function ProductDetailClient({ product, recommendations, initialU
               </table>
 
               <div className="bg-white border border-black/5 p-4 rounded-xl text-[11px] leading-relaxed text-black/85">
-                <span className="font-bold text-black block mb-1">How to Measure:</span>
-                Place your heel against a flat wall, draw a line at the longest toe, and measure distance in centimeters. Choose the corresponding size. Standard fit supports standard width configuration.
+                <span className="font-bold text-black block mb-1">
+                  {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'मापने का तरीका:' : 'How to Measure:'}
+                </span>
+                {t('home.newArrivals') === 'नए जूते (New Arrivals)'
+                  ? 'अपनी एड़ी को एक सपाट दीवार के खिलाफ रखें, सबसे लंबी पैर की अंगुली पर एक रेखा खींचें, और सेंटीमीटर में दूरी मापें। संबंधित आकार चुनें। मानक फिट मानक चौड़ाई विन्यास का समर्थन करता है।'
+                  : 'Place your heel against a flat wall, draw a line at the longest toe, and measure distance in centimeters. Choose the corresponding size. Standard fit supports standard width configuration.'}
               </div>
             </div>
           </div>

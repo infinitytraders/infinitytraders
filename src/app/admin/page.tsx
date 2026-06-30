@@ -721,7 +721,7 @@ export default function AdminPage() {
         {activeTab === 'orders' && (
           <div className="space-y-6">
             <h2 className="text-xs font-extrabold uppercase tracking-widest text-black">
-              Customer Orders Fulfillment & Return Request Tracker
+              Customer Orders Fulfillment & Logistics Tracker
             </h2>
 
             {/* Courier Dispatch update Modal overlay */}
@@ -741,7 +741,6 @@ export default function AdminPage() {
                     <option value="PENDING">PENDING Fulfillment</option>
                     <option value="DISPATCHED">DISPATCHED Shipment</option>
                     <option value="DELIVERED">DELIVERED Confirmation</option>
-                    <option value="RETURNED">RETURNED Refund</option>
                   </select>
                 </div>
 

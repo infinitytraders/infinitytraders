@@ -5,14 +5,21 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import type { Product } from '@/lib/db';
 import { getProductsAction } from '@/app/actions';
 import { useCart } from '@/context/CartContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { Star, Search, SlidersHorizontal, Grid, X, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function ShopContent() {
   const { addToCart } = useCart();
+  const { t, tp, tc } = useLanguage();
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  const getCatLabel = (cat: string) => {
+    if (cat === 'All') return t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सभी' : 'All';
+    return tc(cat);
+  };
 
   // State
   const [products, setProducts] = useState<Product[]>([]);
@@ -118,10 +125,10 @@ function ShopContent() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-black/5 pb-6">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wider text-black uppercase">
-            Product Catalog
+            {t('nav.shop')}
           </h1>
           <p className="text-[10px] text-black/50 font-bold mt-1 uppercase tracking-widest">
-            Showing {filteredProducts.length} of {products.length} active articles
+            {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? `${products.length} सक्रिय लेखों में से ${filteredProducts.length} दिखाए जा रहे हैं` : `Showing ${filteredProducts.length} of ${products.length} active articles`}
           </p>
         </div>
 
@@ -130,7 +137,7 @@ function ShopContent() {
           <div className="relative flex-1 md:w-72">
             <input
               type="text"
-              placeholder="Search by name, SKU, brand..."
+              placeholder={t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'नाम, SKU, ब्रांड द्वारा खोजें...' : 'Search by name, SKU, brand...'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full border border-black/10 focus:border-black rounded-full pl-10 pr-4 py-2.5 text-xs outline-none bg-white transition-all text-black"
@@ -142,7 +149,7 @@ function ShopContent() {
             onClick={() => setShowFiltersMobile(true)}
             className="lg:hidden bg-white border border-black/10 text-black px-4 py-2.5 rounded-full flex items-center gap-1.5 text-xs uppercase font-extrabold tracking-widest transition-all"
           >
-            <SlidersHorizontal className="w-4 h-4" /> Filters
+            <SlidersHorizontal className="w-4 h-4" /> {t('shop.filters')}
           </button>
         </div>
       </div>
@@ -152,19 +159,19 @@ function ShopContent() {
         <aside className="hidden lg:block lg:col-span-3 space-y-6 bg-white border border-black/5 p-6 rounded-2xl sticky top-28 shadow-xs">
           <div className="flex justify-between items-center border-b border-black/5 pb-4">
             <h2 className="text-[10px] uppercase tracking-widest font-extrabold text-black flex items-center gap-2">
-              <SlidersHorizontal className="w-4 h-4 text-black" /> Filters
+              <SlidersHorizontal className="w-4 h-4 text-black" /> {t('shop.filters')}
             </h2>
             <button
               onClick={clearFilters}
               className="text-[9px] text-black hover:underline transition-all uppercase tracking-widest font-extrabold"
             >
-              Reset All
+              {t('shop.clear')}
             </button>
           </div>
 
           {/* Category Filter */}
           <div className="space-y-2">
-            <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black/45">Category</h3>
+            <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black/45">{t('shop.filter.category')}</h3>
             <div className="flex flex-col gap-1">
               {categories.map((cat) => (
                 <button
@@ -174,7 +181,7 @@ function ShopContent() {
                     selectedCategory === cat ? 'text-black font-extrabold underline' : 'text-black/60 hover:text-black'
                   }`}
                 >
-                  {cat}
+                  {getCatLabel(cat)}
                 </button>
               ))}
             </div>
@@ -182,7 +189,7 @@ function ShopContent() {
 
           {/* Brand Filter */}
           <div className="space-y-2 border-t border-black/5 pt-4">
-            <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black/45">Brand</h3>
+            <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black/45">{t('shop.filter.brand')}</h3>
             <div className="flex flex-col gap-1">
               {brands.map((b) => (
                 <button
@@ -192,7 +199,7 @@ function ShopContent() {
                     selectedBrand === b ? 'text-black font-extrabold underline' : 'text-black/60 hover:text-black'
                   }`}
                 >
-                  {b}
+                  {b === 'All' && t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सभी' : b}
                 </button>
               ))}
             </div>
@@ -200,7 +207,7 @@ function ShopContent() {
 
           {/* Size Filter */}
           <div className="space-y-3 border-t border-black/5 pt-4">
-            <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black/45">Shoe size (UK)</h3>
+            <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black/45">{t('shop.filter.size')}</h3>
             <div className="grid grid-cols-4 gap-1.5">
               {allSizes.map((size) => (
                 <button
@@ -212,7 +219,7 @@ function ShopContent() {
                       : 'border-black/10 bg-white text-black hover:border-black/25'
                   }`}
                 >
-                  {size === 'All' ? 'ALL' : size}
+                  {size === 'All' ? (t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सभी' : 'ALL') : size}
                 </button>
               ))}
             </div>
@@ -221,7 +228,7 @@ function ShopContent() {
           {/* Price Range Slider */}
           <div className="space-y-3 border-t border-black/5 pt-4">
             <div className="flex justify-between items-center text-[10px] uppercase tracking-wider font-extrabold text-black/45">
-              <span>Max Price</span>
+              <span>{t('shop.filter.price')}</span>
               <span className="text-black font-extrabold">₹{maxPrice.toLocaleString('en-IN')}</span>
             </div>
             <input
@@ -237,17 +244,17 @@ function ShopContent() {
 
           {/* Sorting Option */}
           <div className="space-y-3 border-t border-black/5 pt-4">
-            <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black/45">Sort By</h3>
+            <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black/45">{t('shop.sort.title')}</h3>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
               className="w-full bg-[#fdfdfd] border border-black/10 rounded-xl p-2.5 text-xs text-black font-semibold focus:border-black focus:outline-none"
             >
-              <option value="newest">New Arrivals</option>
-              <option value="best-selling">Best Sellers</option>
-              <option value="popularity">Popularity</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
+              <option value="newest">{t('home.newArrivals')}</option>
+              <option value="best-selling">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'बेस्ट सेलर्स' : 'Best Sellers'}</option>
+              <option value="popularity">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'लोकप्रियता' : 'Popularity'}</option>
+              <option value="price-low">{t('shop.sort.lowHigh')}</option>
+              <option value="price-high">{t('shop.sort.highLow')}</option>
             </select>
           </div>
         </aside>
@@ -265,12 +272,12 @@ function ShopContent() {
               <div className="w-16 h-16 rounded-full bg-black/5 flex items-center justify-center text-black/35">
                 <Grid className="w-8 h-8" />
               </div>
-              <p className="text-black/50 font-light tracking-wide">No articles matches your selected filter criteria.</p>
+              <p className="text-black/50 font-light tracking-wide">{t('shop.noProducts')}</p>
               <button
                 onClick={clearFilters}
                 className="bg-black hover:bg-transparent text-white hover:text-black border border-black py-2.5 px-6 rounded-full text-xs uppercase tracking-widest font-bold transition-all"
               >
-                Clear All Filters
+                {t('shop.clear')}
               </button>
             </div>
           ) : (
@@ -287,17 +294,17 @@ function ShopContent() {
                   <Link href={`/product/${product.id}`} className="block relative aspect-[4/5] bg-white overflow-hidden border-b border-black/5">
                     {product.stockQuantity <= 3 && product.stockQuantity > 0 && (
                       <span className="absolute top-3 left-3 bg-[#d97706] text-white text-[8px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full z-10">
-                        Low Stock
+                        {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'कम स्टॉक' : 'Low Stock'}
                       </span>
                     )}
                     {product.stockQuantity === 0 && (
                       <span className="absolute top-3 left-3 bg-red-600/90 text-white text-[8px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full z-10">
-                        Out of Stock
+                        {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'आउट ऑफ स्टॉक' : 'Out of Stock'}
                       </span>
                     )}
                     {product.discountPercentage > 0 && (
                       <span className="absolute top-3 right-3 bg-black text-white text-[8px] font-bold px-2.5 py-1 rounded-full z-10">
-                        {product.discountPercentage}% OFF
+                        {product.discountPercentage}% {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'छूट' : 'OFF'}
                       </span>
                     )}
                     <img
@@ -312,16 +319,16 @@ function ShopContent() {
                     <div>
                       <div className="flex justify-between items-center text-[9px] uppercase tracking-widest text-black/45 font-bold">
                         <span>{product.brand}</span>
-                        <span>{product.category}</span>
+                        <span>{tc(product.category)}</span>
                       </div>
                       <Link
                         href={`/product/${product.id}`}
                         className="block text-sm font-extrabold text-black mt-1 hover:underline transition-colors line-clamp-1"
                       >
-                        {product.name}
+                        {tp(product.id, 'name', product.name)}
                       </Link>
                       <p className="text-[11px] text-black/60 font-light line-clamp-2 mt-1.5 leading-relaxed">
-                        {product.description}
+                        {tp(product.id, 'desc', product.description)}
                       </p>
                     </div>
 
@@ -347,14 +354,14 @@ function ShopContent() {
                           onClick={() => addToCart(product, 1, product.sizes[0] || 8)}
                           className="w-full bg-black hover:bg-transparent text-white hover:text-black border border-black py-2.5 text-[9px] uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 rounded-full transition-all"
                         >
-                          <ShoppingCart className="w-3 h-3" /> Add to Bag
+                          <ShoppingCart className="w-3.5 h-3.5" /> {t('prod.addToCart')}
                         </button>
                       ) : (
                         <button
                           disabled
                           className="w-full bg-black/5 border border-black/5 text-black/30 py-2.5 text-[9px] uppercase tracking-widest font-bold rounded-full cursor-not-allowed"
                         >
-                          Out of Stock
+                          {t('prod.outOfStock')}
                         </button>
                       )}
                     </div>
@@ -400,7 +407,7 @@ function ShopContent() {
 
                 {/* Mobile Category */}
                 <div className="space-y-2">
-                  <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black/45">Category</h3>
+                  <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black/45">{t('shop.filter.category')}</h3>
                   <div className="flex flex-wrap gap-1.5">
                     {categories.map((cat) => (
                       <button
@@ -412,7 +419,7 @@ function ShopContent() {
                             : 'border-black/10 bg-white text-black hover:border-black/25'
                         }`}
                       >
-                        {cat}
+                        {getCatLabel(cat)}
                       </button>
                     ))}
                   </div>
@@ -420,7 +427,7 @@ function ShopContent() {
 
                 {/* Mobile Brand */}
                 <div className="space-y-2 border-t border-black/5 pt-4">
-                  <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black/45">Brand</h3>
+                  <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black/45">{t('shop.filter.brand')}</h3>
                   <div className="flex flex-wrap gap-1.5">
                     {brands.map((b) => (
                       <button
@@ -432,7 +439,7 @@ function ShopContent() {
                             : 'border-black/10 bg-white text-black hover:border-black/25'
                         }`}
                       >
-                        {b}
+                        {b === 'All' && t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सभी' : b}
                       </button>
                     ))}
                   </div>
@@ -440,7 +447,7 @@ function ShopContent() {
 
                 {/* Mobile Size */}
                 <div className="space-y-3 border-t border-black/5 pt-4">
-                  <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black/45">Shoe size (UK)</h3>
+                  <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black/45">{t('shop.filter.size')}</h3>
                   <div className="grid grid-cols-4 gap-1.5">
                     {allSizes.map((size) => (
                       <button
@@ -452,7 +459,7 @@ function ShopContent() {
                             : 'border-black/10 bg-white text-black hover:border-black/25'
                         }`}
                       >
-                        {size === 'All' ? 'ALL' : size}
+                        {size === 'All' ? (t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सभी' : 'ALL') : size}
                       </button>
                     ))}
                   </div>
@@ -461,7 +468,7 @@ function ShopContent() {
                 {/* Mobile Price */}
                 <div className="space-y-3 border-t border-black/5 pt-4">
                   <div className="flex justify-between items-center text-[10px] uppercase tracking-wider font-extrabold text-black/45">
-                    <span>Max Price</span>
+                    <span>{t('shop.filter.price')}</span>
                     <span className="text-black font-extrabold">₹{maxPrice.toLocaleString('en-IN')}</span>
                   </div>
                   <input
@@ -477,17 +484,17 @@ function ShopContent() {
 
                 {/* Mobile Sorting */}
                 <div className="space-y-3 border-t border-black/5 pt-4">
-                  <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black/45">Sort By</h3>
+                  <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black/45">{t('shop.sort.title')}</h3>
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
                     className="w-full bg-[#fdfdfd] border border-black/10 rounded-xl p-2.5 text-xs text-black font-semibold focus:border-black focus:outline-none"
                   >
-                    <option value="newest">New Arrivals</option>
-                    <option value="best-selling">Best Sellers</option>
-                    <option value="popularity">Popularity</option>
-                    <option value="price-low">Price: Low to High</option>
-                    <option value="price-high">Price: High to Low</option>
+                    <option value="newest">{t('home.newArrivals')}</option>
+                    <option value="best-selling">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'बेस्ट सेलर्स' : 'Best Sellers'}</option>
+                    <option value="popularity">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'लोकप्रियता' : 'Popularity'}</option>
+                    <option value="price-low">{t('shop.sort.lowHigh')}</option>
+                    <option value="price-high">{t('shop.sort.highLow')}</option>
                   </select>
                 </div>
               </div>
@@ -497,13 +504,13 @@ function ShopContent() {
                   onClick={clearFilters}
                   className="flex-1 bg-white hover:bg-black/5 border border-black/15 text-black py-3 text-[10px] font-extrabold uppercase tracking-widest rounded-full transition-all text-center"
                 >
-                  Clear
+                  {t('shop.clear')}
                 </button>
                 <button
                   onClick={() => setShowFiltersMobile(false)}
                   className="flex-1 bg-black hover:bg-transparent text-white hover:text-black border border-black py-3 text-[10px] font-extrabold uppercase tracking-widest rounded-full transition-all text-center"
                 >
-                  Apply
+                  {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'लागू करें' : 'Apply'}
                 </button>
               </div>
             </motion.div>

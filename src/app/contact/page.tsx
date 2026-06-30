@@ -2,9 +2,11 @@
 
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Clock, Send, CheckCircle2, AlertTriangle, Sparkles } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 import { motion } from 'framer-motion';
 
 export default function ContactPage() {
+  const { t } = useLanguage();
   // Form State
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -47,12 +49,12 @@ export default function ContactPage() {
     >
       {/* Page Header */}
       <div className="text-center space-y-2 border-b border-black/5 pb-8 mb-12">
-        <span className="text-[10px] uppercase tracking-[0.3em] text-black/55 font-bold">Get In Touch</span>
+        <span className="text-[10px] uppercase tracking-[0.3em] text-black/55 font-bold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'संपर्क करें' : 'Get In Touch'}</span>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-wider text-black uppercase">
-          Contact Infinity Traders
+          {t('nav.contact')}
         </h1>
         <p className="text-xs text-black/60 font-light max-w-md mx-auto leading-relaxed">
-          Have questions about shipping speed, custom sizing, or bulk distributions? Speak with our Dhanbad support desk today.
+          {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'शिपिंग गति, कस्टम आकार या थोक वितरण के बारे में प्रश्न हैं? आज ही हमारे धनबाद सहायता डेस्क से बात करें।' : 'Have questions about shipping speed, custom sizing, or bulk distributions? Speak with our Dhanbad support desk today.'}
         </p>
       </div>
 
@@ -62,7 +64,7 @@ export default function ContactPage() {
           {/* Card 1: Main Support Channels */}
           <div className="bg-white border border-black/5 p-6 rounded-2xl space-y-6 shadow-xs">
             <h2 className="text-xs font-extrabold uppercase tracking-widest text-black border-b border-black/5 pb-3">
-              Distribution Desk
+              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'वितरण डेस्क' : 'Distribution Desk'}
             </h2>
 
             <div className="space-y-4">
@@ -71,11 +73,11 @@ export default function ContactPage() {
                   <Mail className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-[9px] uppercase tracking-wider text-black/40 font-bold">Email Communication</h3>
+                  <h3 className="text-[9px] uppercase tracking-wider text-black/40 font-bold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'ईमेल संचार' : 'Email Communication'}</h3>
                   <a href="mailto:info@infinitytraders.com" className="text-xs font-bold text-black hover:underline block mt-0.5">
                     info@infinitytraders.com
                   </a>
-                  <p className="text-[10px] text-black/50 font-light mt-0.5">Average response within 3 hours.</p>
+                  <p className="text-[10px] text-black/50 font-light mt-0.5">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'औसत प्रतिक्रिया ३ घंटे के भीतर।' : 'Average response within 3 hours.'}</p>
                 </div>
               </div>
 
@@ -84,11 +86,11 @@ export default function ContactPage() {
                   <Phone className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-[9px] uppercase tracking-wider text-black/40 font-bold">Helpline & WhatsApp</h3>
+                  <h3 className="text-[9px] uppercase tracking-wider text-black/40 font-bold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'हेल्पलाइन और व्हाट्सएप' : 'Helpline & WhatsApp'}</h3>
                   <a href="tel:+919999999999" className="text-xs font-bold text-black hover:underline block mt-0.5">
                     +91 99999 99999
                   </a>
-                  <p className="text-[10px] text-black/50 font-light mt-0.5">Mon - Sat: 10:00 AM to 7:00 PM</p>
+                  <p className="text-[10px] text-black/50 font-light mt-0.5">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सोम - शनि: सुबह १०:०० से शाम ७:०० बजे तक' : 'Mon - Sat: 10:00 AM to 7:00 PM'}</p>
                 </div>
               </div>
             </div>
@@ -97,7 +99,7 @@ export default function ContactPage() {
           {/* Card 2: HQ Location */}
           <div className="bg-white border border-black/5 p-6 rounded-2xl space-y-6 shadow-xs">
             <h2 className="text-xs font-extrabold uppercase tracking-widest text-black border-b border-black/5 pb-3">
-              Logistics Depot & HQ
+              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'लॉजिस्टिक्स डिपो और मुख्यालय' : 'Logistics Depot & HQ'}
             </h2>
 
             <div className="space-y-4">
@@ -106,11 +108,11 @@ export default function ContactPage() {
                   <MapPin className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-[9px] uppercase tracking-wider text-black/40 font-bold">Address Registry</h3>
+                  <h3 className="text-[9px] uppercase tracking-wider text-black/40 font-bold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'पता रजिस्ट्री' : 'Address Registry'}</h3>
                   <p className="text-xs font-bold text-black leading-relaxed mt-0.5">
                     Infinity Traders,<br />
-                    Bank More, Dhanbad,<br />
-                    Jharkhand - 826001
+                    {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'बैंक मोड़, धनबाद,' : 'Bank More, Dhanbad,'}<br />
+                    {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'झारखंड - ८२६००१' : 'Jharkhand - 826001'}
                   </p>
                 </div>
               </div>
@@ -120,11 +122,11 @@ export default function ContactPage() {
                   <Clock className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-[9px] uppercase tracking-wider text-black/40 font-bold">Depot Hours</h3>
+                  <h3 className="text-[9px] uppercase tracking-wider text-black/40 font-bold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'डिपो का समय' : 'Depot Hours'}</h3>
                   <p className="text-xs font-bold text-black mt-0.5">
-                    Sundays & Holidays: Closed for Dispatch
+                    {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'रविवार और छुट्टियाँ: प्रेषण के लिए बंद' : 'Sundays & Holidays: Closed for Dispatch'}
                   </p>
-                  <p className="text-[10px] text-black/50 font-light mt-0.5">Invoices generated 24/7 online.</p>
+                  <p className="text-[10px] text-black/50 font-light mt-0.5">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'चालान २४/७ ऑनलाइन उत्पन्न होते हैं।' : 'Invoices generated 24/7 online.'}</p>
                 </div>
               </div>
             </div>
@@ -134,7 +136,7 @@ export default function ContactPage() {
         {/* Right Column: Interactive Form */}
         <div className="lg:col-span-7 bg-white border border-black/5 p-8 rounded-2xl shadow-xs">
           <h2 className="text-xs font-extrabold uppercase tracking-widest text-black border-b border-black/5 pb-4 mb-6">
-            Dispatch a Digital Inquiry
+            {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'एक डिजिटल पूछताछ भेजें' : 'Dispatch a Digital Inquiry'}
           </h2>
 
           {isSuccess ? (
@@ -143,16 +145,16 @@ export default function ContactPage() {
                 <CheckCircle2 className="w-8 h-8" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-sm font-extrabold uppercase tracking-wider text-black">Inquiry Logged</h3>
+                <h3 className="text-sm font-extrabold uppercase tracking-wider text-black">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'पूछताछ दर्ज की गई' : 'Inquiry Logged'}</h3>
                 <p className="text-xs text-black/60 font-light max-w-xs mx-auto">
-                  Your communication has been securely transmitted. A representative will contact you via email shortly.
+                  {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'आपका संदेश सुरक्षित रूप से भेज दिया गया है। एक प्रतिनिधि जल्द ही आपसे संपर्क करेगा।' : 'Your communication has been securely transmitted. A representative will contact you via email shortly.'}
                 </p>
               </div>
               <button
                 onClick={() => setIsSuccess(false)}
                 className="bg-black hover:bg-transparent text-white hover:text-black border border-black px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all mt-4"
               >
-                Send Another Message
+                {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'दूसरा संदेश भेजें' : 'Send Another Message'}
               </button>
             </div>
           ) : (
@@ -166,22 +168,22 @@ export default function ContactPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold">Full Name</label>
+                  <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'पूरा नाम' : 'Full Name'}</label>
                   <input
                     type="text"
                     required
-                    placeholder="Enter name"
+                    placeholder={t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'नाम दर्ज करें' : 'Enter name'}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full border border-black/10 focus:border-black rounded-full px-4 py-2.5 text-xs outline-none bg-[#fdfdfd] transition-all text-black"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold">Email Address</label>
+                  <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'ईमेल पता' : 'Email Address'}</label>
                   <input
                     type="email"
                     required
-                    placeholder="Enter email"
+                    placeholder={t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'ईमेल दर्ज करें' : 'Enter email'}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full border border-black/10 focus:border-black rounded-full px-4 py-2.5 text-xs outline-none bg-[#fdfdfd] transition-all text-black"
@@ -190,11 +192,11 @@ export default function ContactPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold">Subject Interest</label>
+                <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'विषय रुचि' : 'Subject Interest'}</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Bulk inquiry, Shipping transit delay"
+                  placeholder={t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'जैसे: थोक पूछताछ, शिपिंग में देरी' : 'e.g. Bulk inquiry, Shipping transit delay'}
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                   className="w-full border border-black/10 focus:border-black rounded-full px-4 py-2.5 text-xs outline-none bg-[#fdfdfd] transition-all text-black"
@@ -202,11 +204,11 @@ export default function ContactPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold">Message Details</label>
+                <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'संदेश विवरण' : 'Message Details'}</label>
                 <textarea
                   rows={4}
                   required
-                  placeholder="Write your query here..."
+                  placeholder={t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'अपनी पूछताछ यहाँ लिखें...' : 'Write your query here...'}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   className="w-full border border-black/10 focus:border-black rounded-2xl px-4 py-3 text-xs outline-none bg-[#fdfdfd] transition-all text-black resize-none"
@@ -220,11 +222,11 @@ export default function ContactPage() {
               >
                 {isSubmitting ? (
                   <>
-                    <Sparkles className="w-3.5 h-3.5 animate-spin" /> Senders processing...
+                    <Sparkles className="w-3.5 h-3.5 animate-spin" /> {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'भेजा जा रहा है...' : 'Senders processing...'}
                   </>
                 ) : (
                   <>
-                    Send Inquiry <Send className="w-3.5 h-3.5" />
+                    {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'पूछताछ भेजें' : 'Send Inquiry'} <Send className="w-3.5 h-3.5" />
                   </>
                 )}
               </button>
