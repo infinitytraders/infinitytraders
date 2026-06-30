@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import type { Product } from '@/lib/db';
 import { useCart } from '@/context/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { ArrowRight, ShoppingCart, Star, CheckCircle, ShieldAlert, Send } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ArrowRight, ShoppingCart, Star, CheckCircle, ShieldAlert, Send, ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface HomeClientProps {
   initialProducts: Product[];
@@ -19,6 +19,44 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
   const [checkingPin, setCheckingPin] = useState(false);
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterSubscribed, setNewsletterSubscribed] = useState(false);
+
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  const slides = [
+    {
+      id: 'shoes',
+      title: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'जूते (Footwear)' : 'SHOES',
+      desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'उच्च प्रदर्शन रनिंग' : 'High-performance footwear',
+      img: '/slide_shoes.png',
+    },
+    {
+      id: 'clothes',
+      title: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'कपड़े (Apparel)' : 'CLOTHES',
+      desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सक्रिय कम्फर्ट स्पोर्ट्सवियर' : 'Active comfort sportswear',
+      img: '/slide_clothes.png',
+    },
+    {
+      id: 'accessories',
+      title: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सामान (Accessories)' : 'ACCESSORIES',
+      desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'प्रशिक्षण सहायक उपकरण' : 'Essential training accessories',
+      img: '/slide_accessories.png',
+    },
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveSlide((prev) => (prev + 1) % slides.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [slides.length]);
+
+  const handleNext = () => {
+    setActiveSlide((prev) => (prev + 1) % slides.length);
+  };
+
+  const handlePrev = () => {
+    setActiveSlide((prev) => (prev - 1 + slides.length) % slides.length);
+  };
 
   const filteredProducts = initialProducts.filter((p) => {
     if (activeTab === 'new') return p.isNewArrival;
@@ -120,14 +158,107 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
           {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'इन्फिनिटी ट्रेडर्स शरीर और पर्यावरण के बीच शाश्वत सामंजस्य को दर्शाता है, एक ऐसा सिद्धांत जो विशिष्ट जूतों के वितरकों में निहित है। प्रीमियम एथलेटिक ब्रांडों के लिए भारत के वितरण स्रोत के रूप में, हम प्राकृतिक यांत्रिकी द्वारा निर्देशित उच्च-प्रदर्शन गियर प्रदान करते हैं: प्रदर्शन जो शरीर के साथ तालमेल बिठाता है, उसके खिलाफ नहीं।' : 'Infinity Traders reflects the timeless harmony between body and environment, a principle rooted in distributors of elite footwear. As India\'s distribution source for premium athletic brands, we deliver high-performance gear guided by Natural Mechanics: performance that moves in sync with the body, not against it.'}
         </p>
 
-        {/* Pedestal Rock & Shoe Shot */}
-        <div className="relative pt-6 max-w-md mx-auto flex flex-col items-center">
-          {/* Shoe & Pedestal Image */}
-          <img
-            src="/premium_shoe.png"
-            alt="Premium athletic shoe on pedestal"
-            className="w-full rounded-2xl border border-black/5 hover:translate-y-[-8px] transition-transform duration-500 shadow-sm"
-          />
+        {/* Pedestal Rock Swiper Slider */}
+        <div className="relative pt-6 max-w-md mx-auto flex flex-col items-center w-full">
+          {/* Swiper Wrapper - Completely transparent floating container */}
+          <div className="relative w-full aspect-square overflow-hidden flex items-center justify-center group">
+            
+            {/* 1. Stationary Pedestal in the background */}
+            <img
+              src="/pedestal_only.png"
+              alt="Stone pedestal"
+              className="absolute bottom-[2%] left-1/2 -translate-x-1/2 w-[90%] h-auto object-contain z-10 pointer-events-none select-none filter drop-shadow-sm"
+            />
+
+            {/* 2. Sliding Products Container on top of the pedestal */}
+            <div className="absolute inset-0 z-20 flex items-center justify-center cursor-grab active:cursor-grabbing">
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={activeSlide}
+                  src={slides[activeSlide].img}
+                  alt={slides[activeSlide].title}
+                  initial={{ opacity: 0, x: 80, scale: 0.95 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: -80, scale: 0.95 }}
+                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  className="w-[58%] h-[58%] object-contain mb-[22%] pointer-events-none select-none filter drop-shadow-md"
+                />
+              </AnimatePresence>
+              
+              {/* Invisible drag overlay for swipe gesture detection */}
+              <motion.div
+                className="absolute inset-0 z-30"
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                onDragEnd={(e, info) => {
+                  if (info.offset.x > 50) {
+                    handlePrev();
+                  } else if (info.offset.x < -50) {
+                    handleNext();
+                  }
+                }}
+              />
+            </div>
+
+            {/* Left navigation arrow */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handlePrev();
+              }}
+              className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/75 hover:bg-white border border-black/5 text-black p-2.5 rounded-full shadow-md backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-all duration-300 z-40 cursor-pointer"
+              aria-label="Previous Slide"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            {/* Right navigation arrow */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleNext();
+              }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/75 hover:bg-white border border-black/5 text-black p-2.5 rounded-full shadow-md backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-all duration-300 z-40 cursor-pointer"
+              aria-label="Next Slide"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Active slide metadata */}
+          <div className="text-center mt-6 min-h-[4.5rem]">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeSlide}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                className="space-y-1"
+              >
+                <h4 className="text-xs uppercase font-extrabold tracking-[0.25em] text-black">
+                  {slides[activeSlide].title}
+                </h4>
+                <p className="text-[10px] text-black/55 uppercase tracking-widest">
+                  {slides[activeSlide].desc}
+                </p>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Pagination dots indicators */}
+          <div className="flex gap-2.5 justify-center mt-1.5">
+            {slides.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setActiveSlide(index)}
+                className={`h-1.5 transition-all rounded-full ${
+                  index === activeSlide ? 'w-8 bg-black' : 'w-2 bg-black/15'
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
         </div>
       </motion.section>
 
