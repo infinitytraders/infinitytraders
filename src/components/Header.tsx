@@ -69,7 +69,10 @@ export default function Header() {
               </button>
 
               <Link href="/" className="flex items-center gap-2 group">
-                <img src="/logo.png" alt="Infinity Traders" className="w-8 h-8 object-contain" />
+                <svg className="w-8 h-8 text-black" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M30 35 C15 35 15 65 30 65 C45 65 55 35 70 35 C85 35 85 65 70 65 C55 65 45 35 30 35 Z" 
+                    stroke="currentColor" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                </svg>
                 <div className="flex flex-col leading-none">
                   <span className="text-[12px] font-extrabold tracking-[0.2em] text-black uppercase">
                     INFINITY
@@ -231,12 +234,9 @@ export default function Header() {
             >
               <div>
                 <div className="flex items-center justify-between border-b border-black/5 pb-5">
-                  <div className="flex items-center gap-2">
-                    <img src="/logo.png" alt="Infinity Traders" className="w-6 h-6 object-contain" />
-                    <span className="text-sm font-black tracking-widest text-black uppercase">
-                      INFINITY TRADERS
-                    </span>
-                  </div>
+                  <span className="text-sm font-black tracking-widest text-black uppercase">
+                    INFINITY TRADERS
+                  </span>
                   <button
                     onClick={() => setMobileMenuOpen(false)}
                     className="text-black/60 hover:text-black transition-colors"
