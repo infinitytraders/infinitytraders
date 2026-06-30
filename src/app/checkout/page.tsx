@@ -8,6 +8,7 @@ import { ShoppingBag, CreditCard, CheckCircle2, AlertTriangle, Truck, Sparkles, 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import confetti from 'canvas-confetti';
+import Script from 'next/script';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -39,7 +40,6 @@ export default function CheckoutPage() {
   // Checkout Status States
   const [validationError, setValidationError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [orderConfirmed, setOrderConfirmed] = useState<Order | null>(null);
 
   // Load session
@@ -88,13 +88,46 @@ export default function CheckoutPage() {
     if (!validateForm()) return;
 
     if (paymentMethod === 'RAZORPAY') {
-      setShowPaymentModal(true);
+      const rzpKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_live_T7TLW2HhvqGGyq';
+      
+      const options = {
+        key: rzpKeyId,
+        amount: Math.round(finalAmount * 100), // in paise
+        currency: 'INR',
+        name: 'Infinity Traders',
+        description: 'Secure Payment Gateway',
+        image: '/hero_runner.png',
+        handler: async function (response: any) {
+          setIsSubmitting(true);
+          await processOrderPlacement(response.razorpay_payment_id);
+        },
+        prefill: {
+          name: name,
+          email: email,
+          contact: mobile
+        },
+        theme: {
+          color: '#000000'
+        },
+        modal: {
+          ondismiss: function () {
+            setIsSubmitting(false);
+          }
+        }
+      };
+
+      try {
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
+      } catch (error) {
+        setValidationError('Failed to load Razorpay checkout SDK. Please verify your internet connection.');
+      }
     } else {
       await processOrderPlacement();
     }
   };
 
-  const processOrderPlacement = async () => {
+  const processOrderPlacement = async (paymentId?: string) => {
     setIsSubmitting(true);
     setValidationError('');
 
@@ -122,7 +155,6 @@ export default function CheckoutPage() {
 
     const res = await createOrderAction(orderPayload);
     setIsSubmitting(false);
-    setShowPaymentModal(false);
 
     if (res.success && res.order) {
       setOrderConfirmed(res.order);
@@ -457,55 +489,7 @@ export default function CheckoutPage() {
         </aside>
       </div>
 
-      {/* RAZORPAY SIMULATED GATEWAY POPUP MODAL */}
-      {showPaymentModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-xs" />
-          <div className="relative bg-[#f4f3ef] border border-black/5 rounded-2xl p-6 max-w-sm w-full space-y-6 text-center z-10 shadow-2xl">
-            <div className="flex justify-center">
-              <span className="text-[10px] font-extrabold tracking-widest text-black uppercase flex items-center gap-1 border border-black/10 px-4 py-1.5 rounded-full bg-white shadow-xs">
-                <Sparkles className="w-3.5 h-3.5 text-black animate-spin" /> Razorpay Secured
-              </span>
-            </div>
-
-            <div className="space-y-2">
-              <h3 className="text-xs uppercase tracking-widest font-extrabold text-black">Complete Transaction</h3>
-              <p className="text-xs text-black/60 font-light leading-relaxed">
-                Secure checkout portal for <strong>₹{finalAmount.toLocaleString('en-IN')}</strong>. Simulated Razorpay transaction.
-              </p>
-            </div>
-
-            <div className="border border-black/5 bg-white p-4 rounded-xl space-y-3.5 text-xs text-left shadow-xs">
-              <p className="text-[9px] uppercase text-black/40 font-bold tracking-wider">Select Payment Route</p>
-              <label className="flex items-center gap-2 text-black font-semibold cursor-pointer">
-                <input type="radio" defaultChecked className="accent-black" />
-                <span>UPI / Netbanking (Google Pay, PhonePe)</span>
-              </label>
-              <label className="flex items-center gap-2 text-black/40 font-medium">
-                <input type="radio" disabled className="accent-black cursor-not-allowed" />
-                <span>Credit / Debit Card (Not available)</span>
-              </label>
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setShowPaymentModal(false)}
-                className="flex-1 bg-white hover:bg-black/5 border border-black/15 text-black py-2.5 text-[10px] font-extrabold uppercase tracking-widest rounded-full transition-all text-center"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={processOrderPlacement}
-                className="flex-1 bg-black hover:bg-transparent text-white hover:text-black border border-black py-2.5 text-[10px] font-extrabold uppercase tracking-widest rounded-full transition-all text-center"
-              >
-                Authorize
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
     </div>
   );
 }
