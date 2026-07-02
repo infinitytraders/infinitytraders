@@ -126,6 +126,16 @@ async function main() {
       );
     `);
 
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+        id TEXT PRIMARY KEY,
+        first_name TEXT,
+        last_name TEXT,
+        email TEXT UNIQUE NOT NULL,
+        subscribed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
     console.log('Tables verified/created successfully.');
 
     // 2. Load and migrate initial seed data from data/db.json

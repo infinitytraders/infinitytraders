@@ -19,9 +19,11 @@ import {
   getPincodesAction,
   addOrUpdatePincodeAction,
   deletePincodeAction,
-  loginAction
+  loginAction,
+  getNewsletterSubscribersAction,
+  deleteNewsletterSubscriberAction
 } from '@/app/actions';
-import type { User, Product, Order, Coupon, PincodeServiceability, AuditLog } from '@/lib/db';
+import type { User, Product, Order, Coupon, PincodeServiceability, AuditLog, NewsletterSubscriber } from '@/lib/db';
 import { BarChart3, ShoppingCart, Users, BadgeAlert, Plus, Edit2, Trash2, Check, X, FileSpreadsheet, Package, AlertTriangle, ShieldCheck, Tag, History, MapPin } from 'lucide-react';
 import Link from 'next/link';
 
@@ -36,7 +38,7 @@ export default function AdminPage() {
   const [loginError, setLoginError] = useState('');
 
   // Active board tab
-  const [activeTab, setActiveTab] = useState<'metrics' | 'products' | 'orders' | 'coupons' | 'pincodes' | 'logs'>('metrics');
+  const [activeTab, setActiveTab] = useState<'metrics' | 'products' | 'orders' | 'coupons' | 'pincodes' | 'logs' | 'newsletter'>('metrics');
 
   // Loaded database items
   const [metrics, setMetrics] = useState<any>(null);
@@ -45,6 +47,7 @@ export default function AdminPage() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [pincodes, setPincodes] = useState<PincodeServiceability[]>([]);
+  const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
 
   // Pincode CRUD states
   const [showPincodeForm, setShowPincodeForm] = useState(false);
@@ -121,6 +124,9 @@ export default function AdminPage() {
 
     const pins = await getPincodesAction();
     if (pins.success && pins.pincodes) setPincodes(pins.pincodes);
+
+    const subs = await getNewsletterSubscribersAction();
+    setSubscribers(subs);
   };
 
   // Product submit (create or update)
@@ -333,6 +339,17 @@ export default function AdminPage() {
     }
   };
 
+  // Newsletter Delete / Unsubscribe
+  const handleSubscriberDelete = async (email: string) => {
+    if (!confirm(`Are you sure you want to remove ${email} from the newsletter subscriptions?`)) return;
+    const res = await deleteNewsletterSubscriberAction(email);
+    if (res.success) {
+      loadAdminData();
+    } else {
+      alert(res.error || 'Failed to remove subscriber.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center uppercase tracking-widest text-xs text-black/45 font-extrabold">
@@ -435,10 +452,12 @@ export default function AdminPage() {
           { id: 'orders', label: 'Orders & Tracking', icon: ShoppingCart },
           { id: 'coupons', label: 'Marketing & Coupons', icon: Tag },
           { id: 'pincodes', label: 'Pincode Serviceability', icon: MapPin },
+          { id: 'newsletter', label: 'Newsletter Subscribers', icon: Users },
           { id: 'logs', label: 'Super Audit Logs', icon: History }
         ].map((tab) => {
           const Icon = tab.icon;
           if (tab.id === 'logs' && user.role !== 'SUPER_ADMIN') return null; // restrict audit logs
+          if (tab.id === 'newsletter' && !['SUPER_ADMIN', 'STORE_MANAGER', 'MARKETING_MANAGER'].includes(user.role)) return null; // restrict newsletter
           return (
             <button
               key={tab.id}
@@ -1208,6 +1227,70 @@ export default function AdminPage() {
                               <Trash2 className="w-3 h-3" />
                             </button>
                           </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: NEWSLETTER SUBSCRIBERS */}
+        {activeTab === 'newsletter' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center border-b border-black/5 pb-4">
+              <div>
+                <h2 className="text-xs font-extrabold uppercase tracking-widest text-black">
+                  Newsletter Subscriptions
+                </h2>
+                <p className="text-[10px] text-black/50 mt-0.5">
+                  View and manage users who signed up to receive updates from the store.
+                </p>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-black/10 pb-2 text-black/45 font-bold uppercase tracking-widest text-[9px]">
+                    <th className="pb-3">Subscriber Name</th>
+                    <th className="pb-3">Email Address</th>
+                    <th className="pb-3">Date Subscribed</th>
+                    <th className="pb-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-black/5 text-black/70 font-bold">
+                  {subscribers.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="py-8 text-center text-black/40 font-normal">
+                        No newsletter subscriptions found.
+                      </td>
+                    </tr>
+                  ) : (
+                    subscribers.map((sub) => (
+                      <tr key={sub.id}>
+                        <td className="py-3 text-black font-extrabold">
+                          {sub.firstName} {sub.lastName}
+                        </td>
+                        <td className="py-3 font-mono text-black/80 font-medium">
+                          {sub.email}
+                        </td>
+                        <td className="py-3 text-black/60 font-medium">
+                          {new Date(sub.subscribedAt).toLocaleString('en-IN', {
+                            dateStyle: 'medium',
+                            timeStyle: 'short'
+                          })}
+                        </td>
+                        <td className="py-3 text-right">
+                          <button
+                            onClick={() => handleSubscriberDelete(sub.email)}
+                            className="text-red-700 hover:text-red-800 p-1.5 border border-black/10 hover:border-red-700 hover:bg-red-50 rounded-lg transition-all shadow-xs"
+                            title="Unsubscribe Member"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </td>
                       </tr>
                     ))

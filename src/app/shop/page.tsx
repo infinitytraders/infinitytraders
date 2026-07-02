@@ -264,7 +264,7 @@ function ShopContent() {
         {/* PRODUCTS LIST GRID */}
         <main className="lg:col-span-9 space-y-6">
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="bg-white border border-black/5 h-96 rounded-2xl animate-pulse" />
               ))}
@@ -283,7 +283,7 @@ function ShopContent() {
               </button>
             </div>
           ) : (
-            <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <motion.div layout className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {filteredProducts.map((product) => (
                 <motion.div
                   layout
@@ -317,7 +317,7 @@ function ShopContent() {
                     <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </Link>
 
-                  <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
+                  <div className="p-3 sm:p-5 space-y-3 flex-1 flex flex-col justify-between">
                     <div>
                       <div className="flex justify-between items-center text-[9px] uppercase tracking-widest text-black/45 font-bold">
                         <span>{product.brand}</span>
@@ -325,26 +325,26 @@ function ShopContent() {
                       </div>
                       <Link
                         href={`/product/${product.id}`}
-                        className="block text-sm font-extrabold text-black mt-1 hover:underline transition-colors line-clamp-1"
+                        className="block text-xs sm:text-sm font-extrabold text-black mt-1 hover:underline transition-colors line-clamp-1"
                       >
                         {tp(product.id, 'name', product.name)}
                       </Link>
-                      <p className="text-[11px] text-black/60 font-light line-clamp-2 mt-1.5 leading-relaxed">
+                      <p className="hidden sm:block text-[11px] text-black/60 font-light line-clamp-2 mt-1.5 leading-relaxed">
                         {tp(product.id, 'desc', product.description)}
                       </p>
                     </div>
 
                     <div className="space-y-3 pt-3 border-t border-black/5">
                       <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-1 bg-black/5 px-2 py-0.5 rounded-full">
+                        <div className="flex items-center gap-1 bg-black/5 px-1.5 sm:px-2 py-0.5 rounded-full">
                           <Star className="w-3 h-3 text-black fill-black" />
-                          <span className="text-[10px] text-black font-extrabold">{product.averageRating}</span>
-                          <span className="text-[9px] text-black/50">({product.reviewsCount})</span>
+                          <span className="text-[9px] sm:text-[10px] text-black font-extrabold">{product.averageRating}</span>
+                          <span className="text-[8px] sm:text-[9px] text-black/50">({product.reviewsCount})</span>
                         </div>
                         <div className="text-right">
-                          <span className="text-sm font-extrabold text-black">₹{product.sellingPrice.toLocaleString('en-IN')}</span>
+                          <span className="text-xs sm:text-sm font-extrabold text-black">₹{product.sellingPrice.toLocaleString('en-IN')}</span>
                           {product.mrp > product.sellingPrice && (
-                            <span className="text-[10px] text-black/40 line-through block font-medium">
+                            <span className="text-[8px] sm:text-[10px] text-black/40 line-through block font-medium">
                               ₹{product.mrp.toLocaleString('en-IN')}
                             </span>
                           )}
@@ -354,14 +354,14 @@ function ShopContent() {
                       {product.stockQuantity > 0 ? (
                         <button
                           onClick={() => addToCart(product, 1, product.sizes[0] || 8)}
-                          className="w-full bg-black hover:bg-transparent text-white hover:text-black border border-black py-2.5 text-[9px] uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 rounded-full transition-all"
+                          className="w-full bg-black hover:bg-transparent text-white hover:text-black border border-black py-2 sm:py-2.5 text-[8px] sm:text-[9px] uppercase tracking-widest font-bold flex items-center justify-center gap-1 sm:gap-1.5 rounded-full transition-all"
                         >
                           <ShoppingCart className="w-3.5 h-3.5" /> {t('prod.addToCart')}
                         </button>
                       ) : (
                         <button
                           disabled
-                          className="w-full bg-black/5 border border-black/5 text-black/30 py-2.5 text-[9px] uppercase tracking-widest font-bold rounded-full cursor-not-allowed"
+                          className="w-full bg-black/5 border border-black/5 text-black/30 py-2 sm:py-2.5 text-[8px] sm:text-[9px] uppercase tracking-widest font-bold rounded-full cursor-not-allowed"
                         >
                           {t('prod.outOfStock')}
                         </button>

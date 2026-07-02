@@ -117,6 +117,14 @@ export interface AuditLog {
   timestamp: string;
 }
 
+export interface NewsletterSubscriber {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  subscribedAt: string;
+}
+
 // Database Schema interface
 export interface DatabaseSchema {
   products: Product[];
@@ -227,6 +235,16 @@ function mapAuditLogFromDb(row: any): AuditLog {
     action: row.action,
     details: row.details,
     timestamp: row.timestamp instanceof Date ? row.timestamp.toISOString() : String(row.timestamp)
+  };
+}
+
+function mapNewsletterSubscriberFromDb(row: any): NewsletterSubscriber {
+  return {
+    id: row.id,
+    firstName: row.first_name || '',
+    lastName: row.last_name || '',
+    email: row.email,
+    subscribedAt: row.subscribed_at instanceof Date ? row.subscribed_at.toISOString() : String(row.subscribed_at)
   };
 }
 
@@ -675,5 +693,33 @@ export const db = {
       id, userId, userEmail, action, details, new Date().toISOString()
     ]);
     return mapAuditLogFromDb(res.rows[0]);
+  },
+
+  // NEWSLETTER
+  async getNewsletterSubscribers(): Promise<NewsletterSubscriber[]> {
+    const res = await pool.query('SELECT * FROM newsletter_subscribers ORDER BY subscribed_at DESC');
+    return res.rows.map(mapNewsletterSubscriberFromDb);
+  },
+
+  async subscribeToNewsletter(firstName: string, lastName: string, email: string): Promise<NewsletterSubscriber> {
+    const id = `sub_${Date.now()}`;
+    const query = `
+      INSERT INTO newsletter_subscribers (id, first_name, last_name, email, subscribed_at)
+      VALUES ($1, $2, $3, $4, $5)
+      ON CONFLICT (email) DO UPDATE SET
+        first_name = EXCLUDED.first_name,
+        last_name = EXCLUDED.last_name,
+        subscribed_at = EXCLUDED.subscribed_at
+      RETURNING *
+    `;
+    const res = await pool.query(query, [
+      id, firstName, lastName, email.trim(), new Date().toISOString()
+    ]);
+    return mapNewsletterSubscriberFromDb(res.rows[0]);
+  },
+
+  async unsubscribeFromNewsletter(email: string): Promise<boolean> {
+    const res = await pool.query('DELETE FROM newsletter_subscribers WHERE LOWER(email) = LOWER($1)', [email.trim()]);
+    return (res.rowCount ?? 0) > 0;
   }
 };

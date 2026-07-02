@@ -1,6 +1,6 @@
 'use server';
 
-import { db, Product, Order, User, Coupon, PincodeServiceability, AuditLog } from '@/lib/db';
+import { db, Product, Order, User, Coupon, PincodeServiceability, AuditLog, NewsletterSubscriber } from '@/lib/db';
 import { cookies } from 'next/headers';
 
 // --- SESSION UTILITIES ---
@@ -639,5 +639,54 @@ export async function getDashboardMetricsAction(): Promise<{
     };
   } catch (error: any) {
     return { success: false, error: error.message };
+  }
+}
+
+// --- NEWSLETTER SUBSCRIBER ACTIONS ---
+export async function subscribeNewsletterAction(
+  firstName: string,
+  lastName: string,
+  email: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await db.subscribeToNewsletter(firstName, lastName, email);
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Subscription failed.' };
+  }
+}
+
+export async function getNewsletterSubscribersAction(): Promise<NewsletterSubscriber[]> {
+  try {
+    const user = await getSessionUser();
+    if (!user || !['SUPER_ADMIN', 'STORE_MANAGER', 'MARKETING_MANAGER'].includes(user.role)) {
+      throw new Error('Unauthorized access.');
+    }
+    return await db.getNewsletterSubscribers();
+  } catch (error) {
+    return [];
+  }
+}
+
+export async function deleteNewsletterSubscriberAction(
+  email: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const user = await getSessionUser();
+    if (!user || !['SUPER_ADMIN', 'STORE_MANAGER', 'MARKETING_MANAGER'].includes(user.role)) {
+      return { success: false, error: 'Unauthorized access.' };
+    }
+    const success = await db.unsubscribeFromNewsletter(email);
+    if (success) {
+      await db.createAuditLog(
+        user.id,
+        user.email,
+        'NEWSLETTER_UNSUBSCRIBE',
+        `Unsubscribed email: ${email} by admin: ${user.email}`
+      );
+    }
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Operation failed.' };
   }
 }
