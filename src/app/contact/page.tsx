@@ -99,8 +99,8 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h3 className="text-[9px] uppercase tracking-wider text-black/40 font-bold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'ईमेल संचार' : 'Email Communication'}</h3>
-                  <a href="mailto:info@infinitytraders.shop" className="text-xs font-bold text-black hover:underline block mt-0.5">
-                    info@infinitytraders.shop
+                  <a href="mailto:support@infinitytraders.shop" className="text-xs font-bold text-black hover:underline block mt-0.5">
+                    support@infinitytraders.shop
                   </a>
                   <p className="text-[10px] text-black/50 font-light mt-0.5">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'औसत प्रतिक्रिया ३ घंटे के भीतर।' : 'Average response within 3 hours.'}</p>
                 </div>

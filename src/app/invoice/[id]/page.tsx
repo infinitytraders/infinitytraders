@@ -71,7 +71,7 @@ export default async function InvoicePage({ params }: Props) {
             <p className="text-[10px] text-black/65 font-bold uppercase tracking-wider leading-relaxed">
               Multi-Brand Footwear & Lifestyle Distributor<br />
               HQ: Putki Chirudih, opposite Navneet Hotel, Dhanbad, Jharkhand<br />
-              Email: compliance@infinitytraders.shop<br />
+              Email: support@infinitytraders.shop<br />
               <strong>GSTIN: 20CYWPA5355E1ZK</strong>
             </p>
           </div>
