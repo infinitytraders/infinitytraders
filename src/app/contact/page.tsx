@@ -261,35 +261,50 @@ export default function ContactPage() {
       </div>
 
       {/* FAQ Section */}
-      <div id="faq" className="mt-20 border-t border-black/5 pt-16 max-w-4xl mx-auto w-full space-y-8">
-        <div className="text-center space-y-1.5">
-          <span className="text-[9px] uppercase tracking-[0.25em] text-black/50 font-bold">Answers & Customer Support</span>
-          <h2 className="text-2xl font-extrabold tracking-widest text-black uppercase">FAQ</h2>
+      <div id="faq" className="mt-24 border-t border-black/5 pt-20 max-w-4xl mx-auto w-full space-y-12">
+        <div className="text-center space-y-2">
+          <span className="text-[10px] uppercase tracking-[0.35em] text-black/40 font-extrabold block">Have a Question?</span>
+          <h2 className="text-3xl font-extrabold tracking-widest text-black uppercase">
+            Frequently Asked
+          </h2>
+          <div className="w-12 h-1 bg-black mx-auto mt-3 rounded-full" />
         </div>
 
-        <div className="space-y-4">
+        <div className="divide-y divide-black/10 border-t border-b border-black/10">
           {faqs.map((faq, index) => {
             const isOpen = openIndex === index;
             return (
               <div 
                 key={index} 
-                className="bg-white border border-black/5 rounded-2xl overflow-hidden transition-all duration-300 shadow-xs"
+                className="group py-5 transition-colors duration-300"
               >
                 <button
                   onClick={() => setOpenIndex(isOpen ? null : index)}
-                  className="w-full flex justify-between items-center p-5 text-left text-xs font-extrabold uppercase tracking-wider text-black focus:outline-none select-none"
+                  className="w-full flex justify-between items-center text-left py-2 focus:outline-none select-none"
                 >
-                  <span>{faq.question}</span>
-                  <span className="text-lg font-light leading-none">
-                    {isOpen ? '−' : '+'}
+                  <span className="text-xs font-black uppercase tracking-wider text-black group-hover:translate-x-1.5 transition-transform duration-300">
+                    {faq.question}
+                  </span>
+                  <span className={`w-8 h-8 rounded-full flex items-center justify-center bg-black/5 group-hover:bg-black group-hover:text-white transition-all duration-300 shrink-0 ml-4`}>
+                    <svg 
+                      className={`w-3.5 h-3.5 transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2.5" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
                   </span>
                 </button>
                 <div 
-                  className={`transition-all duration-300 overflow-hidden ${
-                    isOpen ? 'max-h-48 border-t border-black/5' : 'max-h-0'
+                  className={`transition-all duration-500 ease-in-out overflow-hidden ${
+                    isOpen ? 'max-h-48 opacity-100 mt-4' : 'max-h-0 opacity-0 pointer-events-none'
                   }`}
                 >
-                  <p className="p-5 text-xs text-black/70 font-medium leading-relaxed bg-[#fafafa]">
+                  <p className="text-xs text-black/60 font-medium leading-relaxed pl-1 pb-4 max-w-3xl">
                     {faq.answer}
                   </p>
                 </div>
