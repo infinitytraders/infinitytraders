@@ -584,7 +584,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-wider text-black uppercase">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'श्रेणियां ब्राउज़ करें' : 'Browse Categories'}</h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           {[
             {
               name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'जूते (Footwear)' : 'Footwear',
@@ -614,17 +614,17 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
             <Link
               key={cat.name}
               href={cat.link}
-              className="group relative h-96 rounded-2xl overflow-hidden border border-black/5 flex flex-col justify-end p-6 bg-white shadow-xs"
+              className="group relative h-56 sm:h-96 rounded-2xl overflow-hidden border border-black/5 flex flex-col justify-end p-4 sm:p-6 bg-white shadow-xs"
             >
               <div className="absolute inset-0 z-0 transition-transform duration-700 group-hover:scale-105">
                 <img src={cat.img} alt={cat.name} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               </div>
               <div className="z-10 space-y-1">
-                <span className="text-[9px] uppercase tracking-widest text-white/60 font-semibold">
+                <span className="text-[8px] sm:text-[9px] uppercase tracking-widest text-white/60 font-semibold">
                   {cat.desc}
                 </span>
-                <h3 className="text-base font-extrabold tracking-wider text-white uppercase group-hover:underline">
+                <h3 className="text-xs sm:text-base font-extrabold tracking-wider text-white uppercase group-hover:underline">
                   {cat.name}
                 </h3>
               </div>
@@ -671,7 +671,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
         </div>
 
         {/* Curated Products Grid */}
-        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <motion.div layout className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-8">
           {filteredProducts.map((product) => (
             <motion.div
               layout
@@ -707,24 +707,24 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
               </Link>
 
               {/* Product details */}
-              <div className="p-6 space-y-4 flex-1 flex flex-col justify-between">
+              <div className="p-3 sm:p-6 space-y-3 sm:space-y-4 flex-1 flex flex-col justify-between">
                 <div>
                   <div className="flex justify-between items-center text-[9px] uppercase tracking-widest text-black/45 font-bold">
                     <span>{product.brand}</span>
-                    <span>{product.category}</span>
+                    <span className="hidden sm:inline">{product.category}</span>
                   </div>
                   <Link
                     href={`/product/${product.id}`}
-                    className="block text-base font-extrabold text-black mt-1.5 hover:underline transition-all line-clamp-1"
+                    className="block text-xs sm:text-base font-extrabold text-black mt-1 hover:underline transition-all line-clamp-1"
                   >
                     {product.name}
                   </Link>
-                  <p className="text-xs text-black/60 font-light line-clamp-2 mt-1.5 leading-relaxed">
+                  <p className="hidden sm:block text-xs text-black/60 font-light line-clamp-2 mt-1.5 leading-relaxed">
                     {product.description}
                   </p>
                 </div>
 
-                <div className="space-y-4 pt-4 border-t border-black/5">
+                <div className="space-y-3 sm:space-y-4 pt-3 sm:pt-4 border-t border-black/5">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-1 bg-black/5 px-2 py-0.5 rounded-full">
                       <Star className="w-3 h-3 text-black fill-black" />
@@ -732,9 +732,9 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
                       <span className="text-[9px] text-black/50">({product.reviewsCount})</span>
                     </div>
                     <div className="text-right">
-                      <span className="text-sm font-extrabold text-black">₹{product.sellingPrice.toLocaleString('en-IN')}</span>
+                      <span className="text-xs sm:text-sm font-extrabold text-black">₹{product.sellingPrice.toLocaleString('en-IN')}</span>
                       {product.mrp > product.sellingPrice && (
-                        <span className="text-[10px] text-black/40 line-through block font-medium">
+                        <span className="text-[8px] sm:text-[10px] text-black/40 line-through block font-medium">
                           ₹{product.mrp.toLocaleString('en-IN')}
                         </span>
                       )}
@@ -745,7 +745,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
                     <button
                       suppressHydrationWarning
                       onClick={() => addToCart(product, 1, product.sizes[0] || 8)}
-                      className="w-full bg-black hover:bg-transparent text-white hover:text-black border border-black py-2.5 text-[10px] uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 rounded-full transition-all"
+                      className="w-full bg-black hover:bg-transparent text-white hover:text-black border border-black py-2 text-[9px] sm:text-[10px] uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 rounded-full transition-all"
                     >
                       <ShoppingCart className="w-3.5 h-3.5" /> {t('prod.addToCart')}
                     </button>
@@ -753,7 +753,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
                     <button
                       suppressHydrationWarning
                       disabled
-                      className="w-full bg-black/5 border border-black/5 text-black/30 py-2.5 text-[10px] uppercase tracking-widest font-bold rounded-full cursor-not-allowed"
+                      className="w-full bg-black/5 border border-black/5 text-black/30 py-2 text-[9px] sm:text-[10px] uppercase tracking-widest font-bold rounded-full cursor-not-allowed"
                     >
                       {t('prod.outOfStock')}
                     </button>
