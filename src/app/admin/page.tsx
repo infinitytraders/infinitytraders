@@ -70,6 +70,7 @@ export default function AdminPage() {
   const [trackingNumber, setTrackingNumber] = useState('');
   const [dispatchDetails, setDispatchDetails] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<'PENDING' | 'DISPATCHED' | 'DELIVERED' | 'RETURNED'>('PENDING');
+  const [selectedPaymentStatus, setSelectedPaymentStatus] = useState<'PENDING' | 'PAID' | 'FAILED'>('PENDING');
 
   // Coupon create states
   const [showCouponForm, setShowCouponForm] = useState(false);
@@ -285,7 +286,10 @@ export default function AdminPage() {
     e.preventDefault();
     if (!updatingOrder) return;
 
-    const payload: any = { orderStatus: selectedStatus };
+    const payload: any = { 
+      orderStatus: selectedStatus,
+      paymentStatus: selectedPaymentStatus
+    };
     if (selectedStatus === 'DISPATCHED') {
       payload.courierName = courierName;
       payload.trackingNumber = trackingNumber;
@@ -947,14 +951,37 @@ export default function AdminPage() {
                   <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Fulfillment Status</label>
                   <select
                     value={selectedStatus}
-                    onChange={(e) => setSelectedStatus(e.target.value as any)}
+                    onChange={(e) => {
+                      const newStatus = e.target.value as any;
+                      setSelectedStatus(newStatus);
+                      // Auto-fail payment if marked as returned/cancelled
+                      if (newStatus === 'RETURNED' && updatingOrder.paymentMethod === 'COD') {
+                        setSelectedPaymentStatus('FAILED');
+                      }
+                    }}
                     className="w-full bg-white border border-black/10 rounded-lg p-2 text-xs text-black font-semibold"
                   >
                     <option value="PENDING">PENDING Fulfillment</option>
                     <option value="DISPATCHED">DISPATCHED Shipment</option>
                     <option value="DELIVERED">DELIVERED Confirmation</option>
+                    <option value="RETURNED">RETURNED Back (Refund/Cancel)</option>
                   </select>
                 </div>
+
+                {updatingOrder.paymentMethod === 'COD' && (
+                  <div className="space-y-1.5 pt-2 border-t border-black/5">
+                    <label className="text-[9px] font-bold text-[#b45309] uppercase tracking-wider block">COD Payment Status</label>
+                    <select
+                      value={selectedPaymentStatus}
+                      onChange={(e) => setSelectedPaymentStatus(e.target.value as any)}
+                      className="w-full bg-[#fdfaf2] border border-amber-500/20 rounded-lg p-2 text-xs text-amber-900 font-semibold"
+                    >
+                      <option value="PENDING">PENDING Cash Collection</option>
+                      <option value="PAID">PAID (Cash Collected)</option>
+                      <option value="FAILED">FAILED (Non-payment / Returned)</option>
+                    </select>
+                  </div>
+                )}
 
                 {selectedStatus === 'DISPATCHED' && (
                   <div className="space-y-3 pt-2 border-t border-black/5">
@@ -1025,6 +1052,13 @@ export default function AdminPage() {
                         <td className="py-3.5">
                           <p className="font-extrabold text-black">{o.customerName}</p>
                           <p className="text-[10px] text-black/50 font-bold">{o.customerEmail} | Pincode: {o.shippingAddress.pincode}</p>
+                          <p className="text-[9px] text-black/60 font-bold mt-1 uppercase tracking-wider">
+                            Method: <span className="text-black font-extrabold">{o.paymentMethod}</span> &nbsp;|&nbsp; 
+                            Payment: <span className={`font-extrabold ${
+                              o.paymentStatus === 'PAID' ? 'text-emerald-700' : 
+                              o.paymentStatus === 'FAILED' ? 'text-rose-700' : 'text-amber-700'
+                            }`}>{o.paymentStatus}</span>
+                          </p>
                         </td>
                         <td className="py-3.5 text-center font-medium">
                           {new Date(o.createdAt).toLocaleDateString('en-IN')}
@@ -1035,6 +1069,7 @@ export default function AdminPage() {
                           <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold tracking-wider ${
                             o.orderStatus === 'DELIVERED' ? 'bg-emerald-700/10 text-emerald-800' :
                             o.orderStatus === 'DISPATCHED' ? 'bg-blue-700/10 text-blue-800' :
+                            o.orderStatus === 'RETURNED' ? 'bg-rose-700/10 text-rose-800' :
                             'bg-amber-600/10 text-amber-800'
                           }`}>
                             {o.orderStatus}
@@ -1045,6 +1080,7 @@ export default function AdminPage() {
                             onClick={() => {
                               setUpdatingOrder(o);
                               setSelectedStatus(o.orderStatus);
+                              setSelectedPaymentStatus(o.paymentStatus);
                             }}
                             className="px-3 py-1.5 border border-black/10 hover:border-black text-[9px] font-extrabold uppercase tracking-widest rounded-full transition-all bg-white"
                           >
