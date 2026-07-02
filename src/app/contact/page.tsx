@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Clock, Send, CheckCircle2, AlertTriangle, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { motion } from 'framer-motion';
+import { sendContactQueryAction } from '@/app/actions';
 
 export default function ContactPage() {
   const { t } = useLanguage();
@@ -54,15 +55,22 @@ export default function ContactPage() {
 
     setIsSubmitting(true);
 
-    // Simulate API request
-    setTimeout(() => {
+    try {
+      const res = await sendContactQueryAction(name, email, subject, message);
+      if (res.success) {
+        setIsSuccess(true);
+        setName('');
+        setEmail('');
+        setSubject('');
+        setMessage('');
+      } else {
+        setErrorMsg(res.error || 'Failed to send query.');
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || 'An error occurred while sending your message.');
+    } finally {
       setIsSubmitting(false);
-      setIsSuccess(true);
-      setName('');
-      setEmail('');
-      setSubject('');
-      setMessage('');
-    }, 1500);
+    }
   };
 
   return (

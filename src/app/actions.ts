@@ -2,6 +2,12 @@
 
 import { db, Product, Order, User, Coupon, PincodeServiceability, AuditLog, NewsletterSubscriber } from '@/lib/db';
 import { cookies } from 'next/headers';
+import { 
+  sendOrderConfirmationEmail, 
+  sendOrderStatusUpdateEmail, 
+  sendNewsletterWelcomeEmail, 
+  sendContactQueryEmail 
+} from '@/lib/email';
 
 // --- SESSION UTILITIES ---
 export async function getSessionUser(): Promise<User | null> {
@@ -405,6 +411,12 @@ export async function createOrderAction(orderData: {
       await db.createAuditLog('guest', orderData.customerEmail, 'ORDER_CREATE_GUEST', `Guest created order: ${newOrder.id} for amount ₹${newOrder.finalAmount}`);
     }
 
+    try {
+      await sendOrderConfirmationEmail(newOrder);
+    } catch (emailErr) {
+      console.error('Failed to send order confirmation email:', emailErr);
+    }
+
     return { success: true, order: newOrder };
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to place order.' };
@@ -430,6 +442,15 @@ export async function updateOrderStatusAction(
       'ORDER_STATUS_UPDATE',
       `Updated order ${orderId}: status=${order.orderStatus}, tracking=${order.trackingNumber || 'N/A'}`
     );
+
+    if (updates.orderStatus === 'DISPATCHED' || updates.orderStatus === 'DELIVERED') {
+      try {
+        await sendOrderStatusUpdateEmail(order);
+      } catch (emailErr) {
+        console.error('Failed to send order status update email:', emailErr);
+      }
+    }
+
     return { success: true, order };
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to update order.' };
@@ -650,6 +671,13 @@ export async function subscribeNewsletterAction(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     await db.subscribeToNewsletter(firstName, lastName, email);
+
+    try {
+      await sendNewsletterWelcomeEmail(firstName, email);
+    } catch (emailErr) {
+      console.error('Failed to send newsletter welcome email:', emailErr);
+    }
+
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message || 'Subscription failed.' };
@@ -688,5 +716,27 @@ export async function deleteNewsletterSubscriberAction(
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message || 'Operation failed.' };
+  }
+}
+
+// --- CONTACT QUERY ACTION ---
+export async function sendContactQueryAction(
+  name: string,
+  email: string,
+  subject: string,
+  message: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const success = await sendContactQueryEmail(name, email, subject, message);
+    if (!success) {
+      return { success: false, error: 'Failed to send query email.' };
+    }
+    
+    // Create an audit log for support submissions
+    await db.createAuditLog('support_form', email, 'SUPPORT_QUERY_SUBMIT', `Query from ${name}: Subject: ${subject}`);
+    
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to submit contact query.' };
   }
 }
