@@ -321,7 +321,7 @@
   "users": [
     {
       "id": "u_1",
-      "email": "admin@infinitytraders.com",
+      "email": "admin@infinitytraders.shop",
       "mobile": "9999999999",
       "passwordHash": "admin123",
       "name": "Super Admin",
@@ -344,7 +344,7 @@
     },
     {
       "id": "u_2",
-      "email": "manager@infinitytraders.com",
+      "email": "manager@infinitytraders.shop",
       "mobile": "8888888888",
       "passwordHash": "manager123",
       "name": "Store Manager",
@@ -356,7 +356,7 @@
     },
     {
       "id": "u_3",
-      "email": "marketing@infinitytraders.com",
+      "email": "marketing@infinitytraders.shop",
       "mobile": "7777777777",
       "passwordHash": "market123",
       "name": "Marketing Head",
@@ -457,7 +457,7 @@
     {
       "id": "log_1",
       "userId": "u_1",
-      "userEmail": "admin@infinitytraders.com",
+      "userEmail": "admin@infinitytraders.shop",
       "action": "DB_INITIALIZATION",
       "details": "Database seeded with default products, users, and pincodes.",
       "timestamp": "2026-06-24T20:42:46.809Z"
@@ -473,7 +473,7 @@
     {
       "id": "log_1782426870910",
       "userId": "u_1",
-      "userEmail": "admin@infinitytraders.com",
+      "userEmail": "admin@infinitytraders.shop",
       "action": "USER_LOGIN",
       "details": "Logged in successfully. OTP: false",
       "timestamp": "2026-06-25T22:34:30.910Z"
@@ -481,7 +481,7 @@
     {
       "id": "log_1782427048344",
       "userId": "u_1",
-      "userEmail": "admin@infinitytraders.com",
+      "userEmail": "admin@infinitytraders.shop",
       "action": "USER_LOGIN",
       "details": "Logged in successfully. OTP: false",
       "timestamp": "2026-06-25T22:37:28.344Z"

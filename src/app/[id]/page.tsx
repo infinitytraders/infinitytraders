@@ -62,7 +62,7 @@ export default async function ProductPage({ params }: Props) {
     },
     'offers': {
       '@type': 'Offer',
-      'url': `https://infinitytraders.com/product/${product.id}`,
+      'url': `https://infinitytraders.shop/product/${product.id}`,
       'priceCurrency': 'INR',
       'price': product.sellingPrice,
       'itemCondition': 'https://schema.org/NewCondition',
@@ -84,25 +84,25 @@ export default async function ProductPage({ params }: Props) {
         '@type': 'ListItem',
         'position': 1,
         'name': 'Home',
-        'item': 'https://infinitytraders.com'
+        'item': 'https://infinitytraders.shop'
       },
       {
         '@type': 'ListItem',
         'position': 2,
         'name': 'Shop',
-        'item': 'https://infinitytraders.com/shop'
+        'item': 'https://infinitytraders.shop/shop'
       },
       {
         '@type': 'ListItem',
         'position': 3,
         'name': product.category,
-        'item': `https://infinitytraders.com/shop?category=${product.category}`
+        'item': `https://infinitytraders.shop/shop?category=${product.category}`
       },
       {
         '@type': 'ListItem',
         'position': 4,
         'name': product.name,
-        'item': `https://infinitytraders.com/product/${product.id}`
+        'item': `https://infinitytraders.shop/product/${product.id}`
       }
     ]
   };
