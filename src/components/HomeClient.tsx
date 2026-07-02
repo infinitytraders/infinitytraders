@@ -270,8 +270,32 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
               <span className="absolute -top-10 left-1/2 -translate-x-1/2 text-6xl sm:text-9xl outline-text pointer-events-none select-none tracking-widest opacity-25">
                 {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'परिचय' : 'ABOUT'}
               </span>
-              <h2 className="text-xl sm:text-3xl font-extrabold tracking-[0.15em] text-black uppercase relative z-10">
-                {t('home.whyTraders')}
+              <h2 className="text-xl sm:text-3xl font-extrabold tracking-[0.15em] text-black uppercase relative z-10 flex items-center justify-center gap-3 group">
+                <span>{t('home.whyTraders')}</span>
+                <motion.svg
+                  className="w-6 h-6 sm:w-8 sm:h-8 text-black inline-block cursor-pointer"
+                  viewBox="0 0 100 100"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  whileHover={{ 
+                    scale: 1.25, 
+                    rotate: 180,
+                    transition: { duration: 0.6, ease: "easeInOut" }
+                  }}
+                  animate={{
+                    scale: [1, 1.06, 1],
+                    transition: { repeat: Infinity, duration: 4, ease: "easeInOut" }
+                  }}
+                >
+                  <path
+                    d="M30 35 C15 35 15 65 30 65 C45 65 55 35 70 35 C85 35 85 65 70 65 C55 65 45 35 30 35 Z"
+                    stroke="currentColor"
+                    strokeWidth="12"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                  />
+                </motion.svg>
               </h2>
             </div>
             <p className="text-sm sm:text-base text-black/75 font-light leading-loose max-w-2xl mx-auto tracking-wide">
@@ -467,25 +491,42 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
           </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-10 sm:gap-16 items-center justify-items-center">
-          {[
-            { name: 'Adidas', logo: '/brands logos/Brand (1).svg' },
-            { name: 'Nike', logo: '/brands logos/Brand (2).svg' },
-            { name: 'Puma', logo: '/brands logos/Brand (3).svg' },
-            { name: 'Skechers', logo: '/brands logos/Brand (4).svg' },
-          ].map((brand) => (
-            <Link
-              key={brand.name}
-              href={`/shop?brand=${brand.name}`}
-              className="w-full max-w-[220px] sm:max-w-[260px] h-20 sm:h-28 flex items-center justify-center hover:scale-110 transition-all duration-300 group"
-            >
-              <img
-                src={`${brand.logo}?v=2`}
-                alt={`${brand.name} logo`}
-                className="max-w-full max-h-full object-contain mix-blend-multiply opacity-75 group-hover:opacity-100 transition-all duration-300"
-              />
-            </Link>
-          ))}
+        <div className="relative w-full overflow-hidden mask-gradient py-4">
+          <div className="flex animate-marquee gap-16 sm:gap-24 items-center whitespace-nowrap">
+            {[
+              { name: 'Adidas', logo: '/brands logos/brand (1).svg' },
+              { name: 'Nike', logo: '/brands logos/brand (2).svg' },
+              { name: 'Puma', logo: '/brands logos/brand (3).svg' },
+              { name: 'Skechers', logo: '/brands logos/brand (4).svg' },
+              { name: 'Reebok', logo: '/brands logos/brand (5).svg' },
+              { name: 'Under Armour', logo: '/brands logos/brand (6).svg' },
+              { name: 'Jordan', logo: '/brands logos/brand (7).svg' },
+              { name: 'Fila', logo: '/brands logos/brand (8).svg' },
+              { name: 'Asics', logo: '/brands logos/brand (9).svg' },
+              // Duplicate once for seamless infinite scrolling loop
+              { name: 'Adidas', logo: '/brands logos/brand (1).svg' },
+              { name: 'Nike', logo: '/brands logos/brand (2).svg' },
+              { name: 'Puma', logo: '/brands logos/brand (3).svg' },
+              { name: 'Skechers', logo: '/brands logos/brand (4).svg' },
+              { name: 'Reebok', logo: '/brands logos/brand (5).svg' },
+              { name: 'Under Armour', logo: '/brands logos/brand (6).svg' },
+              { name: 'Jordan', logo: '/brands logos/brand (7).svg' },
+              { name: 'Fila', logo: '/brands logos/brand (8).svg' },
+              { name: 'Asics', logo: '/brands logos/brand (9).svg' },
+            ].map((brand, idx) => (
+              <Link
+                key={`${brand.name}-${idx}`}
+                href={`/shop?brand=${brand.name}`}
+                className="w-[120px] sm:w-[150px] h-12 sm:h-16 flex items-center justify-center hover:scale-110 transition-all duration-300 group shrink-0"
+              >
+                <img
+                  src={`${brand.logo}?v=2`}
+                  alt={`${brand.name} logo`}
+                  className="max-w-full max-h-full object-contain mix-blend-multiply opacity-75 group-hover:opacity-100 transition-all duration-300"
+                />
+              </Link>
+            ))}
+          </div>
         </div>
       </motion.section>
 
