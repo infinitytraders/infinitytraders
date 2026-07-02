@@ -70,9 +70,9 @@ export default async function InvoicePage({ params }: Props) {
             </div>
             <p className="text-[10px] text-black/65 font-bold uppercase tracking-wider leading-relaxed">
               Multi-Brand Footwear & Lifestyle Distributor<br />
-              HQ: Bank More, Dhanbad, Jharkhand &mdash; 826001<br />
+              HQ: Putki Chirudih, opposite Navneet Hotel, Dhanbad, Jharkhand<br />
               Email: compliance@infinitytraders.shop<br />
-              <strong>GSTIN: 20ABCDE1234F1Z5</strong>
+              <strong>GSTIN: 20CYWPA5355E1ZK</strong>
             </p>
           </div>
           <div className="text-left sm:text-right space-y-1">

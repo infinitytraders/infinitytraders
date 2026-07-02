@@ -26,16 +26,16 @@ export default function ContactPage() {
       answer: "Yes, Infinity Traders distributes only 100% authentic products. We source all footwear, activewear, and slides directly from official brand suppliers including Nike, Adidas, Puma, and Skechers."
     },
     {
-      question: "What are your shipping rates and thresholds?",
-      answer: "We charge a flat rate of ₹99 for orders under ₹999. If your order value totals ₹999 or more, shipping is free."
+      question: "What are your shipping rates and charges?",
+      answer: "We charge shipping rates between ₹150 and ₹500 depending upon the destination pincode."
     },
     {
       question: "How long does it take for my order to arrive?",
-      answer: "Delivery timelines range from 2 to 7 business days depending on the destination pincode. Local deliveries within Jharkhand take 1-2 business days, metros take 2-3 business days, and other regions take 4-7 business days."
+      answer: "Standard delivery time is 4 to 5 days across India."
     },
     {
-      question: "What is your refund policy?",
-      answer: "We strictly enforce a 'No Refund' policy. Replacements or returns are only processed within 24 hours of delivery if you receive a damaged product, incorrect size, or incorrect model. All tags must remain attached and the item must be unworn."
+      question: "What is your return policy?",
+      answer: "We strictly enforce a 'No Return, Only Exchange' policy. If you need to exchange an item for a different size or due to a manufacturing defect, you must submit an exchange request within 24 hours of delivery. The item must be unworn and in its original packaging."
     },
     {
       question: "Is Cash on Delivery (COD) available?",
@@ -112,10 +112,10 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h3 className="text-[9px] uppercase tracking-wider text-black/40 font-bold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'हेल्पलाइन और व्हाट्सएप' : 'Helpline & WhatsApp'}</h3>
-                  <a href="tel:+919999999999" className="text-xs font-bold text-black hover:underline block mt-0.5">
-                    +91 99999 99999
+                  <a href="tel:+916202106616" className="text-xs font-bold text-black hover:underline block mt-0.5">
+                    +91 62021 06616
                   </a>
-                  <p className="text-[10px] text-black/50 font-light mt-0.5">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सोम - शनि: सुबह १०:०० से शाम ७:०० बजे तक' : 'Mon - Sat: 10:00 AM to 7:00 PM'}</p>
+                  <p className="text-[10px] text-black/50 font-light mt-0.5">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सोम - शनि: सुबह ११:०० से रात ८:३० बजे तक' : 'Mon - Sat: 11:00 AM to 8:30 PM'}</p>
                 </div>
               </div>
             </div>
@@ -136,8 +136,8 @@ export default function ContactPage() {
                   <h3 className="text-[9px] uppercase tracking-wider text-black/40 font-bold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'पता रजिस्ट्री' : 'Address Registry'}</h3>
                   <p className="text-xs font-bold text-black leading-relaxed mt-0.5">
                     Infinity Traders,<br />
-                    {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'बैंक मोड़, धनबाद,' : 'Bank More, Dhanbad,'}<br />
-                    {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'झारखंड - ८२६००१' : 'Jharkhand - 826001'}
+                    {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'पुतकी चिरूडीह, नवनीत होटल के सामने,' : 'Putki Chirudih, opposite Navneet Hotel,'}<br />
+                    {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'धनबाद, झारखंड' : 'Dhanbad, Jharkhand'}
                   </p>
                 </div>
               </div>

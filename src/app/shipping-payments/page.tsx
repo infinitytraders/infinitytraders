@@ -21,35 +21,37 @@ export default function ShippingPaymentsPage() {
 
         <div className="prose prose-sm prose-neutral max-w-none text-xs text-black/70 font-medium space-y-6 leading-relaxed">
           <section className="space-y-2">
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-black">1. Shipping Fees & Thresholds</h2>
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-black">1. Shipping Fees & Rates</h2>
             <p>
-              We charge a flat shipping rate of ₹99 on all standard orders below the free-shipping threshold. Standard orders totaling ₹999 or more qualify automatically for free courier delivery across India.
+              We charge shipping rates between ₹150 and ₹500 depending upon the destination pincode and package dimensions. The exact rate will be dynamically calculated at checkout.
             </p>
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-black">2. Pincode Serviceability</h2>
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-black">2. Delivery Timelines</h2>
             <p>
-              Delivery availability is determined dynamically using the customer's 6-digit postal pincode. Timelines are computed based on regions:
-            </p>
-            <ul className="list-disc pl-4 space-y-1 mt-1 font-bold">
-              <li>Metro Cities: 2 - 3 business days</li>
-              <li>Jharkhand (Local): 1 - 2 business days</li>
-              <li>Rest of India: 4 - 7 business days</li>
-            </ul>
-          </section>
-
-          <section className="space-y-2">
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-black">3. Integrated Payment Gateways</h2>
-            <p>
-              We support standard prepaid payment options powered by Razorpay. Customers can complete transactions securely using credit cards, debit cards, UPI, or Net Banking options.
+              All standard orders are processed and dispatched within 24 hours. The standard delivery time is 4 to 5 business days across all serviceable pincodes in India.
             </p>
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-black">4. Cash on Delivery (COD) Rules</h2>
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-black">3. Returns & Exchanges</h2>
             <p>
-              For serviceable pincodes, Cash on Delivery is offered at checkout. Customers opting for COD must confirm their active mobile number and address before dispatch.
+              As per our business terms, we enforce a strict <strong>No Return, Only Exchange</strong> policy. In the event of a size mismatch, wrong item delivery, or manufacturing defect, you must register an exchange request within 24 hours of delivery. Items must be unworn and in their original packaging.
+            </p>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-black">4. Integrated Payment Gateways</h2>
+            <p>
+              We support secure prepaid payment options powered by Razorpay. Customers can complete transactions using Credit/Debit Cards, UPI, or Net Banking.
+            </p>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-black">5. Cash on Delivery (COD) Rules</h2>
+            <p>
+              Cash on Delivery (COD) is available for eligible pincodes. Customers opting for COD must confirm their active mobile number and shipping address prior to shipment.
             </p>
           </section>
         </div>

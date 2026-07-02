@@ -71,9 +71,9 @@ export default function Footer() {
                 <span>Store Location</span>
               </div>
               <div className="text-black/70 font-semibold leading-relaxed">
-                Putki chirudih DVC,<br />
-                Opposite navneet hotel,<br />
-                Putki, Dhanbad
+                Putki Chirudih,<br />
+                Opposite Navneet Hotel,<br />
+                Dhanbad, Jharkhand
               </div>
               <a 
                 href="https://maps.app.goo.gl/mBEQXescY9F2eqqU8?g_st=com.google.maps.preview.copy" 

@@ -188,7 +188,36 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Calculations
-  const shippingCharges = subtotal === 0 ? 0 : subtotal >= shippingSettings.freeShippingThreshold ? 0 : shippingSettings.standardShippingFee;
+  const getShippingForPincode = (pin: string): number => {
+    if (!pin || pin.length !== 6) return 150; // default local shipping fee
+    
+    // Local Jharkhand / Dhanbad starts with 82 (e.g. 826001, 828116)
+    if (pin.startsWith('82')) return 150;
+    
+    // Rest of Jharkhand / Bihar starts with 8
+    if (pin.startsWith('8')) return 200;
+    
+    const firstDigit = pin[0];
+    switch (firstDigit) {
+      case '1':
+      case '2': // North India (DL, HR, PB, UP, UA)
+        return 250;
+      case '3':
+      case '4': // West & Central India (MH, GJ, MP, RJ, CG)
+        return 300;
+      case '5':
+      case '6': // South India (KA, AP, TN, KL, TS)
+        return 350;
+      case '7': // East & North-East (WB, OR, NE states, Sikkim)
+        return 400;
+      case '9': // Army / remote / special regions
+        return 500;
+      default:
+        return 250;
+    }
+  };
+
+  const shippingCharges = subtotal === 0 ? 0 : getShippingForPincode(pincode);
   
   // 18% GST calculation (included in selling price as per Indian standard retail display, but shown as breakdown)
   // Selling Price = Base Price + GST (18%)
@@ -198,7 +227,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   
   const finalAmount = Math.max(0, subtotal - couponDiscount + shippingCharges);
   
-  const freeShippingProgress = subtotal === 0 ? 0 : Math.min(100, (subtotal / shippingSettings.freeShippingThreshold) * 100);
+  const freeShippingProgress = 0; // Disabled as shipping charges always apply based on pincode now
 
   return (
     <CartContext.Provider

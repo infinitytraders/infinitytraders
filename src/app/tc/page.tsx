@@ -42,9 +42,9 @@ export default function TermsPage() {
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-black">4. No Refund Policy</h2>
-            <p className="text-red-700 font-bold">
-              We strictly enforce a "No Refund" policy on all successfully processed and shipped orders. In the event of a manufacturing defect or wrong size/product shipment, returns or replacements are accepted within 24 hours of delivery. The item must be unused, in its original packaging, and with all tags intact.
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-black">4. No Return, Only Exchange Policy</h2>
+            <p className="font-bold">
+              We strictly enforce a "No Return, Only Exchange" policy on all successfully processed and shipped orders. We do not accept return requests or offer monetary refunds once an order is placed. In the event of a size mismatch, wrong item delivery, or manufacturing defect, you may submit an exchange request within 24 hours of delivery. The item must be unused, in its original packaging, and with all tags intact.
             </p>
           </section>
 

@@ -21,7 +21,9 @@ export default function CheckoutPage() {
     couponDiscount,
     finalAmount,
     coupon,
-    clearCart
+    clearCart,
+    pincode,
+    setPincode
   } = useCart();
   const { t } = useLanguage();
 
@@ -36,7 +38,6 @@ export default function CheckoutPage() {
   const [street, setStreet] = useState('');
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
-  const [pincode, setPincode] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'COD' | 'RAZORPAY'>('RAZORPAY');
 
   // Checkout Status States
