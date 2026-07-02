@@ -6,7 +6,8 @@ import {
   sendOrderConfirmationEmail, 
   sendOrderStatusUpdateEmail, 
   sendNewsletterWelcomeEmail, 
-  sendContactQueryEmail 
+  sendContactQueryEmail,
+  sendOtpEmail
 } from '@/lib/email';
 
 // --- SESSION UTILITIES ---
@@ -738,5 +739,87 @@ export async function sendContactQueryAction(
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to submit contact query.' };
+  }
+}
+
+// --- OTP ACTIONS ---
+
+/**
+ * Generates a random 6-digit OTP code, saves it in a secure HttpOnly cookie, and sends it to the user's email.
+ */
+export async function sendOtpAction(email: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    if (!email || !email.includes('@')) {
+      return { success: false, error: 'A valid email address is required for OTP verification.' };
+    }
+
+    // Generate random 6-digit code
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Send the code to the user's email
+    const success = await sendOtpEmail(email, otpCode);
+    if (!success) {
+      return { success: false, error: 'Failed to send verification code. Please check your SMTP settings.' };
+    }
+
+    // Store the correct OTP in an encrypted or secure HttpOnly cookie
+    const cookieStore = await cookies();
+    cookieStore.set('infinity_otp_verification', JSON.stringify({ email, code: otpCode, expires: Date.now() + 5 * 60 * 1000 }), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 5, // 5 minutes validity
+      path: '/'
+    });
+
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to send OTP verification code.' };
+  }
+}
+
+/**
+ * Compares the user-supplied verification code with the stored cookie and logs the user in/registers them.
+ */
+export async function verifyOtpAction(
+  email: string,
+  userCode: string
+): Promise<{ success: boolean; error?: string; user?: Omit<User, 'passwordHash'> }> {
+  try {
+    const cookieStore = await cookies();
+    const storedOtpCookie = cookieStore.get('infinity_otp_verification');
+
+    if (!storedOtpCookie || !storedOtpCookie.value) {
+      return { success: false, error: 'Verification code expired or not found. Please request a new OTP.' };
+    }
+
+    const { email: storedEmail, code: storedCode, expires } = JSON.parse(storedOtpCookie.value);
+
+    // Validate email and expiration
+    if (storedEmail.toLowerCase() !== email.toLowerCase()) {
+      return { success: false, error: 'Verification email mismatch. Please request a new OTP.' };
+    }
+
+    if (Date.now() > expires) {
+      cookieStore.delete('infinity_otp_verification');
+      return { success: false, error: 'Verification code expired. Please request a new OTP.' };
+    }
+
+    // Validate code
+    if (storedCode !== userCode.trim()) {
+      return { success: false, error: 'Invalid verification code. Please try again.' };
+    }
+
+    // Clear the OTP verification cookie upon successful validation
+    cookieStore.delete('infinity_otp_verification');
+
+    // Automatically register/log in the user via OTP loginAction
+    const loginRes = await loginAction(email, undefined, true);
+    if (!loginRes.success) {
+      return { success: false, error: loginRes.error || 'Failed to complete login.' };
+    }
+
+    return { success: true, user: loginRes.user };
+  } catch (error: any) {
+    return { success: false, error: error.message || 'OTP verification failed.' };
   }
 }

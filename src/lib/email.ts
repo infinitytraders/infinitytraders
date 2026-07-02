@@ -384,3 +384,32 @@ export async function sendOrderStatusUpdateEmail(order: Order): Promise<boolean>
     return false;
   }
 }
+
+/**
+ * Sends a 6-digit OTP code to a customer's email address
+ */
+export async function sendOtpEmail(email: string, code: string): Promise<boolean> {
+  const subject = 'Infinity Verification Code';
+  const bodyContent = `
+    <h1>VERIFICATION CODE</h1>
+    <p>Please use the following One-Time Password (OTP) to complete your login/registration process. This code is valid for 5 minutes.</p>
+    <div style="background-color: #FAF9F6; border: 1px solid rgba(0,0,0,0.04); padding: 20px; border-radius: 12px; font-size: 28px; font-weight: 800; text-align: center; letter-spacing: 6px; color: #000000; margin: 25px 0;">
+      ${code}
+    </div>
+    <p>If you did not request this verification code, please ignore this email.</p>
+  `;
+  const html = getEmailTemplateWrapper(subject, bodyContent);
+
+  try {
+    await transporter.sendMail({
+      from: FROM_EMAIL,
+      to: email,
+      subject,
+      html,
+    });
+    return true;
+  } catch (error) {
+    console.error('Error sending OTP email:', error);
+    return false;
+  }
+}

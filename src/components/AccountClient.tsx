@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getSessionUser, loginAction, registerAction, getOrdersAction, getProductsAction } from '@/app/actions';
+import { getSessionUser, loginAction, registerAction, getOrdersAction, getProductsAction, sendOtpAction, verifyOtpAction } from '@/app/actions';
 import type { User, Order, Product } from '@/lib/db';
 import { Star, User as UserIcon, Package, Heart, Eye, LogOut, Plus, AlertCircle, FileText, CheckCircle2, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
@@ -84,22 +84,44 @@ export default function AccountClient() {
       }
 
       if (authMethod === 'otp') {
+        const isEmail = identifier.includes('@');
         if (!otpSent) {
-          // Simulate sending OTP
-          setOtpSent(true);
-          setAuthError('');
+          if (isEmail) {
+            const res = await sendOtpAction(identifier);
+            if (res.success) {
+              setOtpSent(true);
+              setAuthError('');
+            } else {
+              setAuthError(res.error || 'Failed to send verification code.');
+            }
+          } else {
+            // Mock Mobile OTP
+            setOtpSent(true);
+            setAuthError('');
+          }
           return;
         }
-        if (otpCode !== '123456') {
-          setAuthError('Invalid OTP code. Enter 123456 to log in.');
-          return;
-        }
-        // Success login via OTP
-        const res = await loginAction(identifier, undefined, true);
-        if (res.success) {
-          window.location.reload();
+
+        // Verification phase
+        if (isEmail) {
+          const res = await verifyOtpAction(identifier, otpCode);
+          if (res.success) {
+            window.location.reload();
+          } else {
+            setAuthError(res.error || 'Invalid OTP code.');
+          }
         } else {
-          setAuthError(res.error || 'OTP Login failed.');
+          // Mock Mobile OTP Verification
+          if (otpCode !== '123456') {
+            setAuthError('Invalid OTP code. Enter 123456 to log in.');
+            return;
+          }
+          const res = await loginAction(identifier, undefined, true);
+          if (res.success) {
+            window.location.reload();
+          } else {
+            setAuthError(res.error || 'OTP Login failed.');
+          }
         }
       } else {
         if (!password) {
@@ -357,12 +379,22 @@ export default function AccountClient() {
                               className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-center text-xs font-black tracking-[0.25em] outline-none transition-all text-black"
                             />
                             <span className="text-[9px] text-emerald-800 bg-emerald-500/5 border border-emerald-500/10 p-2.5 rounded-lg text-center block font-bold">
-                              Demo OTP Code: <strong className="font-extrabold text-[10px]">123456</strong> sent to {identifier}
+                              {identifier.includes('@') ? (
+                                `A 6-digit verification code has been sent to ${identifier}`
+                              ) : (
+                                <>
+                                  Demo OTP Code: <strong className="font-extrabold text-[10px]">123456</strong> sent to {identifier}
+                                </>
+                              )}
                             </span>
                           </div>
                         ) : (
                           <span className="text-[9px] text-black/45 block font-medium leading-relaxed bg-black/5 px-3 py-2 rounded-lg">
-                            We will simulate sending a 6-digit verification code to you.
+                            {identifier.includes('@') ? (
+                              `We will send a secure 6-digit verification code to your email address.`
+                            ) : (
+                              "We will simulate sending a 6-digit verification code to your mobile."
+                            )}
                           </span>
                         )}
                       </div>

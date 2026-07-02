@@ -4,6 +4,7 @@ import { CartProvider } from "@/context/CartContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import Header from "@/components/Header";
 import CartDrawer from "@/components/CartDrawer";
+import CookieConsent from "@/components/CookieConsent";
 import InfinityPreloader from "@/components/InfinityPreloader";
 import Footer from "@/components/Footer";
 
@@ -33,6 +34,7 @@ export default function RootLayout({
             <InfinityPreloader />
             <Header />
             <CartDrawer />
+            <CookieConsent />
             <main className="flex-1 flex flex-col pt-24 bg-[#f4f3ef]">
               {children}
             </main>
