@@ -18,6 +18,31 @@ export default function ContactPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
+  // FAQ Accordion State & Questions
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const faqs = [
+    {
+      question: "Are the shoes and apparel authentic?",
+      answer: "Yes, Infinity Traders distributes only 100% authentic products. We source all footwear, activewear, and slides directly from official brand suppliers including Nike, Adidas, Puma, and Skechers."
+    },
+    {
+      question: "What are your shipping rates and thresholds?",
+      answer: "We charge a flat rate of ₹99 for orders under ₹999. If your order value totals ₹999 or more, shipping is free."
+    },
+    {
+      question: "How long does it take for my order to arrive?",
+      answer: "Delivery timelines range from 2 to 7 business days depending on the destination pincode. Local deliveries within Jharkhand take 1-2 business days, metros take 2-3 business days, and other regions take 4-7 business days."
+    },
+    {
+      question: "What is your refund policy?",
+      answer: "We strictly enforce a 'No Refund' policy. Replacements or returns are only processed within 24 hours of delivery if you receive a damaged product, incorrect size, or incorrect model. All tags must remain attached and the item must be unworn."
+    },
+    {
+      question: "Is Cash on Delivery (COD) available?",
+      answer: "Yes, Cash on Delivery is fully supported for all serviceable pincodes. You can check pincode serviceability before checking out."
+    }
+  ];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
@@ -232,6 +257,45 @@ export default function ContactPage() {
               </button>
             </form>
           )}
+        </div>
+      </div>
+
+      {/* FAQ Section */}
+      <div id="faq" className="mt-20 border-t border-black/5 pt-16 max-w-4xl mx-auto w-full space-y-8">
+        <div className="text-center space-y-1.5">
+          <span className="text-[9px] uppercase tracking-[0.25em] text-black/50 font-bold">Answers & Customer Support</span>
+          <h2 className="text-2xl font-extrabold tracking-widest text-black uppercase">FAQ</h2>
+        </div>
+
+        <div className="space-y-4">
+          {faqs.map((faq, index) => {
+            const isOpen = openIndex === index;
+            return (
+              <div 
+                key={index} 
+                className="bg-white border border-black/5 rounded-2xl overflow-hidden transition-all duration-300 shadow-xs"
+              >
+                <button
+                  onClick={() => setOpenIndex(isOpen ? null : index)}
+                  className="w-full flex justify-between items-center p-5 text-left text-xs font-extrabold uppercase tracking-wider text-black focus:outline-none select-none"
+                >
+                  <span>{faq.question}</span>
+                  <span className="text-lg font-light leading-none">
+                    {isOpen ? '−' : '+'}
+                  </span>
+                </button>
+                <div 
+                  className={`transition-all duration-300 overflow-hidden ${
+                    isOpen ? 'max-h-48 border-t border-black/5' : 'max-h-0'
+                  }`}
+                >
+                  <p className="p-5 text-xs text-black/70 font-medium leading-relaxed bg-[#fafafa]">
+                    {faq.answer}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </motion.div>
