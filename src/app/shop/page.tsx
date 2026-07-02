@@ -49,6 +49,11 @@ function ShopContent() {
       const brandParam = searchParams.get('brand');
       setSelectedBrand(brandParam || 'All');
 
+      const queryParam = searchParams.get('q');
+      if (queryParam) {
+        setSearchQuery(queryParam);
+      }
+
       const filterParam = searchParams.get('filter');
       if (filterParam === 'new') {
         setSortBy('newest');

@@ -584,31 +584,43 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-wider text-black uppercase">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'श्रेणियां ब्राउज़ करें' : 'Browse Categories'}</h2>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3 sm:gap-6">
           {[
             {
-              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'जूते (Footwear)' : 'Footwear',
-              img: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=600&q=80',
-              link: '/shop?category=Footwear',
-              desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'उच्च प्रदर्शन रनिंग' : 'High-performance running'
+              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'रनिंग शूज़ (Running Shoes)' : 'Running Shoes',
+              img: '/categories/Running shoes.png',
+              link: '/shop?category=Footwear&q=running',
+              desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'प्रदर्शन दौड़ना' : 'Performance running'
             },
             {
-              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'स्लीपर्स और स्लाइड्स' : 'Slippers & Slides',
-              img: 'https://images.unsplash.com/photo-1603808033192-082d6919d3e1?auto=format&fit=crop&w=600&q=80',
-              link: '/shop?category=Slippers',
-              desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'रिकवरी स्लाइड्स' : 'Recovery slides'
+              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'एयर सागा (Air Saga)' : 'Air Saga',
+              img: '/categories/Air Saga.png',
+              link: '/shop?category=Footwear&q=saga',
+              desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'प्रीमियम दौड़ना' : 'Premium running'
             },
             {
-              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'परिधान (Apparel)' : 'Apparel',
-              img: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=600&q=80',
-              link: '/shop?category=Apparel',
-              desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सक्रिय आराम स्पोर्ट्सवियर' : 'Active comfort sportswear'
+              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'स्नीकर्स (Sneakers)' : 'Sneakers',
+              img: '/categories/Sneakers.png',
+              link: '/shop?category=Footwear&q=sneaker',
+              desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'स्ट्रीट लाइफस्टाइल' : 'Street lifestyle'
             },
             {
-              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सहायक उपकरण' : 'Accessories',
-              img: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=600&q=80',
-              link: '/shop?category=Accessories',
-              desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'प्रशिक्षण सहायक उपकरण' : 'Training accessories'
+              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'लोअर्स (Lowers)' : 'Lowers',
+              img: '/categories/Lowers.png',
+              link: '/shop?category=Apparel&q=lower',
+              desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सक्रिय ट्रैकवियर' : 'Active trackwear'
+            },
+            {
+              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'टी-शर्ट (T-shirts)' : 'T-shirts',
+              img: '/categories/T-shirts.png',
+              link: '/shop?category=Apparel&q=shirt',
+              desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'एथलेटिक एक्टिववियर' : 'Athletic activewear'
+            },
+            {
+              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'रनिंग किट (Running Kit)' : 'Running Kit',
+              img: '/categories/running kit.png',
+              link: '/shop?category=Accessories&q=kit',
+              desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'आवश्यक सहायक उपकरण' : 'Essential accessories'
             }
           ].map((cat) => (
             <Link
