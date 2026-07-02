@@ -82,6 +82,70 @@ export default function AdminPage() {
   const [excelDataInput, setExcelDataInput] = useState('');
   const [bulkMessage, setBulkMessage] = useState('');
 
+  // Cloudinary Image Upload states
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+
+  const cloudinaryCloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const cloudinaryUploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+  const cloudinaryConfigured = !!(cloudinaryCloudName && cloudinaryUploadPreset);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadError('');
+    
+    // Check limit on image sizes (2MB = 2 * 1024 * 1024 bytes)
+    const MAX_SIZE_BYTES = 2 * 1024 * 1024;
+    const oversizedFiles = Array.from(files).filter(file => file.size > MAX_SIZE_BYTES);
+    if (oversizedFiles.length > 0) {
+      alert(`Some files exceed the 2MB size limit: ${oversizedFiles.map(f => f.name).join(', ')}. Please resize or compress your images.`);
+      return;
+    }
+
+    setUploadingImages(true);
+    const uploadedUrls: string[] = [];
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', cloudinaryUploadPreset!);
+
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/image/upload`, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!res.ok) {
+          throw new Error(`Failed to upload ${file.name} to Cloudinary`);
+        }
+
+        const data = await res.json();
+        if (data.secure_url) {
+          uploadedUrls.push(data.secure_url);
+        }
+      }
+
+      // Add new URLs to the current form images
+      const existingImages = productForm.images.split(',')
+        .map(u => u.trim())
+        .filter(u => u.length > 0);
+      const combined = [...existingImages, ...uploadedUrls].join(',');
+      setProductForm({ ...productForm, images: combined });
+    } catch (err: any) {
+      console.error(err);
+      setUploadError(err.message || 'Error uploading images');
+      alert(err.message || 'Error uploading images. Please verify your Cloudinary settings.');
+    } finally {
+      setUploadingImages(false);
+      // Reset input value to allow uploading same file again
+      e.target.value = '';
+    }
+  };
+
   useEffect(() => {
     checkAccess();
   }, []);
@@ -691,13 +755,80 @@ export default function AdminPage() {
                       className="w-full input-premium text-xs"
                     />
                   </div>
-                  <div className="md:col-span-3 space-y-1.5">
-                    <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Image URLs (Comma separated)</label>
-                    <input
-                      type="text" placeholder="Paste image address"
-                      value={productForm.images} onChange={(e) => setProductForm({...productForm, images: e.target.value})}
-                      className="w-full input-premium text-xs"
-                    />
+                  <div className="md:col-span-3 space-y-2">
+                    <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider block">Product Images</label>
+                    
+                    {/* Cloudinary Warning if not configured */}
+                    {!cloudinaryConfigured && (
+                      <div className="bg-amber-500/10 border border-amber-500/25 text-amber-800 rounded-xl p-3 text-[11px] font-medium flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600" />
+                        <span>
+                          Cloudinary is not configured. Set <strong>NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME</strong> and <strong>NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET</strong> in `.env` to enable file uploads.
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex flex-col sm:flex-row gap-3 items-stretch">
+                      {/* File upload button */}
+                      <div className="relative flex-1">
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          disabled={!cloudinaryConfigured || uploadingImages}
+                          onChange={handleImageUpload}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-10"
+                        />
+                        <div className="border border-dashed border-black/10 rounded-xl p-4 flex flex-col items-center justify-center gap-1 bg-white hover:bg-black/[0.02] transition-colors h-full min-h-[90px]">
+                          {uploadingImages ? (
+                            <span className="text-xs font-bold text-black animate-pulse uppercase tracking-wider">Uploading to Cloudinary...</span>
+                          ) : (
+                            <>
+                              <span className="text-xs font-bold text-black uppercase tracking-wider text-center">Drag & Drop or Click to Upload</span>
+                              <span className="text-[9px] text-black/45 font-bold text-center">Max 2MB per image. Multi-file upload supported.</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Text input fallback / view URLs */}
+                      <div className="flex-1 space-y-1">
+                        <textarea
+                          placeholder="Paste image addresses manually (comma-separated URLs)"
+                          value={productForm.images}
+                          onChange={(e) => setProductForm({...productForm, images: e.target.value})}
+                          className="w-full input-premium text-xs h-full min-h-[90px]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Display preview of currently configured images */}
+                    {productForm.images.trim().length > 0 && (
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        {productForm.images.split(',').map((imgUrl, index) => {
+                          const url = imgUrl.trim();
+                          if (!url) return null;
+                          return (
+                            <div key={index} className="relative w-16 h-16 border border-black/5 rounded-xl overflow-hidden group">
+                              <img src={url} alt={`Preview ${index}`} className="w-full h-full object-cover" />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = productForm.images.split(',')
+                                    .map(u => u.trim())
+                                    .filter((_, i) => i !== index)
+                                    .join(',');
+                                  setProductForm({...productForm, images: updated});
+                                }}
+                                className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity duration-200"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="flex gap-2 justify-end pt-2">
