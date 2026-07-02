@@ -447,6 +447,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
                   index === activeIndex ? 'w-8 bg-black' : 'w-2 bg-black/15'
                 }`}
                 aria-label={`Go to slide ${index + 1}`}
+                suppressHydrationWarning={true}
               />
             ))}
           </div>
@@ -661,6 +662,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
                     ? 'bg-black text-white'
                     : 'text-black/55 hover:text-black hover:bg-black/5'
                 }`}
+                suppressHydrationWarning={true}
               >
                 {tab.label}
               </button>
@@ -878,6 +880,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
                 disabled={scrollProgress <= 0.02}
                 className="text-black hover:text-black/70 disabled:opacity-30 disabled:pointer-events-none transition-all text-xl font-light"
                 aria-label="Previous review"
+                suppressHydrationWarning={true}
               >
                 ←
               </button>
@@ -898,6 +901,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
                 disabled={scrollProgress >= 0.98}
                 className="text-black hover:text-black/70 disabled:opacity-30 disabled:pointer-events-none transition-all text-xl font-light"
                 aria-label="Next review"
+                suppressHydrationWarning={true}
               >
                 →
               </button>

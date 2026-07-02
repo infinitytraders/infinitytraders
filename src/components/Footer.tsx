@@ -146,6 +146,7 @@ export default function Footer() {
                     onChange={(e) => setNewsletterFirstName(e.target.value)} 
                     required 
                     className="border-b border-black/10 focus:border-black bg-transparent outline-none py-1.5 text-xs w-full text-black placeholder-black/30 transition-colors" 
+                    suppressHydrationWarning={true}
                   />
                   <input 
                     type="text" 
@@ -154,6 +155,7 @@ export default function Footer() {
                     onChange={(e) => setNewsletterLastName(e.target.value)} 
                     required 
                     className="border-b border-black/10 focus:border-black bg-transparent outline-none py-1.5 text-xs w-full text-black placeholder-black/30 transition-colors" 
+                    suppressHydrationWarning={true}
                   />
                 </div>
                 <input 
@@ -163,10 +165,12 @@ export default function Footer() {
                   onChange={(e) => setNewsletterEmail(e.target.value)} 
                   required 
                   className="border-b border-black/10 focus:border-black bg-transparent outline-none py-1.5 text-xs w-full text-black placeholder-black/30 transition-colors" 
+                  suppressHydrationWarning={true}
                 />
                 <button 
                   type="submit" 
                   className="border border-black px-6 py-1.5 rounded-full text-xs font-semibold hover:bg-black hover:text-white transition-all text-black mt-2 bg-transparent"
+                  suppressHydrationWarning={true}
                 >
                   Submit
                 </button>

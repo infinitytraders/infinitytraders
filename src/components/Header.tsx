@@ -17,11 +17,16 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [mounted, setMounted] = useState(false);
 
   // Fetch session on load and route change
   useEffect(() => {
     getSessionUser().then(u => setUser(u));
   }, [pathname]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Track scroll position to change background opacity
   useEffect(() => {
@@ -142,8 +147,9 @@ export default function Header() {
               <button
                 onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
                 className="text-[10px] tracking-widest font-semibold text-black/60 hover:text-black transition-colors px-2 py-1 rounded"
+                suppressHydrationWarning={true}
               >
-                {language === 'en' ? 'HI' : 'EN'}
+                {!mounted ? 'HI' : (language === 'en' ? 'HI' : 'EN')}
               </button>
 
               {/* Search Icon */}
@@ -156,6 +162,7 @@ export default function Header() {
                 onClick={() => setCartOpen(true)}
                 className="relative text-black/75 hover:text-black border border-black/10 hover:border-black/35 p-2 rounded-full transition-all flex items-center justify-center bg-white/50"
                 aria-label="Open Shopping Bag"
+                suppressHydrationWarning={true}
               >
                 <ShoppingBag className="w-4 h-4" />
                 <AnimatePresence>
