@@ -998,7 +998,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
             {/* Column 1: Links */}
             <div className="md:col-span-2 flex flex-col gap-3 text-xs text-black/60 font-medium">
               <Link href="/contact" className="hover:text-black transition-colors">Contact us</Link>
-              <span className="hover:text-black cursor-pointer transition-colors">Stores</span>
+              <Link href="/shop" className="hover:text-black transition-colors">Shop</Link>
             </div>
 
             {/* Column 2: Address & Socials */}
