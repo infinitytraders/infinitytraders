@@ -225,7 +225,7 @@ export default function ProductDetailClient({ product, recommendations, initialU
           ) : product.category === 'Apparel' ? (
             <div className="space-y-3">
               <div className="text-xs tracking-wider uppercase font-extrabold text-black/85">
-                {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'चेस्ट साइज चुनें' : 'Select Chest Size'}
+                {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'आकार चुनें' : 'Select Size'}
               </div>
               <div className="grid grid-cols-4 gap-2">
                 {product.sizes.map((size) => (

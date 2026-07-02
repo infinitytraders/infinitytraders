@@ -683,13 +683,9 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
         </div>
 
         {/* Curated Products Grid */}
-        <motion.div layout className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-8">
           {filteredProducts.map((product) => (
-            <motion.div
-              layout
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4 }}
+            <div
               key={product.id}
               className="group bg-white border border-black/5 rounded-2xl overflow-hidden flex flex-col justify-between hover:shadow-md transition-all duration-300 shadow-xs"
             >
@@ -739,7 +735,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
                 <div className="space-y-3 sm:space-y-4 pt-3 sm:pt-4 border-t border-black/5">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-1 bg-black/5 px-2 py-0.5 rounded-full">
-                      <Star className="w-3 h-3 text-black fill-black" />
+                      <Star className="w-3.5 h-3.5 text-black fill-black" />
                       <span className="text-[10px] text-black font-extrabold">{product.averageRating}</span>
                       <span className="text-[9px] text-black/50">({product.reviewsCount})</span>
                     </div>
@@ -772,9 +768,9 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
                   )}
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
-        </motion.div>
+        </div>
       </motion.section>
 
       {/* 7. PINCODE SERVICEABILITY CONTAINER */}
