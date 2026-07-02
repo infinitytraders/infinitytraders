@@ -418,43 +418,40 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
         </div>
       </section>
 
-      {/* 3. BRAND PHILOSOPHY & DETAILS SECTION */}
+      {/* 3. BRAND LOGOS SECTION */}
       <motion.section
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-        className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 gap-16 items-center pt-8"
+        className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-10 text-center"
       >
-        <div className="space-y-6">
-          <div className="space-y-1">
-            <span className="text-xs uppercase tracking-[0.3em] text-black/50 font-semibold block">
-              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'क्यूरेटेड प्रीमियम एथलेटिक्स' : 'CURATED PREMIUM ATHLETICS'}
-            </span>
-            <h3 className="text-2xl sm:text-4xl font-extrabold tracking-wider text-black uppercase">
-              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'गति के लिए इंजीनियर' : 'Engineered for Motion'}
-            </h3>
-          </div>
-          <p className="text-sm text-black/70 font-light leading-loose tracking-wide">
-            {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'हमारे क्यूरेशन के केंद्र में दुनिया के अग्रणी ब्रांडों: नाइके, एडिडास, प्यूमा, स्केचर्स और रीबॉक से उच्च प्रदर्शन वाली इंजीनियरिंग है। जूतों, परिधानों और प्रशिक्षण के सामानों की प्रत्येक वस्तु को अधिकतम ऊर्जा वापसी, एर्गोनोमिक गतिशीलता और दीर्घकालिक स्थायित्व प्रदान करने के लिए चुना गया है।' : 'At the core of our curation lies high-performance engineering from the world\'s leading brands: Nike, Adidas, Puma, Skechers, and Reebok. Every article of footwear, apparel, and training accessory is hand-picked to deliver maximum energy return, ergonomic movement, and long-term durability.'}
-          </p>
-          <div className="pt-2">
-            <Link
-              href="/shop"
-              className="bg-black text-white hover:bg-transparent hover:text-black border border-black px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all"
-            >
-              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'उत्पाद देखें' : 'Explore Products'}
-            </Link>
-          </div>
+        <div className="space-y-2">
+          <span className="text-xs uppercase tracking-[0.25em] text-black/50 font-bold block">
+            {t('home.exploreBrands')}
+          </span>
         </div>
 
-        <div className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-black/5 bg-white shadow-sm group">
-          <img
-            src="/shoe_sole.png"
-            alt="High performance sole close up"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 filter grayscale"
-          />
-          <div className="absolute inset-0 bg-black/5" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-10 sm:gap-16 items-center justify-items-center">
+          {[
+            { name: 'Adidas', logo: '/brands logos/Brand (1).svg' },
+            { name: 'Nike', logo: '/brands logos/Brand (2).svg' },
+            { name: 'Puma', logo: '/brands logos/Brand (3).svg' },
+            { name: 'Skechers', logo: '/brands logos/Brand (4).svg' },
+            { name: 'Reebok', logo: '/brands logos/Brand (5).svg' },
+          ].map((brand) => (
+            <Link
+              key={brand.name}
+              href={`/shop?brand=${brand.name}`}
+              className="w-full max-w-[220px] sm:max-w-[260px] h-20 sm:h-28 flex items-center justify-center hover:scale-110 transition-all duration-300 group"
+            >
+              <img
+                src={`${brand.logo}?v=2`}
+                alt={`${brand.name} logo`}
+                className="max-w-full max-h-full object-contain mix-blend-multiply opacity-75 group-hover:opacity-100 transition-all duration-300"
+              />
+            </Link>
+          ))}
         </div>
       </motion.section>
 

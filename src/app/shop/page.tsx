@@ -44,9 +44,11 @@ function ShopContent() {
 
       // Handle URL pre-filters
       const catParam = searchParams.get('category');
-      if (catParam) {
-        setSelectedCategory(catParam);
-      }
+      setSelectedCategory(catParam || 'All');
+
+      const brandParam = searchParams.get('brand');
+      setSelectedBrand(brandParam || 'All');
+
       const filterParam = searchParams.get('filter');
       if (filterParam === 'new') {
         setSortBy('newest');
