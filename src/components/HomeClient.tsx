@@ -23,6 +23,9 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
   const [activeIndex, setActiveIndex] = useState(1); // Default to clothes (index 1)
   const [isMobile, setIsMobile] = useState(false);
   const [windowWidth, setWindowWidth] = useState(1200);
+  const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
+  const reviewsRef = useRef<HTMLDivElement>(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
     const handleResize = () => {
@@ -42,6 +45,26 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
     }, 5000);
     return () => clearInterval(timer);
   }, []);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    const progress = target.scrollLeft / (target.scrollWidth - target.clientWidth);
+    setScrollProgress(isNaN(progress) ? 0 : progress);
+  };
+
+  const handlePrevReview = () => {
+    if (reviewsRef.current) {
+      const cardWidth = reviewsRef.current.firstElementChild?.clientWidth || 300;
+      reviewsRef.current.scrollBy({ left: -(cardWidth + 24), behavior: 'smooth' });
+    }
+  };
+
+  const handleNextReview = () => {
+    if (reviewsRef.current) {
+      const cardWidth = reviewsRef.current.firstElementChild?.clientWidth || 300;
+      reviewsRef.current.scrollBy({ left: cardWidth + 24, behavior: 'smooth' });
+    }
+  };
 
   const getProductLayout = (slideId: string, isCenter: boolean) => {
     const containerWidth = isMobile ? windowWidth - 32 : Math.min(windowWidth - 32, 1200);
@@ -715,20 +738,20 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8"
+        className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8"
       >
-        <div className="bg-white border border-black/5 rounded-2xl p-8 space-y-6 shadow-xs text-center">
-          <div className="space-y-2">
-            <span className="text-xs uppercase tracking-[0.3em] text-black/50 font-semibold block">Shipping Depot</span>
-            <h3 className="text-xl sm:text-2xl font-extrabold tracking-wider text-black uppercase">
+        <div className="bg-[#faf9f5] border border-black/[0.04] rounded-3xl p-10 sm:p-14 space-y-8 shadow-xs text-center">
+          <div className="space-y-3">
+            <span className="text-[10px] uppercase tracking-[0.4em] text-black/40 font-bold block">Shipping Depot</span>
+            <h3 className="text-2xl sm:text-4xl font-black tracking-tight text-black leading-tight uppercase">
               {t('prod.pincode.title')}
             </h3>
-            <p className="text-xs text-black/60 font-light max-w-md mx-auto leading-relaxed">
+            <p className="text-xs sm:text-sm text-black/60 font-light max-w-md mx-auto leading-relaxed">
               {t('home. JharkhandDepot.desc')}
             </p>
           </div>
 
-          <form onSubmit={handlePincodeCheck} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+          <form onSubmit={handlePincodeCheck} className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
             <input
               suppressHydrationWarning
               type="text"
@@ -736,46 +759,50 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
               placeholder={t('prod.pincode.placeholder')}
               value={pincode}
               onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
-              className="flex-1 border border-black/10 hover:border-black/25 focus:border-black rounded-full px-5 py-3 text-center tracking-widest text-xs outline-none bg-[#fdfdfd] transition-all"
+              className="flex-1 border border-black/10 hover:border-black/20 focus:border-black rounded-full px-6 py-4 text-center tracking-widest text-sm font-semibold outline-none bg-white transition-all shadow-xs"
             />
             <button
               suppressHydrationWarning
               type="submit"
               disabled={checkingPin || pincode.length !== 6}
-              className="bg-black hover:bg-transparent text-white hover:text-black border border-black py-3 px-6 text-xs uppercase tracking-widest font-bold disabled:opacity-50 disabled:pointer-events-none rounded-full transition-all"
+              className="bg-black hover:bg-[#1a1a1a] text-white py-4 px-8 text-xs uppercase tracking-widest font-bold disabled:opacity-50 disabled:pointer-events-none rounded-full transition-all duration-300 w-full sm:w-auto flex items-center justify-center gap-2 shadow-xs"
             >
-              {t('prod.pincode.check')}
+              {checkingPin ? (
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                t('prod.pincode.check')
+              )}
             </button>
           </form>
 
           {pincodeStatus.checked && (
-            <div className="max-w-md mx-auto pt-2">
+            <div className="max-w-lg mx-auto pt-2">
               <div
-                className={`p-4 rounded-xl border text-center flex flex-col items-center gap-2 ${
+                className={`p-5 rounded-2xl border flex items-start gap-4 text-left transition-all ${
                   pincodeStatus.serviceable
-                    ? 'bg-teal-500/5 border-teal-500/10 text-teal-800'
-                    : 'bg-red-500/5 border-red-500/10 text-red-800'
+                    ? 'bg-emerald-500/[0.03] border-emerald-500/10 text-emerald-950'
+                    : 'bg-rose-500/[0.03] border-rose-500/10 text-rose-950'
                 }`}
               >
                 {pincodeStatus.serviceable ? (
                   <>
-                    <CheckCircle className="w-5 h-5 text-teal-700" />
+                    <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-xs font-extrabold uppercase tracking-wider">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सेवा योग्य गंतव्य' : 'Serviceable Destination'}</p>
-                      <p className="text-[11px] opacity-90 mt-1">
+                      <p className="text-xs font-extrabold uppercase tracking-wider text-emerald-800">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सेवा योग्य गंतव्य' : 'Serviceable Destination'}</p>
+                      <p className="text-xs text-emerald-950/70 mt-1 font-medium">
                         {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'शिपिंग मार्ग' : 'Shipping Route'}: Dhanbad &rarr; {pincodeStatus.state}
                       </p>
-                      <p className="text-[11px] font-bold mt-1">
+                      <p className="text-xs text-emerald-950 mt-1 font-bold">
                         {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'अनुमानित पारगमन समय' : 'Estimated Transit Time'}: {pincodeStatus.days} {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'कार्य दिवस' : 'Working Days'}
                       </p>
                     </div>
                   </>
                 ) : (
                   <>
-                    <ShieldAlert className="w-5 h-5 text-red-700" />
+                    <ShieldAlert className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-xs font-extrabold uppercase tracking-wider">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'असेवा योग्य क्षेत्र' : 'Unserviceable Area'}</p>
-                      <p className="text-[11px] opacity-90 mt-1">
+                      <p className="text-xs font-extrabold uppercase tracking-wider text-rose-800">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'असेवा योग्य क्षेत्र' : 'Unserviceable Area'}</p>
+                      <p className="text-xs text-rose-950/70 mt-1 font-medium">
                         {pincodeStatus.error || (t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'इस स्थान पर डिलीवरी उपलब्ध नहीं है।' : 'Delivery not available to this location.')}
                       </p>
                     </div>
@@ -793,55 +820,148 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-12 overflow-hidden"
       >
-        <div className="text-center space-y-2">
-          <span className="text-xs uppercase tracking-[0.3em] text-black/50 font-semibold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'समीक्षाएं' : 'Reviews'}</span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-wider text-black uppercase">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सत्यापित एथलीट अनुभव' : 'Verified Athlete Experiences'}</h2>
+        <div className="text-center">
+          <h2 suppressHydrationWarning className="text-3xl sm:text-4xl font-light text-black tracking-tight uppercase">
+            {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? (
+              <>हमारे ग्राहकों की <strong className="font-black text-black">समीक्षाएं</strong></>
+            ) : (
+              <>Reviews from <strong className="font-black text-black">customers</strong></>
+            )}
+          </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            {
-              name: 'Dr. Vivek Sengupta',
-              city: 'Jamshedpur',
-              rating: 5,
-              title: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'रिकवरी के लिए बेस्ट स्लाइड्स' : 'Best slides for recovery',
-              quote: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'एक सर्जन के रूप में, मैं घंटों खड़ा रहता हूँ। एडिडास एडिलेट कम्फर्ट स्लाइड्स बहुत बेहतरीन हैं। ईवीए फोम बिल्कुल बादलों पर चलने जैसा महसूस होता है।' : 'As a surgeon, I stand for hours. The Adidas Adilette Comfort Slides are a game changer. The EVA foam feels exactly like walking on clouds, and the arch support is perfect. Incredible service!'
-            },
-            {
-              name: 'Anjali Sharma',
-              city: 'Ranchi',
-              rating: 5,
-              title: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'उल्लेखनीय रनिंग सपोर्ट' : 'Remarkable running support',
-              quote: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'मेरे नाइके एयर ज़ूम पेगासस रनिंग जूते सिर्फ २ दिनों में आ गए। ऊर्जा वापसी किसी भी सामान्य स्पोर्ट्स ब्रांड से अलग है।' : 'My Nike Air Zoom Pegasus running shoes arrived in just 2 days. The energy bounce-back is unlike any standard sports brand. Understated design, pure premium material. Recommend 100%.'
-            },
-            {
-              name: 'Kabir Verma',
-              city: 'Dhanbad',
-              rating: 5,
-              title: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'शीर्ष ग्राहक सेवा और जीएसटी बिलिंग' : 'Top customer service & GST billing',
-              quote: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'मैंने अपने कॉर्पोरेट क्लब के लिए जूते खरीदे। चेकआउट ने एक पारदर्शी जीएसटी विवरण की गणना की, एक साफ चालान तैयार किया, और २४ घंटों के भीतर डिलीवरी की।' : 'I purchased footwear for my corporate club. The checkout computed a transparent GST breakdown, generated a clean commercial invoice, and processed standard delivery within 24 hours. A first-rate distributor.'
-            }
-          ].map((rev, i) => (
-            <div key={i} className="bg-white border border-black/5 p-6 rounded-2xl space-y-4 shadow-xs">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h4 className="text-xs font-extrabold text-black uppercase">{rev.name}</h4>
-                  <span className="text-[10px] text-black/50 font-light">{rev.city}, Jharkhand</span>
-                </div>
-                <div className="flex gap-0.5">
-                  {Array.from({ length: rev.rating }).map((_, idx) => (
-                    <Star key={idx} className="w-3 h-3 text-black fill-black" />
-                  ))}
-                </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          {/* Left Column: Quote & Slider Controls */}
+          <div className="lg:col-span-4 space-y-6">
+            <span className="text-[120px] font-serif text-black/10 block leading-none -ml-2 -mb-8 select-none">“</span>
+            <h3 suppressHydrationWarning className="text-[26px] font-semibold text-[#1a1a1a] tracking-tight leading-snug max-w-[240px]">
+              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'हमारे ग्राहक क्या कह रहे हैं' : 'What our customers are saying'}
+            </h3>
+            
+            {/* Slider Controls */}
+            <div className="flex items-center gap-3 pt-6 w-full max-w-[260px]">
+              <button
+                onClick={handlePrevReview}
+                disabled={scrollProgress <= 0.02}
+                className="text-black hover:text-black/70 disabled:opacity-30 disabled:pointer-events-none transition-all text-xl font-light"
+                aria-label="Previous review"
+              >
+                ←
+              </button>
+              
+              {/* Progress Line */}
+              <div className="h-[2px] bg-black/10 flex-1 relative rounded-full overflow-hidden">
+                <motion.div 
+                  className="absolute left-0 top-0 bottom-0 bg-black rounded-full"
+                  animate={{ 
+                    width: `${15 + scrollProgress * 85}%` 
+                  }}
+                  transition={{ duration: 0.2 }}
+                />
               </div>
-              <div className="space-y-1.5">
-                <h5 className="text-[10px] uppercase tracking-wider font-extrabold text-black">{rev.title}</h5>
-                <p className="text-xs text-black/70 font-light leading-relaxed">"{rev.quote}"</p>
-              </div>
+
+              <button
+                onClick={handleNextReview}
+                disabled={scrollProgress >= 0.98}
+                className="text-black hover:text-black/70 disabled:opacity-30 disabled:pointer-events-none transition-all text-xl font-light"
+                aria-label="Next review"
+              >
+                →
+              </button>
             </div>
-          ))}
+          </div>
+
+          {/* Right Column: Testimony Speech Bubble Swiper */}
+          <div className="lg:col-span-8 overflow-hidden w-full relative">
+            <div
+              ref={reviewsRef}
+              onScroll={handleScroll}
+              className="flex gap-6 w-full overflow-x-auto scrollbar-none snap-x snap-mandatory scroll-smooth pb-6"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {[
+                {
+                  name: 'Dr. Vivek Sengupta',
+                  city: 'Jamshedpur',
+                  avatar: '/profile-icon men.png',
+                  quote: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'एक सर्जन के रूप में, मैं घंटों खड़ा रहता हूँ। एडिडास एडिलेट कम्फर्ट स्लाइड्स बहुत बेहतरीन हैं। ईवीए फोम बिल्कुल बादलों पर चलने जैसा महसूस होता है।' : 'As a surgeon, I stand for hours. The Adidas Adilette Comfort Slides are a game changer. The EVA foam feels exactly like walking on clouds, and the arch support is perfect. Incredible service!'
+                },
+                {
+                  name: 'Anjali Sharma',
+                  city: 'Ranchi',
+                  avatar: '/profile-icon women.png',
+                  quote: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'मेरे नाइके एयर ज़ूम पेगासस रनिंग जूते सिर्फ २ दिनों में आ गए। ऊर्जा वापसी किसी भी सामान्य स्पोर्ट्स ब्रांड से अलग है।' : 'My Nike Air Zoom Pegasus running shoes arrived in just 2 days. The energy bounce-back is unlike any standard sports brand. Understated design, pure premium material. Recommend 100%.'
+                },
+                {
+                  name: 'Kabir Verma',
+                  city: 'Dhanbad',
+                  avatar: '/profile-icon men.png',
+                  quote: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'मैंने अपने कॉर्पोरेट क्लब के लिए जूते खरीदे। चेकआउट ने एक पारदर्शी जीएसटी विवरण की गणना की, एक साफ चालान तैयार किया, और २४ घंटों के भीतर डिलीवरी की।' : 'I purchased footwear for my corporate club. The checkout computed a transparent GST breakdown, generated a clean commercial invoice, and processed standard delivery within 24 hours. A first-rate distributor.'
+                },
+                {
+                  name: 'Jasmeet Singh',
+                  city: 'Chandigarh',
+                  avatar: '/profile-icon men.png',
+                  quote: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'प्यूमा नाइट्रो रनिंग शूज अविश्वसनीय रूप से हल्के और तेज हैं। गीली सड़कों पर भी ग्रिप शानदार है। अगले ही दिन डिलीवरी हो गई।' : 'The Puma Nitro running shoes are incredibly lightweight and fast. The grip is outstanding on wet roads. Ordered in the morning and it was delivered the next day. Exceptional service!'
+                },
+                {
+                  name: 'Priyanka Sen',
+                  city: 'Kolkata',
+                  avatar: '/profile-icon women.png',
+                  quote: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'मेरे दैनिक टहलने के लिए स्केचर्स मैक्स कुशनिंग जूते सबसे अच्छे हैं। आराम का स्तर बेजोड़ है। त्वरित ग्राहक सेवा के साथ सत्यापित उत्पाद।' : 'Skechers Max Cushioning shoes are the absolute best for my daily walks. The level of comfort is unmatched. Verified product with quick customer service. Will buy again soon!'
+                },
+                {
+                  name: 'Rohan Malhotra',
+                  city: 'New Delhi',
+                  avatar: '/profile-icon men.png',
+                  quote: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'आधिकारिक स्पोर्ट्स गियर की अद्भुत श्रृंखला। आकार गाइड बहुत सटीक हैं और मुझे सही फिट चुनने में मदद की। भारत में अब तक का सबसे अच्छा ऑनलाइन शॉपिंग अनुभव।' : 'Incredible range of official sports gear. The sizing guides are very accurate and helped me pick the perfect fit. Best online shopping experience so far in India.'
+                },
+                {
+                  name: 'Aarav Mehta',
+                  city: 'Mumbai',
+                  avatar: '/profile-icon men.png',
+                  quote: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'प्रीमियम पैकेजिंग और प्रामाणिक ब्रांड प्रमाणपत्र से अत्यधिक प्रभावित। स्लाइड्स बेहद आरामदायक हैं। सक्रिय स्पोर्ट्सवियर के लिए एक शीर्ष पायदान का स्टोर।' : 'Highly impressed with the premium packaging and authentic brand certificate. The slides are extremely comfortable. A top-tier store for active sportswear.'
+                }
+              ].map((rev, i) => (
+                <div 
+                  key={i} 
+                  className="w-full md:w-[calc(50%-12px)] flex-shrink-0 space-y-6 select-none snap-start"
+                >
+                  {/* Speech Bubble Card */}
+                  <div className="bg-white border border-black/[0.03] rounded-[24px] p-8 shadow-[0_4px_20px_rgba(0,0,0,0.015)] relative">
+                    <p className="text-[14px] text-black/85 font-medium leading-relaxed">
+                      "{rev.quote}"
+                    </p>
+                    
+                    {/* Stars */}
+                    <div className="flex gap-0.5 mt-6">
+                      {Array.from({ length: 5 }).map((_, idx) => (
+                        <Star key={idx} className="w-3.5 h-3.5 text-[#4a4a4a] fill-[#4a4a4a]" />
+                      ))}
+                    </div>
+
+                    {/* Speech Bubble Pointer */}
+                    <div className="absolute -bottom-2.5 left-10 w-5 h-5 bg-white border-r border-b border-black/[0.03] rotate-45" />
+                  </div>
+
+                  {/* Customer Identity below card */}
+                  <div className="flex items-center gap-3 pl-6 pt-2">
+                    <img 
+                      src={rev.avatar} 
+                      alt={rev.name}
+                      className="w-11 h-11 rounded-full object-cover border border-black/5"
+                    />
+                    <div>
+                      <h4 className="text-[13px] font-bold text-black leading-tight">{rev.name}</h4>
+                      <p className="text-[11px] text-black/50 font-semibold mt-0.5">{rev.city}, India</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </motion.section>
 

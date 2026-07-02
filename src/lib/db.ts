@@ -514,6 +514,11 @@ export const db = {
     return mapPincodeFromDb(res.rows[0]);
   },
 
+  async deletePincode(pincode: string): Promise<boolean> {
+    const res = await pool.query('DELETE FROM pincodes WHERE pincode = $1', [pincode]);
+    return (res.rowCount ?? 0) > 0;
+  },
+
   // ORDERS
   async getOrders(): Promise<Order[]> {
     const res = await pool.query('SELECT * FROM orders');

@@ -16,10 +16,13 @@ import {
   updateOrderStatusAction,
   createCouponAction,
   deleteCouponAction,
+  getPincodesAction,
+  addOrUpdatePincodeAction,
+  deletePincodeAction,
   loginAction
 } from '@/app/actions';
-import type { User, Product, Order, Coupon, AuditLog } from '@/lib/db';
-import { BarChart3, ShoppingCart, Users, BadgeAlert, Plus, Edit2, Trash2, Check, X, FileSpreadsheet, Package, AlertTriangle, ShieldCheck, Tag, History } from 'lucide-react';
+import type { User, Product, Order, Coupon, PincodeServiceability, AuditLog } from '@/lib/db';
+import { BarChart3, ShoppingCart, Users, BadgeAlert, Plus, Edit2, Trash2, Check, X, FileSpreadsheet, Package, AlertTriangle, ShieldCheck, Tag, History, MapPin } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminPage() {
@@ -33,7 +36,7 @@ export default function AdminPage() {
   const [loginError, setLoginError] = useState('');
 
   // Active board tab
-  const [activeTab, setActiveTab] = useState<'metrics' | 'products' | 'orders' | 'coupons' | 'logs'>('metrics');
+  const [activeTab, setActiveTab] = useState<'metrics' | 'products' | 'orders' | 'coupons' | 'pincodes' | 'logs'>('metrics');
 
   // Loaded database items
   const [metrics, setMetrics] = useState<any>(null);
@@ -41,6 +44,13 @@ export default function AdminPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [pincodes, setPincodes] = useState<PincodeServiceability[]>([]);
+
+  // Pincode CRUD states
+  const [showPincodeForm, setShowPincodeForm] = useState(false);
+  const [pincodeForm, setPincodeForm] = useState({
+    pincode: '', serviceable: true, estimatedDays: '4', state: ''
+  });
 
   // Product CRUD states
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -108,6 +118,9 @@ export default function AdminPage() {
 
     const logs = await getAuditLogsAction();
     if (logs.success && logs.logs) setAuditLogs(logs.logs);
+
+    const pins = await getPincodesAction();
+    if (pins.success && pins.pincodes) setPincodes(pins.pincodes);
   };
 
   // Product submit (create or update)
@@ -286,6 +299,40 @@ export default function AdminPage() {
     }
   };
 
+  // Pincode Submit
+  const handlePincodeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pincodeForm.pincode || pincodeForm.pincode.length !== 6) {
+      alert('Pincode must be exactly 6 digits.');
+      return;
+    }
+
+    const res = await addOrUpdatePincodeAction(pincodeForm.pincode, {
+      serviceable: pincodeForm.serviceable,
+      estimatedDays: Number(pincodeForm.estimatedDays),
+      state: pincodeForm.state
+    });
+
+    if (res.success) {
+      setShowPincodeForm(false);
+      setPincodeForm({ pincode: '', serviceable: true, estimatedDays: '4', state: '' });
+      loadAdminData();
+    } else {
+      alert(res.error || 'Failed to update pincode.');
+    }
+  };
+
+  // Pincode Delete
+  const handlePincodeDelete = async (pincode: string) => {
+    if (!confirm(`Are you sure you want to delete pincode ${pincode} from serviceability?`)) return;
+    const res = await deletePincodeAction(pincode);
+    if (res.success) {
+      loadAdminData();
+    } else {
+      alert(res.error || 'Failed to delete pincode.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center uppercase tracking-widest text-xs text-black/45 font-extrabold">
@@ -387,6 +434,7 @@ export default function AdminPage() {
           { id: 'products', label: 'Product Catalog Manager', icon: Package },
           { id: 'orders', label: 'Orders & Tracking', icon: ShoppingCart },
           { id: 'coupons', label: 'Marketing & Coupons', icon: Tag },
+          { id: 'pincodes', label: 'Pincode Serviceability', icon: MapPin },
           { id: 'logs', label: 'Super Audit Logs', icon: History }
         ].map((tab) => {
           const Icon = tab.icon;
@@ -996,6 +1044,174 @@ export default function AdminPage() {
                       </td>
                     </tr>
                   ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: PINCODE SERVICEABILITY */}
+        {activeTab === 'pincodes' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center border-b border-black/5 pb-4">
+              <div>
+                <h2 className="text-xs font-extrabold uppercase tracking-widest text-black">
+                  Pincode Delivery Rules
+                </h2>
+                <p className="text-[10px] text-black/50 mt-0.5">
+                  Configure tax-compliant delivery coverage, estimated transit days, and destination states.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowPincodeForm(!showPincodeForm)}
+                className="px-4 py-2 bg-black hover:bg-[#1a1a1a] text-white rounded-full text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-1.5 shadow-xs"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add Delivery Pincode
+              </button>
+            </div>
+
+            {/* Pincode Form */}
+            {showPincodeForm && (
+              <form onSubmit={handlePincodeSubmit} className="bg-[#fcfbf9] border border-black/5 p-6 rounded-2xl space-y-4 max-w-xl shadow-xs">
+                <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black">
+                  Create/Update Pincode Rule
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[9px] uppercase tracking-widest text-black/50 font-bold block">Pincode (6-digit)</label>
+                    <input
+                      type="text"
+                      maxLength={6}
+                      required
+                      placeholder="e.g. 826001"
+                      value={pincodeForm.pincode}
+                      onChange={(e) => setPincodeForm({...pincodeForm, pincode: e.target.value.replace(/\D/g, '')})}
+                      className="w-full input-premium text-xs rounded-full px-4 py-2 border border-black/10 outline-none focus:border-black"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] uppercase tracking-widest text-black/50 font-bold block">Estimated Days</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={30}
+                      required
+                      placeholder="e.g. 4"
+                      value={pincodeForm.estimatedDays}
+                      onChange={(e) => setPincodeForm({...pincodeForm, estimatedDays: e.target.value})}
+                      className="w-full input-premium text-xs rounded-full px-4 py-2 border border-black/10 outline-none focus:border-black"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] uppercase tracking-widest text-black/50 font-bold block">Destination State</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Jharkhand"
+                      value={pincodeForm.state}
+                      onChange={(e) => setPincodeForm({...pincodeForm, state: e.target.value})}
+                      className="w-full input-premium text-xs rounded-full px-4 py-2 border border-black/10 outline-none focus:border-black"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[9px] uppercase tracking-widest text-black/50 font-bold block">Serviceability Status</label>
+                    <select
+                      value={pincodeForm.serviceable ? 'true' : 'false'}
+                      onChange={(e) => setPincodeForm({...pincodeForm, serviceable: e.target.value === 'true'})}
+                      className="w-full input-premium text-xs rounded-full px-4 py-2 border border-black/10 outline-none focus:border-black bg-white"
+                    >
+                      <option value="true">Serviceable (Delivery Active)</option>
+                      <option value="false">Unserviceable (Delivery Blocked)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 justify-end pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowPincodeForm(false);
+                      setPincodeForm({ pincode: '', serviceable: true, estimatedDays: '4', state: '' });
+                    }}
+                    className="px-4 py-2 border border-black/10 hover:border-black rounded-full text-[10px] font-bold text-black uppercase tracking-widest transition-all bg-white"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-black hover:bg-[#1a1a1a] text-white border border-black rounded-full text-[10px] font-bold transition-all uppercase tracking-widest"
+                  >
+                    Save Rule
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* Pincodes listing */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-black/10 pb-2 text-black/45 font-bold uppercase tracking-widest text-[9px]">
+                    <th className="pb-3">Pincode</th>
+                    <th className="pb-3">Status</th>
+                    <th className="pb-3">Estimated Transit</th>
+                    <th className="pb-3">State / Destination</th>
+                    <th className="pb-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-black/5 text-black/70 font-bold">
+                  {pincodes.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-black/40 font-normal">
+                        No explicit pincode rules defined. Standard Indian pincodes default to 4-day delivery.
+                      </td>
+                    </tr>
+                  ) : (
+                    pincodes.map((p) => (
+                      <tr key={p.pincode}>
+                        <td className="py-3 font-mono text-black font-extrabold">{p.pincode}</td>
+                        <td className="py-3">
+                          {p.serviceable ? (
+                            <span className="bg-emerald-500/10 text-emerald-800 px-2.5 py-0.5 text-[9px] uppercase tracking-wider font-extrabold rounded">
+                              Serviceable
+                            </span>
+                          ) : (
+                            <span className="bg-rose-500/10 text-rose-800 px-2.5 py-0.5 text-[9px] uppercase tracking-wider font-extrabold rounded">
+                              Blocked
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 text-black font-extrabold">{p.estimatedDays} Working Days</td>
+                        <td className="py-3 text-black/80 font-medium">{p.state}</td>
+                        <td className="py-3 text-right">
+                          <div className="flex gap-2 justify-end">
+                            <button
+                              onClick={() => {
+                                setPincodeForm({
+                                  pincode: p.pincode,
+                                  serviceable: p.serviceable,
+                                  estimatedDays: String(p.estimatedDays),
+                                  state: p.state
+                                });
+                                setShowPincodeForm(true);
+                              }}
+                              className="text-black/60 hover:text-black p-1.5 border border-black/10 hover:border-black bg-white rounded-lg transition-all shadow-xs"
+                              title="Edit Rule"
+                            >
+                              <Edit2 className="w-3 h-3" />
+                            </button>
+                            <button
+                              onClick={() => handlePincodeDelete(p.pincode)}
+                              className="text-red-700 hover:text-red-800 p-1.5 border border-black/10 hover:border-red-700 hover:bg-red-50 rounded-lg transition-all shadow-xs"
+                              title="Delete Rule"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

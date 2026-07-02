@@ -228,6 +228,65 @@ export async function checkPincodeAction(pincode: string): Promise<{ serviceable
   }
 }
 
+export async function getPincodesAction(): Promise<{ success: boolean; pincodes?: PincodeServiceability[]; error?: string }> {
+  const currentUser = await getSessionUser();
+  if (!currentUser || (currentUser.role !== 'SUPER_ADMIN' && currentUser.role !== 'STORE_MANAGER' && currentUser.role !== 'CUSTOMER_SUPPORT')) {
+    return { success: false, error: 'Unauthorized.' };
+  }
+
+  try {
+    const pincodes = await db.getPincodes();
+    return { success: true, pincodes };
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to fetch pincodes.' };
+  }
+}
+
+export async function addOrUpdatePincodeAction(
+  pincode: string,
+  serviceability: Omit<PincodeServiceability, 'pincode'>
+): Promise<{ success: boolean; pincode?: PincodeServiceability; error?: string }> {
+  const currentUser = await getSessionUser();
+  if (!currentUser || (currentUser.role !== 'SUPER_ADMIN' && currentUser.role !== 'STORE_MANAGER')) {
+    return { success: false, error: 'Unauthorized.' };
+  }
+
+  try {
+    const item = await db.addOrUpdatePincode(pincode, serviceability);
+    await db.createAuditLog(
+      currentUser.id,
+      currentUser.email,
+      'PINCODE_MANAGE',
+      `Set pincode ${pincode} serviceability: serviceable=${serviceability.serviceable}, days=${serviceability.estimatedDays}, state=${serviceability.state}`
+    );
+    return { success: true, pincode: item };
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to update pincode.' };
+  }
+}
+
+export async function deletePincodeAction(pincode: string): Promise<{ success: boolean; error?: string }> {
+  const currentUser = await getSessionUser();
+  if (!currentUser || (currentUser.role !== 'SUPER_ADMIN' && currentUser.role !== 'STORE_MANAGER')) {
+    return { success: false, error: 'Unauthorized.' };
+  }
+
+  try {
+    const success = await db.deletePincode(pincode);
+    if (success) {
+      await db.createAuditLog(
+        currentUser.id,
+        currentUser.email,
+        'PINCODE_DELETE',
+        `Deleted pincode ${pincode} from serviceability database`
+      );
+    }
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to delete pincode.' };
+  }
+}
+
 // --- COUPON ACTIONS ---
 export async function applyCouponAction(
   code: string,
