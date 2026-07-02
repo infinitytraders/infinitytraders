@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import type { Product } from '@/lib/db';
 import { useCart } from '@/context/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { ArrowRight, ShoppingCart, Star, CheckCircle, ShieldAlert, Send, ChevronLeft, ChevronRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useInView, animate } from 'framer-motion';
 
 interface HomeClientProps {
   initialProducts: Product[];
@@ -486,24 +486,32 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+        className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10"
       >
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 bg-white border border-black/5 p-8 rounded-2xl text-center shadow-xs">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-y-10 gap-x-6 text-center">
           <div className="space-y-1">
-            <span className="text-black block text-2xl sm:text-3xl font-extrabold tracking-wide">100%</span>
-            <span className="text-[9px] uppercase tracking-widest text-black/50 font-semibold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'जीएसटी अनुपालन चालान' : 'GST Compliant Invoice'}</span>
+            <Counter value={100} suffix="%" />
+            <span className="text-xs sm:text-sm text-black/60 tracking-normal font-semibold mt-1 block">
+              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'असली उत्पाद' : 'Genuine Products'}
+            </span>
           </div>
-          <div className="space-y-1 border-l border-black/5">
-            <span className="text-black block text-2xl sm:text-3xl font-extrabold tracking-wide">₹999</span>
-            <span className="text-[9px] uppercase tracking-widest text-black/50 font-semibold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'मुफ़्त शिपिंग सीमा' : 'Free Shipping Threshold'}</span>
+          <div className="space-y-1">
+            <Counter value={5} suffix="K+" />
+            <span className="text-xs sm:text-sm text-black/60 tracking-normal font-semibold mt-1 block">
+              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'खुश ग्राहक' : 'Happy Customers'}
+            </span>
           </div>
-          <div className="space-y-1 border-t md:border-t-0 md:border-l border-black/5 pt-4 md:pt-0">
-            <span className="text-black block text-2xl sm:text-3xl font-extrabold tracking-wide">7 Days</span>
-            <span className="text-[9px] uppercase tracking-widest text-black/50 font-semibold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'परेशानी मुक्त विनिमय' : 'Hassle-free Exchange'}</span>
+          <div className="space-y-1">
+            <span className="text-black block text-4xl sm:text-5xl font-extrabold tracking-wide">PAN</span>
+            <span className="text-xs sm:text-sm text-black/60 tracking-normal font-semibold mt-1 block">
+              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'भारत' : 'India'}
+            </span>
           </div>
-          <div className="space-y-1 border-t md:border-t-0 border-l border-black/5 pt-4 md:pt-0">
-            <span className="text-black block text-2xl sm:text-3xl font-extrabold tracking-wide">PAN India</span>
-            <span className="text-[9px] uppercase tracking-widest text-black/50 font-semibold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'एक्सप्रेस वितरण' : 'Express Delivery'}</span>
+          <div className="space-y-1">
+            <Counter value={7} suffix=" D" />
+            <span className="text-xs sm:text-sm text-black/60 tracking-normal font-semibold mt-1 block">
+              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'डिलिवरी' : 'Delivery'}
+            </span>
           </div>
         </div>
       </motion.section>
@@ -915,4 +923,39 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
       </footer>
     </div>
   );
+}
+
+interface CounterProps {
+  value: number;
+  duration?: number;
+  suffix?: string;
+}
+
+function Counter({ value, duration = 1.5, suffix = "" }: CounterProps) {
+  const nodeRef = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(nodeRef, { once: false, margin: "-100px" });
+
+  useEffect(() => {
+    if (isInView) {
+      const node = nodeRef.current;
+      if (!node) return;
+
+      const controls = animate(0, value, {
+        duration: duration,
+        ease: [0.16, 1, 0.3, 1], // Clean, premium ease out curve
+        onUpdate(latestValue) {
+          node.textContent = Math.round(latestValue).toString() + suffix;
+        },
+      });
+
+      return () => controls.stop();
+    } else {
+      const node = nodeRef.current;
+      if (node) {
+        node.textContent = "0" + suffix;
+      }
+    }
+  }, [isInView, value, duration, suffix]);
+
+  return <span ref={nodeRef} className="text-black block text-4xl sm:text-5xl font-extrabold tracking-wide">0{suffix}</span>;
 }
