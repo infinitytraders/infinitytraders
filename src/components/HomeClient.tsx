@@ -253,12 +253,6 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
             >
               {t('home.hero.cta')}
             </Link>
-            <a
-              href="#brand-story"
-              className="bg-white/80 backdrop-blur-md text-black hover:bg-black hover:text-white px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all"
-            >
-              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'अधिक जानें' : 'Learn More'}
-            </a>
           </motion.div>
 
 
