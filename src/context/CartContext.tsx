@@ -7,16 +7,16 @@ import { applyCouponAction, checkPincodeAction, getSettingsAction } from '@/app/
 export interface CartItem {
   product: Product;
   quantity: number;
-  size: number;
+  size: string | number;
 }
 
 interface CartContextType {
   cart: CartItem[];
   cartOpen: boolean;
   setCartOpen: (open: boolean) => void;
-  addToCart: (product: Product, quantity: number, size: number) => void;
-  removeFromCart: (productId: string, size: number) => void;
-  updateQuantity: (productId: string, size: number, quantity: number) => void;
+  addToCart: (product: Product, quantity: number, size: string | number) => void;
+  removeFromCart: (productId: string, size: string | number) => void;
+  updateQuantity: (productId: string, size: string | number, quantity: number) => void;
   clearCart: () => void;
   
   // Coupon
@@ -85,7 +85,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('infinity_cart', JSON.stringify(newCart));
   };
 
-  const addToCart = (product: Product, quantity: number, size: number) => {
+  const addToCart = (product: Product, quantity: number, size: string | number) => {
     const existingIndex = cart.findIndex(
       item => item.product.id === product.id && item.size === size
     );
@@ -101,12 +101,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setCartOpen(true); // Auto-open cart drawer for smooth shopping feedback
   };
 
-  const removeFromCart = (productId: string, size: number) => {
+  const removeFromCart = (productId: string, size: string | number) => {
     const newCart = cart.filter(item => !(item.product.id === productId && item.size === size));
     saveCart(newCart);
   };
 
-  const updateQuantity = (productId: string, size: number, quantity: number) => {
+  const updateQuantity = (productId: string, size: string | number, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(productId, size);
       return;

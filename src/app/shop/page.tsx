@@ -30,7 +30,7 @@ function ShopContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedBrand, setSelectedBrand] = useState<string>('All');
-  const [selectedSize, setSelectedSize] = useState<number | 'All'>('All');
+  const [selectedSize, setSelectedSize] = useState<string | number | 'All'>('All');
   const [maxPrice, setMaxPrice] = useState<number>(15000);
   const [sortBy, setSortBy] = useState<string>('newest');
   const [showFiltersMobile, setShowFiltersMobile] = useState(false);
@@ -66,9 +66,29 @@ function ShopContent() {
   // Extract unique options for filters
   const categories = ['All', ...new Set(products.map((p) => p.category))];
   const brands = ['All', ...new Set(products.map((p) => p.brand))];
+  const clothesOrder = ['S', 'M', 'L', 'XL', 'XXL'];
   const allSizes = [
     'All',
-    ...Array.from(new Set(products.flatMap((p) => p.sizes))).sort((a, b) => a - b),
+    ...Array.from(new Set(products.flatMap((p) => p.sizes))).sort((a, b) => {
+      const aVal = String(a);
+      const bVal = String(b);
+      const aIsNum = !isNaN(Number(aVal));
+      const bIsNum = !isNaN(Number(bVal));
+
+      if (aIsNum && bIsNum) {
+        return Number(aVal) - Number(bVal);
+      }
+      if (aIsNum) return -1;
+      if (bIsNum) return 1;
+
+      const aIdx = clothesOrder.indexOf(aVal.toUpperCase());
+      const bIdx = clothesOrder.indexOf(bVal.toUpperCase());
+      
+      if (aIdx !== -1 && bIdx !== -1) {
+        return aIdx - bIdx;
+      }
+      return aVal.localeCompare(bVal);
+    }),
   ].filter(s => s !== 0);
 
   // Filter and Sort Engine
@@ -96,7 +116,9 @@ function ShopContent() {
     }
 
     if (selectedSize !== 'All') {
-      result = result.filter((p) => p.sizes.includes(Number(selectedSize)));
+      result = result.filter((p) => 
+        p.sizes.some(s => String(s).toLowerCase() === String(selectedSize).toLowerCase())
+      );
     }
 
     result = result.filter((p) => p.sellingPrice <= maxPrice);
@@ -358,7 +380,7 @@ function ShopContent() {
 
                       {product.stockQuantity > 0 ? (
                         <button
-                          onClick={() => addToCart(product, 1, product.sizes[0] || 8)}
+                          onClick={() => addToCart(product, 1, product.sizes[0] || (product.category === 'Footwear' ? 8 : 'M'))}
                           className="w-full bg-black hover:bg-transparent text-white hover:text-black border border-black py-2 sm:py-2.5 text-[8px] sm:text-[9px] uppercase tracking-widest font-bold flex items-center justify-center gap-1 sm:gap-1.5 rounded-full transition-all"
                         >
                           <ShoppingCart className="w-3.5 h-3.5" /> {t('prod.addToCart')}

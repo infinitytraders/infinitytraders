@@ -23,7 +23,7 @@ export interface Product {
   color: string;
   material: string;
   width: string; // 'Standard' | 'Wide' | 'Narrow'
-  sizes: number[]; // Indian Sizes, e.g. [6, 7, 8, 9, 10, 11]
+  sizes: (string | number)[]; // Indian Sizes, e.g. [6, 7, 8, 9, 10, 11] or ['S', 'M', 'L']
   images: string[];
   videos?: string[];
   seoTitle?: string;

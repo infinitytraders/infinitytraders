@@ -202,7 +202,7 @@ export async function bulkUploadProductsAction(productsArray: any[]): Promise<{ 
         color: p.color || 'Black',
         material: p.material || 'Synthetic',
         width: p.width || 'Standard',
-        sizes: Array.isArray(p.sizes) ? p.sizes : [7, 8, 9, 10],
+        sizes: Array.isArray(p.sizes) ? p.sizes : (p.category === 'Apparel' ? ['S', 'M', 'L', 'XL'] : [7, 8, 9, 10]),
         images: Array.isArray(p.images) ? p.images : ['https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80'],
         isNewArrival: !!p.isNewArrival,
         isBestSeller: !!p.isBestSeller,

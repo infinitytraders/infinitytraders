@@ -23,7 +23,7 @@ export default function ProductDetailClient({ product, recommendations, initialU
   // Image Selection
   const [selectedImage, setSelectedImage] = useState(product.images[0]);
   // Size selection
-  const [selectedSize, setSelectedSize] = useState<number>(product.sizes[0]);
+  const [selectedSize, setSelectedSize] = useState<string | number>(product.sizes[0]);
   // Width selection
   const [selectedWidth, setSelectedWidth] = useState<string>('Standard');
   const [quantity, setQuantity] = useState(1);
@@ -209,7 +209,7 @@ export default function ProductDetailClient({ product, recommendations, initialU
               <div className="grid grid-cols-5 gap-2">
                 {product.sizes.map((size) => (
                   <button
-                    key={size}
+                    key={size.toString()}
                     onClick={() => setSelectedSize(size)}
                     className={`py-2.5 text-center text-xs border rounded-xl transition-all font-semibold ${
                       selectedSize === size
@@ -230,7 +230,7 @@ export default function ProductDetailClient({ product, recommendations, initialU
               <div className="grid grid-cols-4 gap-2">
                 {product.sizes.map((size) => (
                   <button
-                    key={size}
+                    key={size.toString()}
                     onClick={() => setSelectedSize(size)}
                     className={`py-2.5 text-center text-xs border rounded-xl transition-all font-semibold ${
                       selectedSize === size

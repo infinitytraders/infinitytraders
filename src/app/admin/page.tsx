@@ -132,7 +132,13 @@ export default function AdminPage() {
   // Product submit (create or update)
   const handleProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const sizesArray = productForm.sizes.split(',').map(s => Number(s.trim())).filter(s => !isNaN(s));
+    const sizesArray = productForm.sizes.split(',')
+      .map(s => {
+        const val = s.trim();
+        const num = Number(val);
+        return isNaN(num) || val === '' ? val : num;
+      })
+      .filter(s => s !== '');
     const imagesArray = productForm.images.split(',').map(img => img.trim()).filter(img => img.length > 0);
 
     const payload = {
@@ -593,7 +599,15 @@ export default function AdminPage() {
                   <div className="space-y-1.5">
                     <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Category</label>
                     <select
-                      value={productForm.category} onChange={(e) => setProductForm({...productForm, category: e.target.value})}
+                      value={productForm.category} 
+                      onChange={(e) => {
+                        const newCat = e.target.value;
+                        let updatedSizes = productForm.sizes;
+                        if (productForm.sizes === '7,8,9,10,11' || productForm.sizes === 'S,M,L,XL,XXL') {
+                          updatedSizes = newCat === 'Apparel' ? 'S,M,L,XL,XXL' : '7,8,9,10,11';
+                        }
+                        setProductForm({...productForm, category: newCat, sizes: updatedSizes});
+                      }}
                       className="w-full bg-white border border-black/10 rounded-lg p-2 text-xs text-black font-semibold"
                     >
                       <option value="Footwear">Footwear</option>

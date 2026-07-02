@@ -756,7 +756,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
                   {product.stockQuantity > 0 ? (
                     <button
                       suppressHydrationWarning
-                      onClick={() => addToCart(product, 1, product.sizes[0] || 8)}
+                      onClick={() => addToCart(product, 1, product.sizes[0] || (product.category === 'Footwear' ? 8 : 'M'))}
                       className="w-full bg-black hover:bg-transparent text-white hover:text-black border border-black py-2 text-[9px] sm:text-[10px] uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 rounded-full transition-all"
                     >
                       <ShoppingCart className="w-3.5 h-3.5" /> {t('prod.addToCart')}
