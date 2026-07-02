@@ -156,169 +156,245 @@ export default function AccountClient() {
   // --- RENDER LOGIN/REGISTER PORTAL ---
   if (!user) {
     return (
-      <div className="max-w-md mx-auto px-4 py-16 space-y-8 bg-[#f4f3ef] min-h-[85vh] flex flex-col justify-center">
-        <div className="text-center space-y-2">
-          <span className="text-[10px] uppercase tracking-[0.3em] text-black/50 font-bold">Infinity Access</span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wider uppercase text-black">
-            {isRegister ? 'Create Account' : 'Sign In'}
-          </h1>
-          <p className="text-xs text-black/60 font-light max-w-xs mx-auto">
-            {isRegister ? 'Join our distributor-direct program.' : 'Access your orders, invoices and saved addresses.'}
-          </p>
-        </div>
-
-        <div className="bg-white border border-black/5 p-6 sm:p-8 rounded-2xl shadow-xs space-y-6">
-          <form onSubmit={handleAuthSubmit} className="space-y-4">
-            {authError && (
-              <div className="bg-red-500/5 border border-red-500/10 text-red-800 text-xs p-3.5 rounded-xl flex items-center gap-2 font-bold">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                <span>{authError}</span>
+      <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12 w-full">
+        <div className="bg-white border border-black/5 rounded-3xl overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.015)] grid grid-cols-1 md:grid-cols-12 min-h-[580px]">
+          
+          {/* Left Column: Brand Image Banner */}
+          <div className="hidden md:flex md:col-span-5 relative bg-black items-center justify-center p-8 overflow-hidden select-none">
+            <div className="absolute inset-0 z-0">
+              <img 
+                src="/image-runner.png" 
+                alt="Infinity Performance" 
+                className="w-full h-full object-cover opacity-50 object-center filter grayscale brightness-75 contrast-125"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+            </div>
+            
+            <div className="relative z-10 text-left space-y-4 w-full">
+              <div className="flex items-center gap-2 text-white">
+                <svg
+                  className="w-8 h-8 text-white"
+                  viewBox="0 0 100 100"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M30 35 C15 35 15 65 30 65 C45 65 55 35 70 35 C85 35 85 65 70 65 C55 65 45 35 30 35 Z"
+                    stroke="currentColor"
+                    strokeWidth="12"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                  />
+                </svg>
+                <div className="flex flex-col leading-none">
+                  <span className="text-[12px] font-extrabold tracking-[0.2em] uppercase">INFINITY</span>
+                  <span className="text-[8px] font-light tracking-[0.25em] uppercase text-white/60 mt-0.5">TRADERS</span>
+                </div>
               </div>
-            )}
+              <h2 className="text-2xl font-black text-white uppercase tracking-widest leading-tight">
+                INFINITY ACCESS
+              </h2>
+              <p className="text-[10px] text-white/70 font-medium leading-relaxed max-w-xs">
+                Unlock order tracking, view invoice documents, save shipping addresses, and receive early updates on new shoe drops.
+              </p>
+            </div>
+          </div>
 
-            {isRegister ? (
-              // REGISTER FIELDS
-              <>
-                <div className="space-y-1.5">
-                  <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold">Full Name</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Enter your name"
-                    value={regName}
-                    onChange={(e) => setRegName(e.target.value)}
-                    className="w-full border border-black/10 focus:border-black rounded-full px-4 py-2.5 text-xs outline-none bg-[#fdfdfd] transition-all text-black"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold">Email Address</label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="yourname@domain.com"
-                    value={regEmail}
-                    onChange={(e) => setRegEmail(e.target.value)}
-                    className="w-full border border-black/10 focus:border-black rounded-full px-4 py-2.5 text-xs outline-none bg-[#fdfdfd] transition-all text-black"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold">Mobile Number</label>
-                  <input
-                    type="tel"
-                    required
-                    pattern="[6-9][0-9]{9}"
-                    placeholder="10-digit Indian Mobile"
-                    value={regMobile}
-                    onChange={(e) => setRegMobile(e.target.value.replace(/\D/g, ''))}
-                    className="w-full border border-black/10 focus:border-black rounded-full px-4 py-2.5 text-xs outline-none bg-[#fdfdfd] transition-all text-black"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold">Password</label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="Minimum 6 characters"
-                    value={regPassword}
-                    onChange={(e) => setRegPassword(e.target.value)}
-                    className="w-full border border-black/10 focus:border-black rounded-full px-4 py-2.5 text-xs outline-none bg-[#fdfdfd] transition-all text-black"
-                  />
-                </div>
-              </>
-            ) : (
-              // LOGIN FIELDS
-              <>
-                <div className="space-y-1.5">
-                  <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold">Email Address or Mobile</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Enter registered email or mobile"
-                    value={identifier}
-                    onChange={(e) => setIdentifier(e.target.value)}
-                    className="w-full border border-black/10 focus:border-black rounded-full px-4 py-2.5 text-xs outline-none bg-[#fdfdfd] transition-all text-black"
-                  />
-                </div>
-
-                {authMethod === 'password' ? (
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between items-center">
-                      <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold">Password</label>
-                      <button
-                        type="button"
-                        onClick={() => setAuthMethod('otp')}
-                        className="text-[9px] text-black/60 hover:text-black font-bold uppercase tracking-wider underline"
-                      >
-                        OTP Login
-                      </button>
-                    </div>
-                    <input
-                      type="password"
-                      required
-                      placeholder="Enter password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full border border-black/10 focus:border-black rounded-full px-4 py-2.5 text-xs outline-none bg-[#fdfdfd] transition-all text-black"
+          {/* Right Column: Portal Form */}
+          <div className="col-span-12 md:col-span-7 p-8 sm:p-12 flex flex-col justify-center bg-[#faf9f5]/20">
+            <div className="space-y-6">
+              {/* Header Title */}
+              <div className="space-y-1 text-left">
+                {/* Mobile-only logo */}
+                <div className="md:hidden flex items-center gap-2 mb-4 select-none">
+                  <svg
+                    className="w-8 h-8 text-black"
+                    viewBox="0 0 100 100"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M30 35 C15 35 15 65 30 65 C45 65 55 35 70 35 C85 35 85 65 70 65 C55 65 45 35 30 35 Z"
+                      stroke="currentColor"
+                      strokeWidth="12"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      fill="none"
                     />
+                  </svg>
+                  <div className="flex flex-col leading-none">
+                    <span className="text-[12px] font-extrabold tracking-[0.2em] uppercase">INFINITY</span>
+                    <span className="text-[8px] font-light tracking-[0.25em] uppercase text-black/60 mt-0.5">TRADERS</span>
+                  </div>
+                </div>
+
+                <span className="text-[9px] uppercase tracking-[0.35em] text-black/45 font-extrabold block">Member Panel</span>
+                <h1 className="text-3xl font-black tracking-wider uppercase text-black">
+                  {isRegister ? 'Register' : 'Sign In'}
+                </h1>
+                <p className="text-xs text-black/50 font-normal leading-relaxed">
+                  {isRegister ? 'Create an account to track orders and save details.' : 'Access your purchases, billing addresses, and invoices.'}
+                </p>
+              </div>
+
+              {/* Form elements */}
+              <form onSubmit={handleAuthSubmit} className="space-y-4">
+                {authError && (
+                  <div className="bg-red-500/5 border border-red-500/10 text-red-800 text-xs p-3.5 rounded-xl flex items-center gap-2 font-bold">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    <span>{authError}</span>
+                  </div>
+                )}
+
+                {isRegister ? (
+                  // REGISTER FIELDS
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Full Name</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Enter your full name"
+                        value={regName}
+                        onChange={(e) => setRegName(e.target.value)}
+                        className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-medium"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Email Address</label>
+                      <input
+                        type="email"
+                        required
+                        placeholder="yourname@domain.shop"
+                        value={regEmail}
+                        onChange={(e) => setRegEmail(e.target.value)}
+                        className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-medium"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Mobile Number</label>
+                      <input
+                        type="tel"
+                        required
+                        pattern="[6-9][0-9]{9}"
+                        placeholder="10-digit Indian Mobile"
+                        value={regMobile}
+                        onChange={(e) => setRegMobile(e.target.value.replace(/\D/g, ''))}
+                        className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-medium"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Password</label>
+                      <input
+                        type="password"
+                        required
+                        placeholder="Minimum 6 characters"
+                        value={regPassword}
+                        onChange={(e) => setRegPassword(e.target.value)}
+                        className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-medium"
+                      />
+                    </div>
                   </div>
                 ) : (
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold">OTP Verification</label>
-                      <button
-                        type="button"
-                        onClick={() => setAuthMethod('password')}
-                        className="text-[9px] text-black/60 hover:text-black font-bold uppercase tracking-wider underline"
-                      >
-                        Password Login
-                      </button>
+                  // LOGIN FIELDS
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Email Address or Mobile</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Enter registered email or mobile"
+                        value={identifier}
+                        onChange={(e) => setIdentifier(e.target.value)}
+                        className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-medium"
+                      />
                     </div>
 
-                    {otpSent ? (
-                      <>
+                    {authMethod === 'password' ? (
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between items-center">
+                          <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Password</label>
+                          <button
+                            type="button"
+                            onClick={() => setAuthMethod('otp')}
+                            className="text-[9px] text-black/60 hover:text-black font-bold uppercase tracking-wider underline transition-colors"
+                          >
+                            OTP Login
+                          </button>
+                        </div>
                         <input
-                          type="text"
+                          type="password"
                           required
-                          maxLength={6}
-                          placeholder="Enter 6-digit OTP (Code: 123456)"
-                          value={otpCode}
-                          onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                          className="w-full border border-black/10 focus:border-black rounded-full px-4 py-2.5 text-center text-sm font-extrabold tracking-widest outline-none bg-[#fdfdfd] text-black"
+                          placeholder="Enter password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-medium"
                         />
-                        <span className="text-[10px] text-teal-800 text-center block font-bold">
-                          Demo OTP Code: <strong>123456</strong> sent to {identifier}
-                        </span>
-                      </>
+                      </div>
                     ) : (
-                      <span className="text-[9px] text-black/40 block font-medium">
-                        We will simulate sending a 6-digit verification code to you.
-                      </span>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">OTP Verification</label>
+                          <button
+                            type="button"
+                            onClick={() => setAuthMethod('password')}
+                            className="text-[9px] text-black/60 hover:text-black font-bold uppercase tracking-wider underline transition-colors"
+                          >
+                            Password Login
+                          </button>
+                        </div>
+
+                        {otpSent ? (
+                          <div className="space-y-3">
+                            <input
+                              type="text"
+                              required
+                              maxLength={6}
+                              placeholder="Enter 6-digit OTP"
+                              value={otpCode}
+                              onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                              className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-center text-xs font-black tracking-[0.25em] outline-none transition-all text-black"
+                            />
+                            <span className="text-[9px] text-emerald-800 bg-emerald-500/5 border border-emerald-500/10 p-2.5 rounded-lg text-center block font-bold">
+                              Demo OTP Code: <strong className="font-extrabold text-[10px]">123456</strong> sent to {identifier}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-[9px] text-black/45 block font-medium leading-relaxed bg-black/5 px-3 py-2 rounded-lg">
+                            We will simulate sending a 6-digit verification code to you.
+                          </span>
+                        )}
+                      </div>
                     )}
                   </div>
                 )}
-              </>
-            )}
 
-            <button
-              type="submit"
-              className="w-full bg-black hover:bg-transparent text-white hover:text-black border border-black py-3.5 text-xs font-bold uppercase tracking-widest rounded-full transition-all mt-4"
-            >
-              {isRegister ? 'Register' : otpSent ? 'Verify & Login' : authMethod === 'otp' ? 'Request OTP' : 'Login'}
-            </button>
-          </form>
+                <button
+                  type="submit"
+                  className="w-full bg-black hover:bg-black/90 text-white font-extrabold text-xs uppercase tracking-widest py-3 rounded-xl transition-all shadow-xs hover:shadow-sm active:scale-[0.98] mt-4"
+                >
+                  {isRegister ? 'Register' : otpSent ? 'Verify & Login' : authMethod === 'otp' ? 'Request OTP' : 'Login'}
+                </button>
+              </form>
 
-          <div className="text-center pt-2">
-            <button
-              onClick={() => {
-                setIsRegister(!isRegister);
-                setAuthError('');
-                setOtpSent(false);
-              }}
-              className="text-xs text-black/50 hover:text-black transition-colors font-bold uppercase tracking-widest"
-            >
-              {isRegister ? 'Already have an account? Sign In' : "Don't have an account? Create one"}
-            </button>
+              {/* Bottom Toggle switch */}
+              <div className="text-center pt-4 border-t border-black/[0.04]">
+                <button
+                  onClick={() => {
+                    setIsRegister(!isRegister);
+                    setAuthError('');
+                    setOtpSent(false);
+                  }}
+                  className="text-[9px] text-black/55 hover:text-black transition-colors font-bold uppercase tracking-widest"
+                >
+                  {isRegister ? 'Already have an account? Sign In' : "Don't have an account? Create one"}
+                </button>
+              </div>
+
+            </div>
           </div>
+
         </div>
       </div>
     );
