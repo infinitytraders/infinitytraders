@@ -432,13 +432,12 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
           </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-10 sm:gap-16 items-center justify-items-center">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-10 sm:gap-16 items-center justify-items-center">
           {[
             { name: 'Adidas', logo: '/brands logos/Brand (1).svg' },
             { name: 'Nike', logo: '/brands logos/Brand (2).svg' },
             { name: 'Puma', logo: '/brands logos/Brand (3).svg' },
             { name: 'Skechers', logo: '/brands logos/Brand (4).svg' },
-            { name: 'Reebok', logo: '/brands logos/Brand (5).svg' },
           ].map((brand) => (
             <Link
               key={brand.name}
@@ -452,6 +451,32 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
               />
             </Link>
           ))}
+        </div>
+      </motion.section>
+
+      {/* INFINITE PERFORMANCE BANNER SECTION */}
+      <motion.section
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+      >
+        <div className="relative w-full aspect-[2/1] rounded-3xl overflow-hidden group shadow-xs">
+          {/* Background image with hover zoom effect */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105"
+            style={{ backgroundImage: "url('/image-runner.png')" }}
+          />
+          {/* Dark Overlay for text legibility */}
+          <div className="absolute inset-0 bg-black/15 transition-opacity duration-300 group-hover:opacity-20" />
+          
+          {/* Centered Content */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
+            <h2 className="text-3xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-wide uppercase select-none drop-shadow-md">
+              Infinite Performance
+            </h2>
+          </div>
         </div>
       </motion.section>
 
