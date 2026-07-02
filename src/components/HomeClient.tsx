@@ -472,25 +472,25 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
           <div className="relative w-full overflow-hidden mask-gradient py-4">
             <div className="flex animate-marquee gap-16 sm:gap-24 items-center whitespace-nowrap">
               {[
-                { name: 'Adidas', logo: '/brands logos/brand (1).svg' },
-                { name: 'Nike', logo: '/brands logos/brand (2).svg' },
-                { name: 'Puma', logo: '/brands logos/brand (3).svg' },
-                { name: 'Skechers', logo: '/brands logos/brand (4).svg' },
-                { name: 'Reebok', logo: '/brands logos/brand (5).svg' },
-                { name: 'Under Armour', logo: '/brands logos/brand (6).svg' },
-                { name: 'Jordan', logo: '/brands logos/brand (7).svg' },
-                { name: 'Fila', logo: '/brands logos/brand (8).svg' },
-                { name: 'Asics', logo: '/brands logos/brand (9).svg' },
+                { name: 'Adidas', logo: '/brands-logos/brand-1.svg' },
+                { name: 'Nike', logo: '/brands-logos/brand-2.svg' },
+                { name: 'Puma', logo: '/brands-logos/brand-3.svg' },
+                { name: 'Skechers', logo: '/brands-logos/brand-4.svg' },
+                { name: 'Reebok', logo: '/brands-logos/brand-5.svg' },
+                { name: 'Under Armour', logo: '/brands-logos/brand-6.svg' },
+                { name: 'Jordan', logo: '/brands-logos/brand-7.svg' },
+                { name: 'Fila', logo: '/brands-logos/brand-8.svg' },
+                { name: 'Asics', logo: '/brands-logos/brand-9.svg' },
                 // Duplicate once for seamless infinite scrolling loop
-                { name: 'Adidas', logo: '/brands logos/brand (1).svg' },
-                { name: 'Nike', logo: '/brands logos/brand (2).svg' },
-                { name: 'Puma', logo: '/brands logos/brand (3).svg' },
-                { name: 'Skechers', logo: '/brands logos/brand (4).svg' },
-                { name: 'Reebok', logo: '/brands logos/brand (5).svg' },
-                { name: 'Under Armour', logo: '/brands logos/brand (6).svg' },
-                { name: 'Jordan', logo: '/brands logos/brand (7).svg' },
-                { name: 'Fila', logo: '/brands logos/brand (8).svg' },
-                { name: 'Asics', logo: '/brands logos/brand (9).svg' },
+                { name: 'Adidas', logo: '/brands-logos/brand-1.svg' },
+                { name: 'Nike', logo: '/brands-logos/brand-2.svg' },
+                { name: 'Puma', logo: '/brands-logos/brand-3.svg' },
+                { name: 'Skechers', logo: '/brands-logos/brand-4.svg' },
+                { name: 'Reebok', logo: '/brands-logos/brand-5.svg' },
+                { name: 'Under Armour', logo: '/brands-logos/brand-6.svg' },
+                { name: 'Jordan', logo: '/brands-logos/brand-7.svg' },
+                { name: 'Fila', logo: '/brands-logos/brand-8.svg' },
+                { name: 'Asics', logo: '/brands-logos/brand-9.svg' },
               ].map((brand, idx) => (
                 <Link
                   key={`${brand.name}-${idx}`}
