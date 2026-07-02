@@ -25,6 +25,9 @@ export async function generateMetadata({ params }: Props) {
   return {
     title: `${product.name} | ${product.brand} | Infinity Traders`,
     description: product.description.slice(0, 160),
+    alternates: {
+      canonical: `https://infinitytraders.shop/product/${product.id}`,
+    },
     openGraph: {
       title: `${product.name} by ${product.brand}`,
       description: product.description.slice(0, 160),

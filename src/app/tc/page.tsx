@@ -1,7 +1,15 @@
-'use client';
-
+import { Metadata } from 'next';
 import React from 'react';
 import Link from 'next/link';
+
+export const metadata: Metadata = {
+  title: 'Terms & Conditions | Business Contract | Infinity Traders',
+  description: 'Read the official terms and conditions for purchasing from Infinity Traders. Learn about our multi-brand distribution rights, billing policies, and Dhanbad jurisdiction terms.',
+  keywords: 'terms and conditions, legal contract, Infinity Traders customer terms, size exchange details, Dhanbad court authority',
+  alternates: {
+    canonical: 'https://infinitytraders.shop/tc',
+  },
+};
 
 export default function TermsPage() {
   return (

@@ -1,7 +1,15 @@
-'use client';
-
+import { Metadata } from 'next';
 import React from 'react';
 import Link from 'next/link';
+
+export const metadata: Metadata = {
+  title: 'Shipping Policy & Payment Methods | Infinity Traders',
+  description: 'Understand the delivery times, shipping charges (₹150 to ₹500), secure Razorpay payments, and Cash on Delivery guidelines for Infinity Traders.',
+  keywords: 'shipping policy, shipping rates India, Cash on Delivery rules, Razorpay payments, Infinity Traders delivery times',
+  alternates: {
+    canonical: 'https://infinitytraders.shop/shipping-payments',
+  },
+};
 
 export default function ShippingPaymentsPage() {
   return (

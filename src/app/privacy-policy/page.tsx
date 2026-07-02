@@ -1,7 +1,15 @@
-'use client';
-
+import { Metadata } from 'next';
 import React from 'react';
 import Link from 'next/link';
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy | User Data Protection | Infinity Traders',
+  description: 'Learn how Infinity Traders handles customer data. Read about our database encryption standards, cookies, and secure Razorpay payment processing APIs.',
+  keywords: 'privacy policy, customer database, cookie settings, Razorpay gateway security, encrypted transactions',
+  alternates: {
+    canonical: 'https://infinitytraders.shop/privacy-policy',
+  },
+};
 
 export default function PrivacyPolicyPage() {
   return (
