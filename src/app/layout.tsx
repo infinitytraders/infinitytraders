@@ -9,15 +9,50 @@ import InfinityPreloader from "@/components/InfinityPreloader";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "Infinity Traders | Premium Footwear & Lifestyle Distributor",
+  metadataBase: new URL('https://infinitytraders.shop'),
+  title: {
+    default: "Infinity Traders | Premium Footwear & Lifestyle Distributor",
+    template: "%s | Infinity Traders"
+  },
   description: "Dhanbad's premier multi-brand distributor. Experience modern design and performance footwear, activewear recovery slides, and premium apparel. Serving pan-India.",
-  keywords: "Infinity Traders, footwear, shoes, sneakers, slippers, slides, apparel, lifestyle, ENA athletics, India, Dhanbad, activewear",
+  keywords: ["Infinity Traders", "footwear", "shoes", "sneakers", "slippers", "slides", "apparel", "lifestyle", "ENA athletics", "India", "Dhanbad", "activewear"],
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      noimageindex: false,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   openGraph: {
+    title: "Infinity Traders | Premium Footwear & Lifestyle",
+    description: "Premium performance running shoes, recovery slides, and active apparel.",
+    url: "https://infinitytraders.shop",
+    siteName: "Infinity Traders",
+    images: [
+      {
+        url: "/categories/sneakers.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Infinity Traders - Premium Footwear & Apparel",
+      }
+    ],
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
     title: "Infinity Traders | Footwear & Lifestyle",
     description: "Premium performance running shoes, recovery slides, and active apparel.",
-    type: "website",
-    locale: "en_IN",
-    siteName: "Infinity Traders"
+    images: ["/categories/sneakers.jpg"],
   }
 };
 
