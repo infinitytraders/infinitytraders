@@ -19,6 +19,7 @@ export default function CartDrawer() {
     shippingCharges,
     couponDiscount,
     finalAmount,
+    comboDiscount,
     freeShippingProgress,
     shippingSettings,
     coupon,
@@ -321,6 +322,12 @@ export default function CartDrawer() {
                     <span>{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'शामिल जीएसटी (18%)' : 'Included GST (18%)'}</span>
                     <span>₹{gstAmount.toLocaleString('en-IN')}</span>
                   </div>
+                  {comboDiscount > 0 && (
+                    <div className="flex justify-between text-teal-800">
+                      <span className="uppercase tracking-wider font-extrabold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'कॉम्बो डिस्काउंट' : 'Combo Discount'}</span>
+                      <span className="font-extrabold">- ₹{comboDiscount.toLocaleString('en-IN')}</span>
+                    </div>
+                  )}
                   {couponDiscount > 0 && (
                     <div className="flex justify-between text-teal-800">
                       <span className="uppercase tracking-wider font-extrabold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'कूपन छूट' : 'Coupon Discount'}</span>

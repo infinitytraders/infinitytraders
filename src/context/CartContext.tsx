@@ -33,6 +33,11 @@ interface CartContextType {
   finalAmount: number;
   freeShippingProgress: number;
   shippingSettings: { standardShippingFee: number; freeShippingThreshold: number };
+  
+  // Combo Deal
+  isComboApplied: boolean;
+  comboDiscount: number;
+  addCompleteGearCombo: (prod1: Product, prod3: Product, prod4: Product) => void;
 
   // Pincode check
   pincode: string;
@@ -124,8 +129,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setCouponError(null);
   };
 
+  const addCompleteGearCombo = (prod1: Product, prod3: Product, prod4: Product) => {
+    // Clear cart first to construct personalized combo cart
+    const newCart = [
+      { product: prod1, quantity: 1, size: 9 },  // Nike shoe
+      { product: prod3, quantity: 1, size: 32 }, // Puma lower
+      { product: prod4, quantity: 1, size: 40 }  // Skechers Tee
+    ];
+    saveCart(newCart);
+    setCartOpen(true);
+  };
+
   // Re-calculate coupon discount when cart subtotal changes
   const subtotal = cart.reduce((sum, item) => sum + item.product.sellingPrice * item.quantity, 0);
+
+  // Combo calculations
+  const hasProd1 = cart.some(item => item.product.id === 'prod_1');
+  const hasProd3 = cart.some(item => item.product.id === 'prod_3');
+  const hasProd4 = cart.some(item => item.product.id === 'prod_4');
+  const isComboApplied = hasProd1 && hasProd3 && hasProd4;
+  const comboDiscount = isComboApplied ? 2500 : 0;
 
   useEffect(() => {
     if (coupon) {
@@ -225,7 +248,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // GST Amount = Selling Price - Base Price
   const gstAmount = Math.round(subtotal - subtotal / 1.18);
   
-  const finalAmount = Math.max(0, subtotal - couponDiscount + shippingCharges);
+  const finalAmount = Math.max(0, subtotal - couponDiscount - comboDiscount + shippingCharges);
   
   const freeShippingProgress = 0; // Disabled as shipping charges always apply based on pincode now
 
@@ -252,6 +275,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         finalAmount,
         freeShippingProgress,
         shippingSettings,
+
+        isComboApplied,
+        comboDiscount,
+        addCompleteGearCombo,
 
         pincode,
         setPincode,

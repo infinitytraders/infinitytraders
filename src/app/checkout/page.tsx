@@ -20,6 +20,7 @@ export default function CheckoutPage() {
     shippingCharges,
     couponDiscount,
     finalAmount,
+    comboDiscount,
     coupon,
     clearCart,
     pincode,
@@ -474,9 +475,15 @@ export default function CheckoutPage() {
               <span>{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'शामिल जीएसटी विवरण (18%)' : 'Included GST Breakdown (18%)'}</span>
               <span>₹{gstAmount.toLocaleString('en-IN')}</span>
             </div>
+            {comboDiscount > 0 && (
+              <div className="flex justify-between text-teal-800">
+                <span className="uppercase tracking-wider font-extrabold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'कॉम्बो डिस्काउंट' : 'Combo Discount'}</span>
+                <span className="font-extrabold">- ₹{comboDiscount.toLocaleString('en-IN')}</span>
+              </div>
+            )}
             {couponDiscount > 0 && (
               <div className="flex justify-between text-teal-800">
-                <span className="uppercase tracking-wider">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'कूपन लागू' : 'Coupon Applied'} ({coupon?.code})</span>
+                <span className="uppercase tracking-wider font-extrabold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'कूपन लागू' : 'Coupon Applied'} ({coupon?.code})</span>
                 <span className="font-extrabold">- ₹{couponDiscount.toLocaleString('en-IN')}</span>
               </div>
             )}

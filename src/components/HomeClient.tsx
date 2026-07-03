@@ -5,7 +5,7 @@ import Link from 'next/link';
 import type { Product } from '@/lib/db';
 import { useCart } from '@/context/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { ArrowRight, ShoppingCart, Star, CheckCircle, ShieldAlert, Send, ChevronLeft, ChevronRight, MapPin, ExternalLink } from 'lucide-react';
+import { ArrowRight, ShoppingCart, Star, CheckCircle, ShieldAlert, Send, ChevronLeft, ChevronRight, MapPin, ExternalLink, X } from 'lucide-react';
 import { motion, AnimatePresence, useInView, animate } from 'framer-motion';
 import { subscribeNewsletterAction } from '@/app/actions';
 
@@ -13,8 +13,320 @@ interface HomeClientProps {
   initialProducts: Product[];
 }
 
+const ALL_BRANDS = ['Nike', 'Adidas', 'Puma', 'Skechers', 'Reebok', 'Under Armour', 'Jordan', 'Fila', 'Asics'];
+
+const BRAND_LOGO_MAPPING: Record<string, string> = {
+  'Adidas': '/brands-logos/brand-1.svg',
+  'Nike': '/brands-logos/brand-2.svg',
+  'Puma': '/brands-logos/brand-3.svg',
+  'Skechers': '/brands-logos/brand-4.svg',
+  'Reebok': '/brands-logos/brand-5.svg',
+  'Under Armour': '/brands-logos/brand-6.svg',
+  'Jordan': '/brands-logos/brand-7.svg',
+  'Fila': '/brands-logos/brand-8.svg',
+  'Asics': '/brands-logos/brand-9.svg'
+};
+
+interface RecommendationProduct {
+  name: string;
+  brand: string;
+  price: string;
+  image: string;
+  link: string;
+  isReal: boolean;
+}
+
+interface QuestionConfig {
+  title: string;
+  question: string;
+  options: string[];
+  recommendations: Record<string, RecommendationProduct[]>;
+}
+
+const RECOMMENDATION_CONFIGS: Record<string, QuestionConfig> = {
+  'running-shoes': {
+    title: 'Running Shoes Matcher',
+    question: 'What is your daily running range?',
+    options: ['1500m to 3km', '3km to 5km', '5km to 10km', 'Super running shoes'],
+    recommendations: {
+      '1500m to 3km': [
+        {
+          name: 'Nike Air Zoom Pegasus Running Shoe',
+          brand: 'Nike',
+          price: '₹9,999',
+          image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80',
+          link: '/product/prod_1',
+          isReal: true
+        },
+        {
+          name: 'Reebok Floatride Energy 5',
+          brand: 'Reebok',
+          price: '₹7,999',
+          image: 'https://images.unsplash.com/photo-1582966772680-860e372bb558?auto=format&fit=crop&w=600&q=80',
+          link: '/shop?category=Footwear',
+          isReal: false
+        }
+      ],
+      '3km to 5km': [
+        {
+          name: 'Nike Air Zoom Pegasus Running Shoe',
+          brand: 'Nike',
+          price: '₹9,999',
+          image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80',
+          link: '/product/prod_1',
+          isReal: true
+        },
+        {
+          name: 'Adidas Ultraboost Light',
+          brand: 'Adidas',
+          price: '₹14,999',
+          image: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=600&q=80',
+          link: '/shop?category=Footwear',
+          isReal: false
+        }
+      ],
+      '5km to 10km': [
+        {
+          name: 'Nike Air Zoom Pegasus Running Shoe',
+          brand: 'Nike',
+          price: '₹9,999',
+          image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80',
+          link: '/product/prod_1',
+          isReal: true
+        },
+        {
+          name: 'Asics Gel-Kayano 30 Premium',
+          brand: 'Asics',
+          price: '₹13,999',
+          image: 'https://images.unsplash.com/photo-1607522370275-f14206abe5d3?auto=format&fit=crop&w=600&q=80',
+          link: '/shop?category=Footwear',
+          isReal: false
+        }
+      ],
+      'Super running shoes': [
+        {
+          name: 'Nike Vaporfly 3 Racing Shoe',
+          brand: 'Nike',
+          price: '₹19,999',
+          image: 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?auto=format&fit=crop&w=600&q=80',
+          link: '/shop?category=Footwear',
+          isReal: false
+        },
+        {
+          name: 'Adidas Adizero Adios Pro 3',
+          brand: 'Adidas',
+          price: '₹18,999',
+          image: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=600&q=80',
+          link: '/shop?category=Footwear',
+          isReal: false
+        }
+      ]
+    }
+  },
+  'casuals': {
+    title: 'Casual Shoes Matcher',
+    question: 'Select your preferred brand:',
+    options: ALL_BRANDS,
+    recommendations: {}
+  },
+  'daily-wear': {
+    title: 'Daily Wear Matcher',
+    question: 'Select your preferred brand:',
+    options: ALL_BRANDS,
+    recommendations: {}
+  },
+  'sliders': {
+    title: 'Sliders Matcher',
+    question: 'Select your preferred brand:',
+    options: ALL_BRANDS,
+    recommendations: {}
+  },
+  't-shirts': {
+    title: 'T-Shirts Matcher',
+    question: 'Which collar style do you prefer?',
+    options: ['Round Neck', 'Polo'],
+    recommendations: {
+      'Round Neck': [
+        {
+          name: 'GO RUN Breathable Training Tee',
+          brand: 'Skechers',
+          price: '₹1,699',
+          image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=600&q=80',
+          link: '/product/prod_4',
+          isReal: true
+        }
+      ],
+      'Polo': [
+        {
+          name: 'Adidas Club Tennis Polo',
+          brand: 'Adidas',
+          price: '₹2,499',
+          image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=600&q=80',
+          link: '/shop?category=Apparel',
+          isReal: false
+        }
+      ]
+    }
+  },
+  'halfpants': {
+    title: 'Halfpants Matcher',
+    question: 'Select your preferred brand:',
+    options: ALL_BRANDS,
+    recommendations: {}
+  },
+  'lowers': {
+    title: 'Lowers Matcher',
+    question: 'Select your preferred brand:',
+    options: ALL_BRANDS,
+    recommendations: {}
+  },
+  'sando': {
+    title: 'Sando Matcher',
+    question: 'Select your preferred brand:',
+    options: ALL_BRANDS,
+    recommendations: {}
+  }
+};
+
+function getRecommendationsForBrand(category: string, brand: string): RecommendationProduct[] {
+  if (category === 'running-shoes') {
+    return RECOMMENDATION_CONFIGS['running-shoes'].recommendations[brand] || [];
+  }
+  if (category === 't-shirts') {
+    return RECOMMENDATION_CONFIGS['t-shirts'].recommendations[brand] || [];
+  }
+
+  // Footwear categories: casuals, daily-wear, sliders
+  if (category === 'casuals' || category === 'daily-wear' || category === 'sliders') {
+    if (brand === 'Adidas') {
+      return [{
+        name: 'Adilette Comfort Slides',
+        brand: 'Adidas',
+        price: '₹1,999',
+        image: 'https://images.unsplash.com/photo-1603808033192-082d6919d3e1?auto=format&fit=crop&w=600&q=80',
+        link: '/product/prod_2',
+        isReal: true
+      }];
+    }
+    if (brand === 'Nike') {
+      return [{
+        name: 'Nike Air Zoom Pegasus Running Shoe',
+        brand: 'Nike',
+        price: '₹9,999',
+        image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80',
+        link: '/product/prod_1',
+        isReal: true
+      }];
+    }
+    if (brand === 'Puma') {
+      return [{
+        name: 'Puma Leadcat Slides',
+        brand: 'Puma',
+        price: '₹1,799',
+        image: 'https://images.unsplash.com/photo-1603808033192-082d6919d3e1?auto=format&fit=crop&w=600&q=80',
+        link: '/shop?category=Footwear&brand=Puma',
+        isReal: false
+      }];
+    }
+    if (brand === 'Skechers') {
+      return [{
+        name: 'Skechers Uno Stand On Air',
+        brand: 'Skechers',
+        price: '₹6,499',
+        image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80',
+        link: '/shop?category=Footwear&brand=Skechers',
+        isReal: false
+      }];
+    }
+    if (brand === 'Reebok') {
+      return [{
+        name: 'Reebok Floatride Energy Trainer',
+        brand: 'Reebok',
+        price: '₹7,999',
+        image: 'https://images.unsplash.com/photo-1582966772680-860e372bb558?auto=format&fit=crop&w=600&q=80',
+        link: '/shop?category=Footwear&brand=Reebok',
+        isReal: false
+      }];
+    }
+    return [{
+      name: `${brand} Premium Athletics Footwear`,
+      brand: brand,
+      price: '₹8,999',
+      image: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=600&q=80',
+      link: `/shop?category=Footwear&brand=${encodeURIComponent(brand)}`,
+      isReal: false
+    }];
+  }
+
+  // Apparel categories: halfpants, lowers, sando
+  if (category === 'halfpants') {
+    if (brand === 'Nike') {
+      return [{
+        name: 'Nike Dri-FIT Flex Training Shorts',
+        brand: 'Nike',
+        price: '₹1,499',
+        image: 'https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=600&q=80',
+        link: '/product/prod_6',
+        isReal: true
+      }];
+    }
+    return [{
+      name: `${brand} Active Training Shorts`,
+      brand: brand,
+      price: '₹1,899',
+      image: 'https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=600&q=80',
+      link: `/shop?category=Apparel&brand=${encodeURIComponent(brand)}`,
+      isReal: false
+    }];
+  }
+
+  if (category === 'lowers') {
+    if (brand === 'Puma') {
+      return [{
+        name: 'Puma Active Tech Fleece Trousers',
+        brand: 'Puma',
+        price: '₹2,799',
+        image: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=600&q=80',
+        link: '/product/prod_3',
+        isReal: true
+      }];
+    }
+    return [{
+      name: `${brand} Warm Tech Training Pants`,
+      brand: brand,
+      price: '₹2,999',
+      image: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=600&q=80',
+      link: `/shop?category=Apparel&brand=${encodeURIComponent(brand)}`,
+      isReal: false
+    }];
+  }
+
+  if (category === 'sando') {
+    if (brand === 'Adidas') {
+      return [{
+        name: 'Adidas Primeknit Sando Vest',
+        brand: 'Adidas',
+        price: '₹4,499',
+        image: 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?auto=format&fit=crop&w=600&q=80',
+        link: '/product/prod_7',
+        isReal: true
+      }];
+    }
+    return [{
+      name: `${brand} Breathable Active Tank`,
+      brand: brand,
+      price: '₹1,599',
+      image: 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?auto=format&fit=crop&w=600&q=80',
+      link: `/shop?category=Apparel&brand=${encodeURIComponent(brand)}`,
+      isReal: false
+    }];
+  }
+
+  return [];
+}
+
 export default function HomeClient({ initialProducts }: HomeClientProps) {
-  const { addToCart, pincode, setPincode, pincodeStatus, checkPincodeServiceability } = useCart();
+  const { addToCart, pincode, setPincode, pincodeStatus, checkPincodeServiceability, addCompleteGearCombo } = useCart();
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'new' | 'best' | 'trending'>('new');
   const [checkingPin, setCheckingPin] = useState(false);
@@ -22,6 +334,27 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
   const [newsletterFirstName, setNewsletterFirstName] = useState('');
   const [newsletterLastName, setNewsletterLastName] = useState('');
   const [newsletterSubscribed, setNewsletterSubscribed] = useState(false);
+
+  const [recommendationModal, setRecommendationModal] = useState<{
+    isOpen: boolean;
+    category: string;
+    step: 'question' | 'loading' | 'results';
+    selectedOption: string | null;
+  }>({
+    isOpen: false,
+    category: '',
+    step: 'question',
+    selectedOption: null
+  });
+
+  const handleCategoryClick = (id: string) => {
+    setRecommendationModal({
+      isOpen: true,
+      category: id,
+      step: 'question',
+      selectedOption: null
+    });
+  };
 
   const [activeIndex, setActiveIndex] = useState(1); // Default to clothes (index 1)
   const [isMobile, setIsMobile] = useState(false);
@@ -665,50 +998,50 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
           {[
             {
+              id: 'running-shoes',
               name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'रनिंग शूज़' : 'Running shoes',
-              img: '/what-we-sell/running-shoes.png',
-              link: '/shop?category=Footwear&q=running'
+              img: '/what-we-sell/running-shoes.png'
             },
             {
+              id: 'casuals',
               name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'कैजुअल जूते' : 'Casuals',
-              img: '/what-we-sell/Casuals.png',
-              link: '/shop?category=Footwear&q=sneaker'
+              img: '/what-we-sell/Casuals.png'
             },
             {
+              id: 'daily-wear',
               name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'डेली वियर' : 'Daily wear',
-              img: '/what-we-sell/Daily-ware.png',
-              link: '/shop?category=Footwear'
+              img: '/what-we-sell/Daily-ware.png'
             },
             {
+              id: 'sliders',
               name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'स्लाइडर्स' : 'Sliders',
-              img: '/what-we-sell/sliders.png',
-              link: '/shop?category=Footwear&q=slide'
+              img: '/what-we-sell/sliders.png'
             },
             {
+              id: 't-shirts',
               name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'टी-शर्ट' : 'T Shirts',
-              img: '/what-we-sell/t-shirts.png',
-              link: '/shop?category=Apparel&q=shirt'
+              img: '/what-we-sell/t-shirts.png'
             },
             {
+              id: 'halfpants',
               name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'हाफ पैंट' : 'Halfpants',
-              img: '/what-we-sell/halfpants.png',
-              link: '/shop?category=Apparel&q=shorts'
+              img: '/what-we-sell/halfpants.png'
             },
             {
+              id: 'lowers',
               name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'लोअर्स' : 'Lowers',
-              img: '/what-we-sell/lowers.png',
-              link: '/shop?category=Apparel&q=lower'
+              img: '/what-we-sell/lowers.png'
             },
             {
+              id: 'sando',
               name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सैंडो' : 'Sando',
-              img: '/what-we-sell/sando.png',
-              link: '/shop?category=Apparel'
+              img: '/what-we-sell/sando.png'
             }
           ].map((item, idx) => (
-            <Link 
+            <div 
               key={idx} 
-              href={item.link} 
-              className="flex flex-col items-center justify-center p-2 transition-all duration-300 group"
+              onClick={() => handleCategoryClick(item.id)}
+              className="flex flex-col items-center justify-center p-2 transition-all duration-300 group cursor-pointer"
             >
               <div className="w-full aspect-square flex items-center justify-center overflow-hidden mb-4">
                 <img 
@@ -720,7 +1053,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
               <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-widest text-black/80 group-hover:text-black transition-colors text-center">
                 {item.name}
               </span>
-            </Link>
+            </div>
           ))}
         </div>
       </motion.section>
@@ -816,13 +1149,20 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
                 infinite<br />
                 experience
               </h2>
-              <Link 
-                href="/shop" 
-                className="inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-widest text-black/45 hover:text-black transition-colors pt-2 group"
+              <button
+                onClick={() => {
+                  const prod1 = initialProducts.find(p => p.id === 'prod_1');
+                  const prod3 = initialProducts.find(p => p.id === 'prod_3');
+                  const prod4 = initialProducts.find(p => p.id === 'prod_4');
+                  if (prod1 && prod3 && prod4) {
+                    addCompleteGearCombo(prod1, prod3, prod4);
+                  }
+                }}
+                className="inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-widest text-black/45 hover:text-black transition-colors pt-2 group text-left"
               >
-                Shop Catalog
+                View Combos
                 <span className="group-hover:translate-x-1 transition-transform duration-300">&rarr;</span>
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -1192,6 +1532,167 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
         </div>
       </motion.section>
 
+      {/* 8. RECOMMENDATION MODAL POPUP */}
+      <AnimatePresence>
+        {recommendationModal.isOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="bg-[#f4f3ef] border border-black/5 rounded-3xl p-6 sm:p-10 max-w-xl w-full relative shadow-xl overflow-hidden"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setRecommendationModal(prev => ({ ...prev, isOpen: false }))}
+                className="absolute top-4 right-4 p-2 rounded-full hover:bg-black/5 text-black/60 hover:text-black transition-colors"
+                title="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              {(() => {
+                const config = RECOMMENDATION_CONFIGS[recommendationModal.category];
+                if (!config) return null;
+
+                if (recommendationModal.step === 'question') {
+                  return (
+                    <div className="space-y-6 pt-2">
+                      <div className="space-y-1">
+                        <span className="text-[10px] uppercase tracking-[0.3em] text-black/50 font-bold block">
+                          Interactive Guide
+                        </span>
+                        <h3 className="text-xl sm:text-2xl font-black text-black uppercase tracking-tight">
+                          {config.title}
+                        </h3>
+                      </div>
+                      <p className="text-sm sm:text-base font-medium text-black">
+                        {config.question}
+                      </p>
+                      {(() => {
+                        const isBrandQuestion = config.options.every(opt => BRAND_LOGO_MAPPING[opt] !== undefined);
+                        return (
+                          <div className={isBrandQuestion ? "grid grid-cols-3 gap-3" : "grid grid-cols-1 gap-2.5"}>
+                            {config.options.map((opt) => {
+                              const logoSrc = BRAND_LOGO_MAPPING[opt];
+                              return (
+                                <button
+                                  key={opt}
+                                  onClick={() => {
+                                    setRecommendationModal(prev => ({ ...prev, selectedOption: opt, step: 'loading' }));
+                                    setTimeout(() => {
+                                      setRecommendationModal(prev => ({ ...prev, step: 'results' }));
+                                    }, 1200);
+                                  }}
+                                  className={`w-full flex items-center justify-center rounded-2xl border border-black/5 bg-white/60 hover:bg-white transition-all duration-300 hover:border-black/15 shadow-2xs hover:shadow-xs active:scale-[0.98] ${
+                                    isBrandQuestion ? 'h-20 sm:h-24 p-3 sm:p-5' : 'p-4 text-left text-xs sm:text-sm font-bold uppercase tracking-wider text-black'
+                                  }`}
+                                >
+                                  {isBrandQuestion && logoSrc ? (
+                                    <img 
+                                      src={logoSrc} 
+                                      alt={opt} 
+                                      className="max-w-full max-h-full object-contain mix-blend-multiply opacity-80 hover:opacity-100 transition-opacity" 
+                                    />
+                                  ) : (
+                                    opt
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  );
+                }
+
+                if (recommendationModal.step === 'loading') {
+                  return (
+                    <div className="flex flex-col items-center justify-center py-16 space-y-4">
+                      <div className="w-8 h-8 border-2 border-black/10 border-t-black rounded-full animate-spin" />
+                      <p className="text-xs uppercase tracking-widest font-extrabold text-black/60">
+                        Finding your perfect match...
+                      </p>
+                    </div>
+                  );
+                }
+
+                if (recommendationModal.step === 'results') {
+                  const products = getRecommendationsForBrand(recommendationModal.category, recommendationModal.selectedOption || '');
+                  return (
+                    <div className="space-y-6 pt-2">
+                      <div className="space-y-1">
+                        <span className="text-[10px] uppercase tracking-[0.3em] text-black/50 font-bold block">
+                          Recommended For You
+                        </span>
+                        <h3 className="text-lg sm:text-xl font-black text-black uppercase tracking-tight leading-tight">
+                          Best Fits for: {recommendationModal.selectedOption}
+                        </h3>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {products.map((p, idx) => (
+                          <Link
+                            key={idx}
+                            href={p.link}
+                            onClick={() => setRecommendationModal(prev => ({ ...prev, isOpen: false }))}
+                            className="flex flex-col p-4 bg-white border border-black/[0.04] rounded-2xl group hover:border-black/10 transition-colors shadow-2xs"
+                          >
+                            <div className="w-full aspect-square flex items-center justify-center overflow-hidden mb-3 bg-[#faf9f5] rounded-xl p-2">
+                              <img
+                                src={p.image}
+                                alt={p.name}
+                                className="max-w-[90%] max-h-[90%] object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-300"
+                              />
+                            </div>
+                            <div className="space-y-1 flex-1 flex flex-col justify-between">
+                              <div>
+                                <span className="text-[9px] uppercase tracking-widest text-black/45 font-bold block">
+                                  {p.brand}
+                                </span>
+                                <h4 className="text-xs font-bold text-black uppercase tracking-tight line-clamp-2 group-hover:text-black/75 transition-colors">
+                                  {p.name}
+                                </h4>
+                              </div>
+                              <div className="pt-2 flex items-center justify-between">
+                                <span className="text-xs font-black text-black">
+                                  {p.price}
+                                </span>
+                                <span className="text-[9px] font-extrabold uppercase tracking-widest text-black/45 group-hover:text-black transition-colors flex items-center gap-1">
+                                  {p.isReal ? 'Buy Now' : 'Explore'} &rarr;
+                                </span>
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+
+                      <div className="pt-2 flex gap-3">
+                        <button
+                          onClick={() => setRecommendationModal(prev => ({ ...prev, step: 'question', selectedOption: null }))}
+                          className="flex-1 text-center py-3 rounded-xl border border-black/10 hover:border-black text-[10px] font-extrabold uppercase tracking-widest text-black transition-colors bg-transparent active:scale-[0.99]"
+                        >
+                          Start Over
+                        </button>
+                        <button
+                          onClick={() => setRecommendationModal(prev => ({ ...prev, isOpen: false }))}
+                          className="flex-1 text-center py-3 rounded-xl bg-black text-white hover:bg-black/90 text-[10px] font-extrabold uppercase tracking-widest transition-colors active:scale-[0.99]"
+                        >
+                          Close Guide
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+
+                return null;
+              })()}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
