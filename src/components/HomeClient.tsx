@@ -773,6 +773,110 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
         </div>
       </motion.section>
 
+      {/* 6.5 COMPLETE GEAR BANNER SECTION */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+        <div className="w-full flex flex-col md:flex-row items-center gap-12 md:gap-6">
+          
+          {/* Left Column: Interactive Runner Diagram */}
+          <div className="w-full md:w-[60%] lg:w-[65%] relative group mix-blend-multiply">
+            <div className="relative w-full aspect-[3/2] select-none">
+              {/* Main Runner Image */}
+              <img 
+                src="/runner.png" 
+                alt="Premium Running Gear" 
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.01]"
+              />
+              
+              {/* Interactive SVG Lines and Dots */}
+              <svg 
+                className="absolute inset-0 w-full h-full pointer-events-none" 
+                viewBox="0 0 100 100" 
+                preserveAspectRatio="none"
+              >
+                {/* T-shirt line */}
+                <path 
+                  d="M 12 16 C 24 16, 35 22, 46 34" 
+                  fill="none" 
+                  stroke="black" 
+                  strokeWidth="0.15" 
+                  strokeOpacity="0.35"
+                />
+                <circle cx="46" cy="34" r="0.45" fill="black" />
+
+                {/* Lowers line */}
+                <path 
+                  d="M 9 51 C 18 51, 28 53, 39 55" 
+                  fill="none" 
+                  stroke="black" 
+                  strokeWidth="0.15" 
+                  strokeOpacity="0.35"
+                />
+                <circle cx="39" cy="55" r="0.45" fill="black" />
+
+                {/* Running Shoes line */}
+                <path 
+                  d="M 83 66 C 80 66, 77 76, 76 88" 
+                  fill="none" 
+                  stroke="black" 
+                  strokeWidth="0.15" 
+                  strokeOpacity="0.35"
+                />
+                <circle cx="76" cy="88" r="0.45" fill="black" />
+              </svg>
+
+              {/* Interactive Hotspot Links */}
+              {/* 1. T-shirts */}
+              <Link 
+                href="/shop?category=Apparel" 
+                className="absolute top-[13.5%] left-[4.5%] text-[9px] sm:text-xs font-bold text-black uppercase tracking-wider hover:opacity-60 transition-opacity"
+                title="Shop T-shirts"
+              >
+                T-shirts
+              </Link>
+
+              {/* 2. Lowers */}
+              <Link 
+                href="/shop?category=Apparel" 
+                className="absolute top-[48.5%] left-[2.5%] text-[9px] sm:text-xs font-bold text-black uppercase tracking-wider hover:opacity-60 transition-opacity"
+                title="Shop Lowers"
+              >
+                Lowers
+              </Link>
+
+              {/* 3. Running Shoes */}
+              <Link 
+                href="/shop?category=Footwear" 
+                className="absolute top-[63.5%] left-[84%] text-[9px] sm:text-xs font-bold text-black uppercase tracking-wider hover:opacity-60 transition-opacity"
+                title="Shop Running Shoes"
+              >
+                Running Shoes
+              </Link>
+            </div>
+          </div>
+
+          {/* Right Column: Hero Typography */}
+          <div className="w-full md:w-[40%] lg:w-[35%] flex items-center justify-start md:pl-8 lg:pl-16">
+            <div className="space-y-4 max-w-sm">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-normal leading-[1.05] tracking-tight text-black uppercase">
+                Get your<br />
+                complete<br />
+                gear for<br />
+                infinite<br />
+                experience
+              </h2>
+              <Link 
+                href="/shop" 
+                className="inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-widest text-black/45 hover:text-black transition-colors pt-2 group"
+              >
+                Shop Catalog
+                <span className="group-hover:translate-x-1 transition-transform duration-300">&rarr;</span>
+              </Link>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
       {/* 7. PINCODE SERVICEABILITY CONTAINER */}
       <motion.section
         initial={{ opacity: 0, y: 30 }}
