@@ -332,6 +332,37 @@ export default function TrackClient() {
             </div>
           )}
 
+          {/* Delhivery Live Delivery Checkpoints */}
+          {order && (order as any).delhiveryTracking && (order as any).delhiveryTracking.Status?.Scans && (
+            <div className="bg-white border border-black/5 p-6 sm:p-8 rounded-2xl shadow-xs space-y-4">
+              <h3 className="text-xs font-extrabold uppercase tracking-widest text-black flex items-center gap-2">
+                <Truck className="w-4 h-4 text-black/60" />
+                {isHindi ? 'लाइव डिलीवरी ट्रैकिंग इतिहास (Delhivery)' : 'Live Delivery Transit Log (Delhivery)'}
+              </h3>
+              <div className="space-y-5 relative pl-4 before:absolute before:left-1.5 before:top-2.5 before:bottom-2.5 before:w-px before:bg-black/10">
+                {(order as any).delhiveryTracking.Status.Scans.slice().reverse().map((scan: any, sIdx: number) => {
+                  const detail = scan.ScanDetail;
+                  if (!detail) return null;
+                  return (
+                    <div key={sIdx} className="space-y-1 relative">
+                      <span className="absolute -left-[14.5px] top-1.5 w-2.5 h-2.5 rounded-full bg-black border-2 border-white shadow-xs" />
+                      <div className="flex flex-col sm:flex-row justify-between text-xs font-extrabold text-black gap-1">
+                        <span className="uppercase tracking-wider">{detail.Scan}</span>
+                        <span className="text-[9px] text-black/45 font-medium">
+                          {new Date(detail.ScanDateTime).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-black/60 font-medium">
+                        Location: <span className="font-bold text-black/85">{detail.ScannedLocation}</span>
+                        {detail.Instructions && <span className="italic text-black/50"> — {detail.Instructions}</span>}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* 3. Address & Billing details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
             {/* Left: Customer Address & Items */}

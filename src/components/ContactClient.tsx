@@ -36,7 +36,7 @@ export default function ContactClient() {
     },
     {
       question: "What is your return policy?",
-      answer: "We strictly enforce a 'No Return, Only Exchange' policy. If you need to exchange an item for a different size or due to a manufacturing defect, you must submit an exchange request within 24 hours of delivery. The item must be unworn and in its original packaging."
+      answer: "We strictly enforce a 'No Return' policy on all purchased products. All sales are final and items are non-returnable. Please verify your sizes and choices carefully before purchasing."
     },
     {
       question: "Is Cash on Delivery (COD) available?",

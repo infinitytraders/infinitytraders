@@ -471,8 +471,8 @@ export default function ProductDetailClient({ product, recommendations, initialU
               </p>
               <p>
                 {t('home.newArrivals') === 'नए जूते (New Arrivals)'
-                  ? 'हमारे व्यापार नियमों के अनुसार सख्त "कोई रिटर्न नहीं, केवल एक्सचेंज" नीति लागू है। साइज मिसमैच या डिफेक्ट के लिए एक्सचेंज अनुरोध डिलीवरी के २४ घंटे के भीतर दर्ज किया जाना चाहिए।'
-                  : 'Our business terms enforce a strict "No Return, Only Exchange" policy. Exchange requests for size mismatches or manufacturing defects must be registered within 24 hours of delivery.'}
+                  ? 'हमारे व्यापार नियमों के अनुसार सख्त "कोई रिटर्न नहीं" नीति लागू है। सभी खरीदारियां अंतिम हैं और किसी भी उत्पाद के लिए कोई रिटर्न, रिफंड या एक्सचेंज स्वीकार नहीं किया जाता है।'
+                  : 'Our business terms enforce a strict "No Return" policy. All purchases are final. We do not accept return, refund, or exchange requests under any circumstances.'}
               </p>
             </div>
           )}

@@ -3,8 +3,8 @@ import ContactClient from '@/components/ContactClient';
 
 export const metadata: Metadata = {
   title: 'Contact Us | Customer Support & Depot HQ | Infinity Traders',
-  description: 'Contact Infinity Traders in Dhanbad for questions about shipping times, product authenticity, exchange policies, or Cash on Delivery (COD) serviceability. Authorized multi-brand supplier.',
-  keywords: 'contact Infinity Traders, customer care, Dhanbad footwear office, exchange shoe size, COD service India, authenticity guarantee',
+  description: 'Contact Infinity Traders in Dhanbad for questions about shipping times, product authenticity, business policies, or Cash on Delivery (COD) serviceability. Authorized multi-brand supplier.',
+  keywords: 'contact Infinity Traders, customer care, Dhanbad footwear office, COD service India, authenticity guarantee, returns policy',
   alternates: {
     canonical: 'https://infinitytraders.shop/contact',
   },
@@ -44,7 +44,7 @@ export default function ContactPage() {
         'name': 'What is your return policy?',
         'acceptedAnswer': {
           '@type': 'Answer',
-          'text': "We strictly enforce a 'No Return, Only Exchange' policy. If you need to exchange an item for a different size or due to a manufacturing defect, you must submit an exchange request within 24 hours of delivery. The item must be unworn and in its original packaging."
+          'text': "We strictly enforce a 'No Return' policy on all purchases. All sales are final and items are non-returnable. No refunds or exchanges are provided."
         }
       },
       {

@@ -5,7 +5,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Terms & Conditions | Business Contract | Infinity Traders',
   description: 'Read the official terms and conditions for purchasing from Infinity Traders. Learn about our multi-brand distribution rights, billing policies, and Dhanbad jurisdiction terms.',
-  keywords: 'terms and conditions, legal contract, Infinity Traders customer terms, size exchange details, Dhanbad court authority',
+  keywords: 'terms and conditions, legal contract, Infinity Traders customer terms, Dhanbad court authority, no returns policy',
   alternates: {
     canonical: 'https://infinitytraders.shop/tc',
   },
@@ -50,9 +50,9 @@ export default function TermsPage() {
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-black">4. No Return, Only Exchange Policy</h2>
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-black">4. No Return Policy</h2>
             <p className="font-bold">
-              We strictly enforce a "No Return, Only Exchange" policy on all successfully processed and shipped orders. We do not accept return requests or offer monetary refunds once an order is placed. In the event of a size mismatch, wrong item delivery, or manufacturing defect, you may submit an exchange request within 24 hours of delivery. The item must be unused, in its original packaging, and with all tags intact.
+              We strictly enforce a "No Return" policy on all successfully processed and shipped orders. All sales are final. We do not accept return or refund requests under any circumstances once an order has been placed. Please ensure your sizes, colors, and items are selected correctly before checking out.
             </p>
           </section>
 

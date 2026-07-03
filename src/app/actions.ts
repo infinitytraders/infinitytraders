@@ -220,13 +220,42 @@ export async function bulkUploadProductsAction(productsArray: any[]): Promise<{ 
 // --- PINCODE ACTIONS ---
 export async function checkPincodeAction(pincode: string): Promise<{ serviceable: boolean; estimatedDays?: number; state?: string; error?: string }> {
   try {
+    const apiKey = process.env.DELHIVERY_API_KEY;
+    const env = process.env.DELHIVERY_ENV || 'production';
+    const baseUrl = env === 'sandbox' ? 'https://staging-express.delhivery.com' : 'https://track.delhivery.com';
+
+    if (apiKey) {
+      const response = await fetch(`${baseUrl}/c/api/pin-codes/json/?pincode=${pincode}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Token ${apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.delivery_codes && data.delivery_codes.length > 0) {
+          const codeInfo = data.delivery_codes[0].postal_code;
+          if (codeInfo && (codeInfo.is_prepaid === 'Y' || codeInfo.is_cod === 'Y')) {
+            return {
+              serviceable: true,
+              estimatedDays: codeInfo.estimated_delivery_days ? parseInt(codeInfo.estimated_delivery_days, 10) : 4,
+              state: `${codeInfo.district}, ${codeInfo.state_code}`
+            };
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Delhivery Pincode API error, falling back:', err);
+  }
+
+  try {
     const item = await db.checkPincode(pincode);
     if (item && item.serviceable) {
       return { serviceable: true, estimatedDays: item.estimatedDays, state: item.state };
     }
-    // Simple simulated serviceability for standard Indian pincodes if not explicitly defined
     if (pincode.length === 6 && /^\d+$/.test(pincode)) {
-      // Seed default serviceability for demo convenience
       return { serviceable: true, estimatedDays: 4, state: 'India (Standard Route)' };
     }
     return { serviceable: false, error: 'Delivery unavailable to this pincode.' };
@@ -388,6 +417,23 @@ export async function createOrderAction(orderData: {
       paymentMethod: orderData.paymentMethod
     });
 
+    // Auto-manifest shipment in Delhivery
+    try {
+      const waybill = await bookDelhiveryShipment(newOrder);
+      if (waybill) {
+        await db.updateOrder(newOrder.id, {
+          trackingNumber: waybill,
+          courierName: 'Delhivery',
+          orderStatus: 'DISPATCHED' // Auto-transition to dispatched with AWB assigned
+        });
+        newOrder.trackingNumber = waybill;
+        newOrder.courierName = 'Delhivery';
+        newOrder.orderStatus = 'DISPATCHED';
+      }
+    } catch (bookingErr) {
+      console.error('Failed to book Delhivery shipment:', bookingErr);
+    }
+
     if (user) {
       // Add address to user profile if not exists
       const addressExists = user.addresses.some(
@@ -502,10 +548,109 @@ export async function trackOrderAction(
       return { success: false, error: 'Contact details do not match this order.' };
     }
 
-    return { success: true, order };
+    let liveTrackingData = null;
+    if (order.trackingNumber && order.courierName === 'Delhivery') {
+      liveTrackingData = await getDelhiveryTrackingDetails(order.trackingNumber);
+    }
+
+    return { 
+      success: true, 
+      order: {
+        ...order,
+        delhiveryTracking: liveTrackingData
+      } as any 
+    };
   } catch (error: any) {
     return { success: false, error: error.message || 'Error looking up order.' };
   }
+}
+
+// --- HELPER LOGISTICS FUNCTIONS ---
+async function bookDelhiveryShipment(order: Order): Promise<string | null> {
+  try {
+    const apiKey = process.env.DELHIVERY_API_KEY;
+    const pickupLocation = process.env.DELHIVERY_PICKUP_LOCATION || 'Infinity Traders';
+    const env = process.env.DELHIVERY_ENV || 'production';
+    const baseUrl = env === 'sandbox' ? 'https://staging-express.delhivery.com' : 'https://track.delhivery.com';
+
+    if (!apiKey) return null;
+
+    const dataPayload = {
+      shipments: [
+        {
+          name: order.customerName,
+          add: order.shippingAddress.street,
+          pin: order.shippingAddress.pincode,
+          phone: order.customerMobile,
+          payment_mode: order.paymentMethod === 'COD' ? 'COD' : 'Prepaid',
+          cod_amount: order.paymentMethod === 'COD' ? order.finalAmount.toString() : '0',
+          order: order.id,
+          weight: '1.2',
+          products_desc: order.items.map(item => `${item.name} (${item.brand})`).join(', ').substring(0, 100),
+          quantity: order.items.reduce((sum, item) => sum + item.quantity, 0).toString()
+        }
+      ],
+      pickup_location: {
+        name: pickupLocation
+      }
+    };
+
+    const formData = new URLSearchParams();
+    formData.append('format', 'json');
+    formData.append('data', JSON.stringify(dataPayload));
+
+    const response = await fetch(`${baseUrl}/api/cmu/create.json`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Token ${apiKey}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: formData.toString()
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      if (result && result.packages && result.packages.length > 0) {
+        const pkg = result.packages[0];
+        if (pkg.status === 'Success' && pkg.waybill) {
+          return pkg.waybill;
+        } else {
+          console.error('Delhivery Booking failed remarks:', pkg.remarks);
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Delhivery bookShipment error:', err);
+  }
+  return null;
+}
+
+export async function getDelhiveryTrackingDetails(waybill: string): Promise<any> {
+  try {
+    const apiKey = process.env.DELHIVERY_API_KEY;
+    const env = process.env.DELHIVERY_ENV || 'production';
+    const baseUrl = env === 'sandbox' ? 'https://staging-express.delhivery.com' : 'https://track.delhivery.com';
+
+    if (!apiKey) return null;
+
+    const response = await fetch(`${baseUrl}/api/v1/packages/json/?waybill=${waybill}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Token ${apiKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data && data.ShipmentData && data.ShipmentData.length > 0) {
+        return data.ShipmentData[0].Shipment;
+      }
+    }
+  } catch (err) {
+    console.error('Delhivery Tracking API error:', err);
+  }
+  return null;
 }
 
 // --- USER PROFILE & WISHLIST ACTIONS ---

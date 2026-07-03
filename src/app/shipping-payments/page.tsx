@@ -43,9 +43,9 @@ export default function ShippingPaymentsPage() {
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-black">3. Returns & Exchanges</h2>
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-black">3. No Returns Policy</h2>
             <p>
-              As per our business terms, we enforce a strict <strong>No Return, Only Exchange</strong> policy. In the event of a size mismatch, wrong item delivery, or manufacturing defect, you must register an exchange request within 24 hours of delivery. Items must be unworn and in their original packaging.
+              As per our business terms, we enforce a strict <strong>No Return</strong> policy on all products purchased. All sales are final and non-returnable. No returns, refunds, or exchanges are accepted under any circumstances.
             </p>
           </section>
 
