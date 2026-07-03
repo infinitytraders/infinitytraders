@@ -2,6 +2,36 @@
 
 import { db, Product, Order, User, Coupon, PincodeServiceability, AuditLog, NewsletterSubscriber } from '@/lib/db';
 import { cookies } from 'next/headers';
+import crypto from 'crypto';
+
+const SESSION_SECRET = process.env.SESSION_SECRET || 'infinity_traders_super_secret_cookie_signing_key_2026';
+
+export async function signSession(userData: { id: string; email: string; name: string; role: string }): Promise<string> {
+  const payload = `${userData.id}|${userData.email}|${userData.name}|${userData.role}`;
+  const hmac = crypto.createHmac('sha256', SESSION_SECRET);
+  hmac.update(payload);
+  const signature = hmac.digest('hex');
+  return JSON.stringify({ data: userData, signature });
+}
+
+export async function verifySession(cookieValue: string): Promise<{ id: string; email: string; name: string; role: string } | null> {
+  try {
+    const parsed = JSON.parse(cookieValue);
+    const userData = parsed.data;
+    const signature = parsed.signature;
+    const payload = `${userData.id}|${userData.email}|${userData.name}|${userData.role}`;
+    const hmac = crypto.createHmac('sha256', SESSION_SECRET);
+    hmac.update(payload);
+    const expectedSignature = hmac.digest('hex');
+    if (signature === expectedSignature) {
+      return userData;
+    }
+  } catch (err) {
+    // Fail silently
+  }
+  return null;
+}
+
 import { 
   sendOrderConfirmationEmail, 
   sendOrderStatusUpdateEmail, 
@@ -16,7 +46,13 @@ export async function getSessionUser(): Promise<User | null> {
     const cookieStore = await cookies();
     const session = cookieStore.get('infinity_session');
     if (!session || !session.value) return null;
-    const userData = JSON.parse(session.value);
+    
+    const userData = await verifySession(session.value);
+    if (!userData) {
+      console.warn('Session cookie verification failed. Rejection due to potential tampering.');
+      return null;
+    }
+
     // Refresh user from db to get latest details (like addresses, wishlist)
     const user = await db.getUserById(userData.id);
     return user || null;
@@ -66,7 +102,8 @@ export async function loginAction(
 
     // Save session
     const cookieStore = await cookies();
-    cookieStore.set('infinity_session', JSON.stringify({ id: user.id, email: user.email, name: user.name, role: user.role }), {
+    const sessionData = { id: user.id, email: user.email, name: user.name, role: user.role };
+    cookieStore.set('infinity_session', await signSession(sessionData), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 60 * 24 * 7, // 1 week
