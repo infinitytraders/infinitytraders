@@ -46,7 +46,7 @@ interface QuestionConfig {
 const RECOMMENDATION_CONFIGS: Record<string, QuestionConfig> = {
   'running-shoes': {
     title: 'Running Shoes Matcher',
-    question: 'What is your daily running range?',
+    question: 'What is your running goal?',
     options: ['1500m to 3km', '3km to 5km', '5km to 10km', 'Super running shoes'],
     recommendations: {
       '1500m to 3km': [
@@ -125,9 +125,46 @@ const RECOMMENDATION_CONFIGS: Record<string, QuestionConfig> = {
   },
   'casuals': {
     title: 'Casual Shoes Matcher',
-    question: 'Select your preferred brand:',
-    options: ALL_BRANDS,
-    recommendations: {}
+    question: 'Select your preferred style:',
+    options: ['Sports Shoes', 'Sneakers'],
+    recommendations: {
+      'Sports Shoes': [
+        {
+          name: 'Nike Air Zoom Pegasus Running Shoe',
+          brand: 'Nike',
+          price: '₹9,999',
+          image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80',
+          link: '/product/prod_1',
+          isReal: true
+        },
+        {
+          name: 'Reebok Floatride Energy Trainer',
+          brand: 'Reebok',
+          price: '₹7,999',
+          image: 'https://images.unsplash.com/photo-1582966772680-860e372bb558?auto=format&fit=crop&w=600&q=80',
+          link: '/shop?category=Footwear&brand=Reebok',
+          isReal: false
+        }
+      ],
+      'Sneakers': [
+        {
+          name: 'Skechers Uno Stand On Air',
+          brand: 'Skechers',
+          price: '₹6,499',
+          image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80',
+          link: '/shop?category=Footwear&brand=Skechers',
+          isReal: false
+        },
+        {
+          name: 'Nike Dunks Classic Retro',
+          brand: 'Nike',
+          price: '₹8,999',
+          image: 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?auto=format&fit=crop&w=600&q=80',
+          link: '/shop?category=Footwear',
+          isReal: false
+        }
+      ]
+    }
   },
   'daily-wear': {
     title: 'Daily Wear Matcher',
@@ -195,9 +232,12 @@ function getRecommendationsForBrand(category: string, brand: string): Recommenda
   if (category === 't-shirts') {
     return RECOMMENDATION_CONFIGS['t-shirts'].recommendations[brand] || [];
   }
+  if (category === 'casuals') {
+    return RECOMMENDATION_CONFIGS['casuals'].recommendations[brand] || [];
+  }
 
-  // Footwear categories: casuals, daily-wear, sliders
-  if (category === 'casuals' || category === 'daily-wear' || category === 'sliders') {
+  // Footwear categories: daily-wear, sliders
+  if (category === 'daily-wear' || category === 'sliders') {
     if (brand === 'Adidas') {
       return [{
         name: 'Adilette Comfort Slides',
@@ -427,7 +467,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
       aspectRatio = 0.43;
     } else if (slideId === 'accessories') {
       scaleRatio = isCenter ? 0.72 : 0.42;
-      bottomPadding = isMobile ? 0.24 : 0.19;
+      bottomPadding = isMobile ? 0.02 : -0.03;
       aspectRatio = 0.385;
     }
 
@@ -1114,9 +1154,9 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
               <Link 
                 href="/shop?category=Apparel" 
                 className="absolute top-[13.5%] left-[4.5%] text-[9px] sm:text-xs font-bold text-black uppercase tracking-wider hover:opacity-60 transition-opacity"
-                title="Shop T-shirts"
+                title="Shop T-shirt or Sando"
               >
-                T-shirts
+                T-shirt or Sando
               </Link>
 
               {/* 2. Lowers */}
