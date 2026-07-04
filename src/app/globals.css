@@ -202,3 +202,21 @@ body {
   mask-image: linear-gradient(to right, transparent, white 15%, white 85%, transparent);
   -webkit-mask-image: linear-gradient(to right, transparent, white 15%, white 85%, transparent);
 }
+
+/* Line clamping utilities */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+

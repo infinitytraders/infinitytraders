@@ -413,3 +413,43 @@ export async function sendOtpEmail(email: string, code: string): Promise<boolean
     return false;
   }
 }
+
+/**
+ * Sends a welcome email to automatically registered guest customers containing their temporary password
+ */
+export async function sendGuestWelcomeEmail(email: string, name: string, password: string): Promise<boolean> {
+  const subject = 'Your Infinity Traders Account Details';
+  const bodyContent = `
+    <h1>WELCOME TO INFINITY TRADERS</h1>
+    <p>Hi ${name},</p>
+    <p>Thank you for placing an order with us! We have automatically created a customer account for you so you can easily track your shipments and view invoices.</p>
+    <div style="background-color: #FAF9F6; border: 1px solid rgba(0,0,0,0.04); padding: 20px; border-radius: 12px; margin: 25px 0;">
+      <table style="width: 100%; font-size: 13px; text-align: left;" cellpadding="3">
+        <tr>
+          <th style="color: #777; width: 120px;">Login Email:</th>
+          <td style="font-weight: 600;">${email}</td>
+        </tr>
+        <tr>
+          <th style="color: #777;">Temp Password:</th>
+          <td style="font-weight: 600; font-family: monospace;">${password}</td>
+        </tr>
+      </table>
+    </div>
+    <p>You can change your password at any time by logging in and navigating to your profile settings.</p>
+  `;
+  const html = getEmailTemplateWrapper(subject, bodyContent);
+
+  try {
+    await transporter.sendMail({
+      from: FROM_EMAIL,
+      to: email,
+      subject,
+      html,
+    });
+    return true;
+  } catch (error) {
+    console.error('Error sending guest welcome email:', error);
+    return false;
+  }
+}
+

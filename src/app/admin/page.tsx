@@ -24,7 +24,7 @@ import {
   deleteNewsletterSubscriberAction,
   retryDelhiveryBookingAction
 } from '@/app/actions';
-import { getHexFromColorName } from '@/lib/colors';
+import { getHexFromColorName, getColorsArray } from '@/lib/colors';
 import type { User, Product, Order, Coupon, PincodeServiceability, AuditLog, NewsletterSubscriber } from '@/lib/db';
 import { BarChart3, ShoppingCart, Users, BadgeAlert, Plus, Edit2, Trash2, Check, X, FileSpreadsheet, Package, AlertTriangle, ShieldCheck, Tag, History, MapPin } from 'lucide-react';
 import Link from 'next/link';
@@ -727,7 +727,7 @@ export default function AdminPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider block">Product Color</label>
+                    <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider block">Product Color (Multi-color supported)</label>
                     <div className="bg-[#fcfbf9] border border-black/10 p-4 rounded-2xl max-w-[240px] space-y-3 shadow-xs">
                       {/* Swatches Grid */}
                       <div className="grid grid-cols-4 gap-3">
@@ -745,35 +745,69 @@ export default function AdminPage() {
                           { name: 'yellow', hex: '#eab308' },
                           { name: 'pink', hex: '#ec4899' }
                         ].map((swatch) => {
-                          const isSelected = productForm.color.toLowerCase() === swatch.name || productForm.color.toLowerCase() === swatch.hex;
+                          const selectedColors = getColorsArray(productForm.color).map(c => c.trim().toLowerCase());
+                          const isSelected = selectedColors.includes(swatch.name) || selectedColors.includes(swatch.hex.toLowerCase());
+                          
+                          const handleSwatchClick = () => {
+                            const rawColors = getColorsArray(productForm.color);
+                            const alreadySelectedIdx = rawColors.findIndex(
+                              c => c.trim().toLowerCase() === swatch.name || c.trim().toLowerCase() === swatch.hex.toLowerCase()
+                            );
+                            
+                            let newColors: string[];
+                            if (alreadySelectedIdx !== -1) {
+                              newColors = rawColors.filter((_, i) => i !== alreadySelectedIdx);
+                            } else {
+                              newColors = [...rawColors, swatch.hex];
+                            }
+                            setProductForm({ ...productForm, color: newColors.join(',') });
+                          };
+
                           return (
                             <button
                               key={swatch.name}
                               type="button"
-                              onClick={() => setProductForm({ ...productForm, color: swatch.hex })}
+                              onClick={handleSwatchClick}
                               className={`w-7 h-7 rounded-full border transition-transform hover:scale-110 active:scale-95 ${
-                                isSelected ? 'border-black scale-105 shadow-[0_0_8px_rgba(0,0,0,0.15)]' : 'border-black/15'
+                                isSelected ? 'border-black scale-105 shadow-[0_0_8px_rgba(0,0,0,0.25)]' : 'border-black/15'
                               }`}
                               style={{ backgroundColor: swatch.hex }}
                               title={swatch.name}
                             />
                           );
                         })}
+
+                        {/* Custom Color spectrum picker */}
+                        <label
+                          className="w-7 h-7 rounded-full border border-black/15 flex-shrink-0 cursor-pointer overflow-hidden block transition-transform hover:scale-110 active:scale-95 shadow-xs relative"
+                          style={{ background: 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)' }}
+                          title="Custom Color Picker"
+                        >
+                          <input
+                            type="color"
+                            value="#00c543"
+                            onChange={(e) => {
+                              const customHex = e.target.value;
+                              const rawColors = getColorsArray(productForm.color);
+                              if (!rawColors.includes(customHex)) {
+                                setProductForm({ ...productForm, color: [...rawColors, customHex].join(',') });
+                              }
+                            }}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                          />
+                        </label>
                       </div>
                       
                       {/* Hex/Name Custom Input */}
                       <div className="bg-white rounded-xl px-3 py-2 flex items-center gap-2 border border-black/10 focus-within:border-black/35">
-                        <span className="text-black/30 text-xs font-mono">#</span>
                         <input
                           type="text"
-                          placeholder="00C543 or color name"
-                          value={productForm.color.startsWith('#') ? productForm.color.substring(1) : productForm.color}
+                          placeholder="e.g. Red, Black or #ffffff,#ef4444"
+                          value={productForm.color}
                           onChange={(e) => {
-                            const val = e.target.value;
-                            const cleanVal = /^[0-9A-Fa-f]{6}$/.test(val) ? `#${val}` : val;
-                            setProductForm({ ...productForm, color: cleanVal });
+                            setProductForm({ ...productForm, color: e.target.value });
                           }}
-                          className="bg-transparent text-black font-mono text-xs uppercase w-full outline-none"
+                          className="bg-transparent text-black font-medium text-xs w-full outline-none"
                         />
                       </div>
                     </div>

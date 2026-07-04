@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
-import { getSessionUser, createOrderAction } from '@/app/actions';
+import { getSessionUser, createOrderAction, sendCheckoutMobileOtpAction, verifyCheckoutMobileOtpAction } from '@/app/actions';
 import { User, Order } from '@/lib/db';
 import { useLanguage } from '@/context/LanguageContext';
 import { ShoppingBag, CreditCard, CheckCircle2, AlertTriangle, Truck, Sparkles, Printer } from 'lucide-react';
@@ -46,37 +46,97 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderConfirmed, setOrderConfirmed] = useState<Order | null>(null);
 
+  // Guest phone verification states
+  const [isMobileOtpSent, setIsMobileOtpSent] = useState(false);
+  const [isMobileVerified, setIsMobileVerified] = useState(false);
+  const [mobileOtpCode, setMobileOtpCode] = useState('');
+  const [otpVerificationError, setOtpVerificationError] = useState('');
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+
   // Load session
   useEffect(() => {
     getSessionUser().then((u) => {
-      if (!u) {
-        router.push('/account?redirect=/checkout');
-        return;
+      if (u) {
+        setUser(u);
+        setName(u.name);
+        setEmail(u.email);
+        setMobile(u.mobile);
+        
+        // Auto fill default address if exists
+        const defaultAddr = u.addresses.find(a => a.isDefault);
+        if (defaultAddr) {
+          setStreet(defaultAddr.street);
+          setCity(defaultAddr.city);
+          setState(defaultAddr.state);
+          setPincode(defaultAddr.pincode);
+        }
       }
-      setUser(u);
       setLoadingSession(false);
-      setName(u.name);
-      setEmail(u.email);
-      setMobile(u.mobile);
-      
-      // Auto fill default address if exists
-      const defaultAddr = u.addresses.find(a => a.isDefault);
-      if (defaultAddr) {
-        setStreet(defaultAddr.street);
-        setCity(defaultAddr.city);
-        setState(defaultAddr.state);
-        setPincode(defaultAddr.pincode);
-      }
     });
   }, [router, setPincode]);
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  // Send Mobile verification OTP for guest checkout
+  const handleSendMobileOtp = async () => {
+    setOtpVerificationError('');
+    const cleaned = mobile.replace(/\D/g, '');
+    if (cleaned.length !== 10) {
+      setOtpVerificationError('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+    
+    setIsSendingOtp(true);
+    try {
+      const res = await sendCheckoutMobileOtpAction(cleaned);
+      if (res.success) {
+        setIsMobileOtpSent(true);
+      } else {
+        setOtpVerificationError(res.error || 'Failed to send OTP.');
+      }
+    } catch (err: any) {
+      setOtpVerificationError(err.message || 'Error sending OTP.');
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+  // Verify Mobile verification OTP for guest checkout
+  const handleVerifyMobileOtp = async () => {
+    setOtpVerificationError('');
+    if (!mobileOtpCode || mobileOtpCode.length !== 6) {
+      setOtpVerificationError('Please enter a valid 6-digit OTP code.');
+      return;
+    }
+
+    setIsVerifyingOtp(true);
+    try {
+      const res = await verifyCheckoutMobileOtpAction(mobile, mobileOtpCode);
+      if (res.success) {
+        setIsMobileVerified(true);
+        setIsMobileOtpSent(false);
+      } else {
+        setOtpVerificationError(res.error || 'Invalid OTP code.');
+      }
+    } catch (err: any) {
+      setOtpVerificationError(err.message || 'Error verifying OTP.');
+    } finally {
+      setIsVerifyingOtp(false);
+    }
+  };
 
   const validateForm = (): boolean => {
     setValidationError('');
     if (!name.trim()) return setError('Full Name is required.');
     if (!email.trim() || !email.includes('@')) return setError('Valid Email is required.');
     if (!mobile.trim() || mobile.length !== 10) return setError('10-digit mobile number is required.');
+    
+    // Guest must verify phone via OTP
+    if (!user && !isMobileVerified) {
+      return setError('Please verify your mobile number with OTP first.');
+    }
+
     if (!street.trim()) return setError('Street Address is required.');
     if (!city.trim()) return setError('City is required.');
     if (!state.trim()) return setError('State is required.');
@@ -309,17 +369,63 @@ export default function CheckoutPage() {
                   className="w-full border border-black/10 focus:border-black rounded-full px-4 py-2.5 text-xs outline-none bg-[#fdfdfd] transition-all text-black"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 relative">
                 <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'मोबाइल नंबर (10 अंक)' : 'Mobile Number (10 digits)'}</label>
-                <input
-                  type="tel"
-                  required
-                  pattern="[6-9][0-9]{9}"
-                  placeholder={t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'भारतीय मोबाइल नंबर' : 'Indian mobile phone'}
-                  value={mobile}
-                  onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
-                  className="w-full border border-black/10 focus:border-black rounded-full px-4 py-2.5 text-xs outline-none bg-[#fdfdfd] transition-all text-black"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="tel"
+                    required
+                    disabled={user !== null || isMobileVerified}
+                    pattern="[6-9][0-9]{9}"
+                    placeholder={t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'भारतीय मोबाइल नंबर' : 'Indian mobile phone'}
+                    value={mobile}
+                    onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
+                    className="w-full border border-black/10 focus:border-black rounded-full px-4 py-2.5 text-xs outline-none bg-[#fdfdfd] transition-all text-black disabled:bg-black/[0.02] disabled:text-black/55"
+                  />
+                  {!user && !isMobileVerified && (
+                    <button
+                      type="button"
+                      disabled={isSendingOtp || mobile.length !== 10}
+                      onClick={handleSendMobileOtp}
+                      className="px-4 py-2 bg-black text-white hover:bg-transparent hover:text-black border border-black rounded-full text-[9px] font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                    >
+                      {isSendingOtp ? 'Sending...' : isMobileOtpSent ? 'Resend' : 'Send OTP'}
+                    </button>
+                  )}
+                  {isMobileVerified && (
+                    <span className="px-4 py-2.5 bg-emerald-50 text-emerald-800 border border-emerald-100 rounded-full text-[9px] font-extrabold uppercase tracking-widest flex items-center gap-1 flex-shrink-0">
+                      ✓ Verified
+                    </span>
+                  )}
+                </div>
+
+                {!user && isMobileOtpSent && !isMobileVerified && (
+                  <div className="bg-[#fcfbf9] border border-black/5 p-3 rounded-2xl space-y-2 mt-2">
+                    <p className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Enter 6-Digit OTP Code</p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        maxLength={6}
+                        placeholder="123456"
+                        value={mobileOtpCode}
+                        onChange={(e) => setMobileOtpCode(e.target.value.replace(/\D/g, ''))}
+                        className="w-32 border border-black/10 focus:border-black rounded-full px-4 py-2 text-xs outline-none bg-white text-black text-center font-mono tracking-widest"
+                      />
+                      <button
+                        type="button"
+                        disabled={isVerifyingOtp || mobileOtpCode.length !== 6}
+                        onClick={handleVerifyMobileOtp}
+                        className="px-4 py-2 bg-emerald-800 hover:bg-emerald-950 text-white rounded-full text-[9px] font-bold uppercase tracking-widest transition-all disabled:opacity-50"
+                      >
+                        {isVerifyingOtp ? 'Verifying...' : 'Verify OTP'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {otpVerificationError && (
+                  <p className="text-[10px] text-rose-600 font-semibold mt-1">⚠️ {otpVerificationError}</p>
+                )}
               </div>
               <div className="md:col-span-2 space-y-1.5">
                 <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'ईमेल पता' : 'Email Address'}</label>

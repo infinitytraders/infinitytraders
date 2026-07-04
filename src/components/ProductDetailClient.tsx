@@ -8,7 +8,7 @@ import { toggleWishlistAction, recordRecentlyViewedAction } from '@/app/actions'
 import { Star, Truck, Heart, Share2, Plus, Minus, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getHexFromColorName } from '@/lib/colors';
+import { getHexFromColorName, getColorsArray } from '@/lib/colors';
 
 interface ProductDetailClientProps {
   product: Product;
@@ -202,14 +202,20 @@ export default function ProductDetailClient({ product, recommendations, initialU
                 {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'रंग' : 'Color'}
               </span>
               <div className="flex items-center gap-2.5">
-                <span
-                  className="w-5 h-5 rounded-full border border-black/10 inline-block shadow-inner"
-                  style={{
-                    backgroundColor: product.color.startsWith('#') ? product.color : getHexFromColorName(product.color)
-                  }}
-                />
+                <div className="flex items-center gap-1.5">
+                  {getColorsArray(product.color).map((col, idx) => (
+                    <span
+                      key={idx}
+                      className="w-5 h-5 rounded-full border border-black/10 inline-block shadow-inner"
+                      style={{
+                        backgroundColor: col.startsWith('#') ? col : getHexFromColorName(col)
+                      }}
+                      title={col}
+                    />
+                  ))}
+                </div>
                 <span className="text-[11px] sm:text-xs font-bold text-black/60 capitalize">
-                  {product.color.startsWith('#') ? product.color : product.color}
+                  {getColorsArray(product.color).join(' / ')}
                 </span>
               </div>
             </div>

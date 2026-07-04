@@ -8,7 +8,7 @@ import { useCart } from '@/context/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { Star, Search, SlidersHorizontal, Grid, X, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
-import { getHexFromColorName } from '@/lib/colors';
+import { getHexFromColorName, getColorsArray } from '@/lib/colors';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ShopClient() {
@@ -355,13 +355,18 @@ export default function ShopClient() {
                           {tp(product.id, 'name', product.name)}
                         </Link>
                         {product.color && (
-                          <span
-                            className="w-3.5 h-3.5 rounded-full border border-black/10 flex-shrink-0 inline-block shadow-inner"
-                            style={{
-                              backgroundColor: product.color.startsWith('#') ? product.color : getHexFromColorName(product.color)
-                            }}
-                            title={product.color}
-                          />
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            {getColorsArray(product.color).map((col, idx) => (
+                              <span
+                                key={idx}
+                                className="w-3 h-3 rounded-full border border-black/10 inline-block shadow-inner"
+                                style={{
+                                  backgroundColor: col.startsWith('#') ? col : getHexFromColorName(col)
+                                }}
+                                title={col}
+                              />
+                            ))}
+                          </div>
                         )}
                       </div>
                       <p className="hidden sm:block text-[11px] text-black/60 font-light line-clamp-2 mt-1.5 leading-relaxed">

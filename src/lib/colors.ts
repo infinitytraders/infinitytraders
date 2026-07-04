@@ -27,3 +27,11 @@ export function getHexFromColorName(colorName: string): string {
   
   return colorMap[name] || name;
 }
+
+/**
+ * Splits a color string (e.g. "#ffffff,#ef4444" or "Black/Red" or "Red, White") into an array of individual colors.
+ */
+export function getColorsArray(colorStr: string): string[] {
+  if (!colorStr) return [];
+  return colorStr.split(/[,\/+]+/).map(c => c.trim()).filter(Boolean);
+}

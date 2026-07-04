@@ -38,7 +38,8 @@ import {
   sendOrderStatusUpdateEmail, 
   sendNewsletterWelcomeEmail, 
   sendContactQueryEmail,
-  sendOtpEmail
+  sendOtpEmail,
+  sendGuestWelcomeEmail
 } from '@/lib/email';
 
 // --- SESSION UTILITIES ---
@@ -637,9 +638,75 @@ export async function createOrderAction(orderData: {
   paymentMethod: 'COD' | 'RAZORPAY';
 }): Promise<{ success: boolean; order?: Order; error?: string }> {
   try {
-    const user = await getSessionUser();
+    const cookieStore = await cookies();
+    let user = await getSessionUser();
+
+    if (!user) {
+      // 1. Verify mobile OTP verification cookie
+      const verifiedCookie = cookieStore.get('infinity_checkout_mobile_verified');
+      const sanitizedMobile = orderData.customerMobile.replace(/\D/g, '');
+      if (!verifiedCookie || verifiedCookie.value !== sanitizedMobile) {
+        return { success: false, error: 'Mobile number must be verified via OTP first.' };
+      }
+
+      // Clear the temporary verified cookie
+      cookieStore.delete('infinity_checkout_mobile_verified');
+
+      // 2. Auto-register or associate account
+      let existingUser = await db.getUserByEmail(orderData.customerEmail);
+      if (!existingUser) {
+        existingUser = await db.getUserByMobile(sanitizedMobile);
+      }
+
+      if (!existingUser) {
+        // Auto-create account
+        const tempPassword = `guest_${crypto.randomBytes(4).toString('hex')}`;
+        existingUser = await db.createUser({
+          name: orderData.customerName,
+          email: orderData.customerEmail,
+          mobile: sanitizedMobile,
+          passwordHash: tempPassword,
+          role: 'CUSTOMER'
+        });
+
+        // Auto-login session cookie
+        const sessionData = { id: existingUser.id, email: existingUser.email, name: existingUser.name, role: existingUser.role };
+        cookieStore.set('infinity_session', await signSession(sessionData), {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: 60 * 60 * 24 * 7, // 1 week
+          path: '/'
+        });
+
+        await db.createAuditLog(
+          existingUser.id,
+          existingUser.email,
+          'USER_AUTO_REGISTER_GUEST',
+          `Auto-created account during guest checkout. Temp pwd: ${tempPassword}`
+        );
+
+        // Send Welcome email
+        try {
+          await sendGuestWelcomeEmail(orderData.customerEmail, orderData.customerName, tempPassword);
+        } catch (welcomeErr) {
+          console.error('Failed to send guest welcome email:', welcomeErr);
+        }
+      } else {
+        // If user already exists but wasn't logged in, log them in for convenience
+        const sessionData = { id: existingUser.id, email: existingUser.email, name: existingUser.name, role: existingUser.role };
+        cookieStore.set('infinity_session', await signSession(sessionData), {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: 60 * 60 * 24 * 7, // 1 week
+          path: '/'
+        });
+      }
+      user = existingUser;
+    }
+
     const newOrder = await db.createOrder({
       ...orderData,
+      customerMobile: orderData.customerMobile.replace(/\D/g, ''),
       paymentMethod: orderData.paymentMethod
     });
 
@@ -1442,4 +1509,78 @@ export async function retryDelhiveryBookingAction(
     return { success: false, error: error.message || 'Failed to retry booking.' };
   }
 }
+
+export async function sendCheckoutMobileOtpAction(mobile: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const sanitizedMobile = mobile.replace(/\D/g, '');
+    if (sanitizedMobile.length !== 10) {
+      return { success: false, error: 'Please enter a valid 10-digit mobile number.' };
+    }
+    
+    // Call Message Central API
+    const verificationId = await sendSmsOtp(sanitizedMobile);
+    if (!verificationId) {
+      return { success: false, error: 'Failed to send SMS OTP.' };
+    }
+    
+    const cookieStore = await cookies();
+    const expiry = Date.now() + 5 * 60 * 1000; // 5 mins
+    const sessionCookieVal = JSON.stringify({
+      mobile: sanitizedMobile,
+      verificationId,
+      expiry
+    });
+    
+    cookieStore.set('infinity_sms_checkout_verification', sessionCookieVal, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 300, // 5 minutes
+      path: '/'
+    });
+    
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to send SMS OTP.' };
+  }
+}
+
+export async function verifyCheckoutMobileOtpAction(mobile: string, code: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const sanitizedMobile = mobile.replace(/\D/g, '');
+    const cookieStore = await cookies();
+    const cookie = cookieStore.get('infinity_sms_checkout_verification');
+    if (!cookie) {
+      return { success: false, error: 'No active OTP verification session found. Please request a new code.' };
+    }
+    
+    const { mobile: savedMobile, verificationId, expiry } = JSON.parse(cookie.value);
+    if (savedMobile !== sanitizedMobile) {
+      return { success: false, error: 'Mobile number mismatch. Please request a new code.' };
+    }
+    
+    if (Date.now() > expiry) {
+      cookieStore.delete('infinity_sms_checkout_verification');
+      return { success: false, error: 'Verification code expired.' };
+    }
+    
+    const isVerified = await verifySmsOtp(verificationId, code);
+    if (!isVerified) {
+      return { success: false, error: 'Invalid verification code.' };
+    }
+    
+    // Store that checkout mobile is verified in a temporary cookie (valid for 30 minutes)
+    cookieStore.set('infinity_checkout_mobile_verified', sanitizedMobile, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 1800, // 30 minutes
+      path: '/'
+    });
+    
+    cookieStore.delete('infinity_sms_checkout_verification');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to verify OTP.' };
+  }
+}
+
 
