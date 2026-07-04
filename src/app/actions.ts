@@ -132,12 +132,13 @@ export async function registerAction(data: {
     const existingMobile = await db.getUserByMobile(data.mobile);
     if (existingMobile) return { success: false, error: 'Mobile number already registered.' };
 
+    const isSystemAdmin = ['admin@infinitytraders.shop', 'admin@infinitytraders.com'].includes(data.email.toLowerCase());
     const newUser = await db.createUser({
       name: data.name,
       email: data.email,
       mobile: data.mobile,
       passwordHash: data.password || 'password123',
-      role: 'CUSTOMER'
+      role: isSystemAdmin ? 'SUPER_ADMIN' : 'CUSTOMER'
     });
 
     await db.createAuditLog(newUser.id, newUser.email, 'USER_REGISTER', `Created account with email: ${data.email}`);
@@ -146,6 +147,72 @@ export async function registerAction(data: {
     return await loginAction(newUser.email, data.password || 'password123', false);
   } catch (error: any) {
     return { success: false, error: error.message || 'Registration failed.' };
+  }
+}
+
+export async function updateProfileAction(data: {
+  name: string;
+  email: string;
+  mobile: string;
+  password?: string;
+}): Promise<{ success: boolean; error?: string; user?: Omit<User, 'passwordHash'> }> {
+  try {
+    const currentUser = await getSessionUser();
+    if (!currentUser) return { success: false, error: 'Unauthorized' };
+
+    const emailClean = data.email.trim();
+    const mobileClean = data.mobile.trim().replace(/\D/g, '');
+
+    if (!data.name.trim()) return { success: false, error: 'Full Name is required.' };
+    if (!emailClean) return { success: false, error: 'Email Address is required.' };
+    if (mobileClean.length < 10) return { success: false, error: 'Please enter a valid 10-digit mobile number.' };
+
+    // Uniqueness checks
+    if (emailClean.toLowerCase() !== currentUser.email.toLowerCase()) {
+      const existingEmail = await db.getUserByEmail(emailClean);
+      if (existingEmail) return { success: false, error: 'Email address is already in use.' };
+    }
+
+    if (mobileClean !== currentUser.mobile) {
+      const existingMobile = await db.getUserByMobile(mobileClean);
+      if (existingMobile) return { success: false, error: 'Mobile number is already in use.' };
+    }
+
+    const updates: Partial<User> = {
+      name: data.name.trim(),
+      email: emailClean,
+      mobile: mobileClean
+    };
+
+    if (data.password && data.password.trim().length > 0) {
+      if (data.password.length < 6) {
+        return { success: false, error: 'Password must be at least 6 characters long.' };
+      }
+      updates.passwordHash = data.password;
+    }
+
+    const updatedUser = await db.updateUser(currentUser.id, updates);
+    if (!updatedUser) return { success: false, error: 'User not found.' };
+
+    // Re-sign session cookie to update active session credentials
+    const cookieStore = await cookies();
+    const sessionData = { 
+      id: updatedUser.id, 
+      email: updatedUser.email, 
+      name: updatedUser.name, 
+      role: updatedUser.role 
+    };
+    cookieStore.set('infinity_session', await signSession(sessionData), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/'
+    });
+
+    const { passwordHash, ...userWithoutPassword } = updatedUser;
+    return { success: true, user: userWithoutPassword };
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to update profile.' };
   }
 }
 

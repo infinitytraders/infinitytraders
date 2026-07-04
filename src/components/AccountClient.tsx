@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getSessionUser, loginAction, registerAction, getOrdersAction, getProductsAction, sendOtpAction, verifyOtpAction, cancelOrderAction } from '@/app/actions';
+import { getSessionUser, loginAction, registerAction, getOrdersAction, getProductsAction, sendOtpAction, verifyOtpAction, cancelOrderAction, updateProfileAction } from '@/app/actions';
 import type { User, Order, Product } from '@/lib/db';
-import { Star, User as UserIcon, Package, Heart, Eye, LogOut, Plus, AlertCircle, FileText, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Star, User as UserIcon, Package, Heart, Eye, EyeOff, LogOut, Plus, AlertCircle, FileText, CheckCircle2, ChevronRight, Edit2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AccountClient() {
@@ -39,6 +39,17 @@ export default function AccountClient() {
   const [newAddress, setNewAddress] = useState({ street: '', city: '', state: '', pincode: '' });
   const [addingAddress, setAddingAddress] = useState(false);
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+  
+  // Profile edit states
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editMobile, setEditMobile] = useState('');
+  const [editPassword, setEditPassword] = useState('');
+  const [editError, setEditError] = useState('');
+  const [updatingProfile, setUpdatingProfile] = useState(false);
 
   const handleCancelOrder = async (orderId: string) => {
     if (!window.confirm('Are you sure you want to cancel this order?')) return;
@@ -61,12 +72,41 @@ export default function AccountClient() {
     }
   };
 
+  const handleProfileUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEditError('');
+    setUpdatingProfile(true);
+    try {
+      const res = await updateProfileAction({
+        name: editName,
+        email: editEmail,
+        mobile: editMobile,
+        password: editPassword || undefined
+      });
+      if (res.success && res.user) {
+        setUser(res.user as any);
+        setIsEditingProfile(false);
+        setEditPassword('');
+        alert('Profile updated successfully.');
+      } else {
+        setEditError(res.error || 'Failed to update profile.');
+      }
+    } catch (err: any) {
+      setEditError(err.message || 'Error updating profile.');
+    } finally {
+      setUpdatingProfile(false);
+    }
+  };
+
   // Load Session
   useEffect(() => {
     getSessionUser().then((u) => {
       setUser(u);
       setLoading(false);
       if (u) {
+        setEditName(u.name);
+        setEditEmail(u.email);
+        setEditMobile(u.mobile);
         // Load data if logged in
         getOrdersAction().then(res => {
           if (res.success && res.orders) setOrders(res.orders);
@@ -338,14 +378,23 @@ export default function AccountClient() {
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Password</label>
-                      <input
-                        type="password"
-                        required
-                        placeholder="Minimum 6 characters"
-                        value={regPassword}
-                        onChange={(e) => setRegPassword(e.target.value)}
-                        className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-medium"
-                      />
+                      <div className="relative">
+                        <input
+                          type={showRegisterPassword ? "text" : "password"}
+                          required
+                          placeholder="Minimum 6 characters"
+                          value={regPassword}
+                          onChange={(e) => setRegPassword(e.target.value)}
+                          className="w-full bg-white border border-black/10 focus:border-black rounded-xl pl-4 pr-10 py-2.5 text-xs outline-none transition-all text-black font-medium"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-black/40 hover:text-black transition-colors"
+                        >
+                          {showRegisterPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -375,14 +424,23 @@ export default function AccountClient() {
                             OTP Login
                           </button>
                         </div>
-                        <input
-                          type="password"
-                          required
-                          placeholder="Enter password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-medium"
-                        />
+                        <div className="relative">
+                          <input
+                            type={showLoginPassword ? "text" : "password"}
+                            required
+                            placeholder="Enter password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full bg-white border border-black/10 focus:border-black rounded-xl pl-4 pr-10 py-2.5 text-xs outline-none transition-all text-black font-medium"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowLoginPassword(!showLoginPassword)}
+                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-black/40 hover:text-black transition-colors"
+                          >
+                            {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
                       </div>
                     ) : (
                       <div className="space-y-2">
@@ -517,29 +575,116 @@ export default function AccountClient() {
           {/* PROFILE TAB */}
           {activeTab === 'profile' && (
             <div className="space-y-6">
-              <h2 className="text-xs font-extrabold uppercase tracking-widest text-black border-b border-black/5 pb-3">
-                Account Information
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-black/80">
-                <div className="space-y-1">
-                  <span className="text-black/45 block uppercase tracking-wider font-bold text-[9px]">Full Name</span>
-                  <span className="text-sm font-extrabold text-black">{user.name}</span>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-black/45 block uppercase tracking-wider font-bold text-[9px]">Mobile Number</span>
-                  <span className="text-sm font-extrabold text-black">+91 {user.mobile}</span>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-black/45 block uppercase tracking-wider font-bold text-[9px]">Email Address</span>
-                  <span className="text-sm font-extrabold text-black">{user.email}</span>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-black/45 block uppercase tracking-wider font-bold text-[9px]">Created Date</span>
-                  <span className="text-sm font-extrabold text-black">
-                    {new Date(user.createdAt).toLocaleDateString('en-IN', { dateStyle: 'medium' })}
-                  </span>
-                </div>
+              <div className="flex justify-between items-center border-b border-black/5 pb-3">
+                <h2 className="text-xs font-extrabold uppercase tracking-widest text-black">
+                  Account Information
+                </h2>
+                {!isEditingProfile && (
+                  <button
+                    onClick={() => {
+                      setIsEditingProfile(true);
+                      setEditName(user.name);
+                      setEditEmail(user.email);
+                      setEditMobile(user.mobile);
+                      setEditPassword('');
+                      setEditError('');
+                    }}
+                    className="inline-flex items-center gap-1.5 text-[9px] uppercase tracking-widest font-extrabold text-black/60 hover:text-black transition-colors"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" /> Edit Profile
+                  </button>
+                )}
               </div>
+
+              {isEditingProfile ? (
+                <form onSubmit={handleProfileUpdate} className="space-y-4 max-w-xl animate-fadeIn">
+                  {editError && (
+                    <p className="text-rose-600 font-semibold text-xs bg-rose-50 border border-rose-100 rounded-xl p-3">
+                      {editError}
+                    </p>
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Full Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-semibold animate-pulse-once"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Mobile Number</label>
+                      <input
+                        type="tel"
+                        required
+                        pattern="[6-9][0-9]{9}"
+                        value={editMobile}
+                        onChange={(e) => setEditMobile(e.target.value.replace(/\D/g, ''))}
+                        className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-semibold"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Email Address</label>
+                      <input
+                        type="email"
+                        required
+                        value={editEmail}
+                        onChange={(e) => setEditEmail(e.target.value)}
+                        className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-semibold"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">New Password (Optional)</label>
+                      <input
+                        type="password"
+                        placeholder="Leave blank to keep current"
+                        value={editPassword}
+                        onChange={(e) => setEditPassword(e.target.value)}
+                        className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-semibold"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      type="submit"
+                      disabled={updatingProfile}
+                      className="bg-black hover:bg-transparent text-white hover:text-black border border-black px-5 py-2 text-[10px] uppercase tracking-widest font-bold rounded-full transition-all shadow-xs disabled:opacity-50 active:scale-[0.98]"
+                    >
+                      {updatingProfile ? 'Saving...' : 'Save Changes'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingProfile(false)}
+                      className="bg-white hover:bg-black text-black hover:text-white border border-black/15 hover:border-black px-5 py-2 text-[10px] uppercase tracking-widest font-bold rounded-full transition-all shadow-xs active:scale-[0.98]"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-black/80">
+                  <div className="space-y-1">
+                    <span className="text-black/45 block uppercase tracking-wider font-bold text-[9px]">Full Name</span>
+                    <span className="text-sm font-extrabold text-black">{user.name}</span>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-black/45 block uppercase tracking-wider font-bold text-[9px]">Mobile Number</span>
+                    <span className="text-sm font-extrabold text-black">+91 {user.mobile}</span>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-black/45 block uppercase tracking-wider font-bold text-[9px]">Email Address</span>
+                    <span className="text-sm font-extrabold text-black">{user.email}</span>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-black/45 block uppercase tracking-wider font-bold text-[9px]">Created Date</span>
+                    <span className="text-sm font-extrabold text-black">
+                      {new Date(user.createdAt).toLocaleDateString('en-IN', { dateStyle: 'medium' })}
+                    </span>
+                  </div>
+                </div>
+              )}
 
               {/* Saved Addresses */}
               <div className="border-t border-black/5 pt-6 space-y-4">
