@@ -172,29 +172,22 @@ export default function CheckoutPage() {
   };
 
   const triggerConfetti = () => {
-    const duration = 3 * 1000;
-    const end = Date.now() + duration;
-
-    (function frame() {
-      confetti({
-        particleCount: 5,
-        angle: 60,
-        spread: 55,
-        origin: { x: 0 },
-        colors: ['#000000', '#d97706', '#ffffff']
-      });
-      confetti({
-        particleCount: 5,
-        angle: 120,
-        spread: 55,
-        origin: { x: 1 },
-        colors: ['#000000', '#d97706', '#ffffff']
-      });
-
-      if (Date.now() < end) {
-        requestAnimationFrame(frame);
-      }
-    }());
+    // Single elegant burst from left side
+    confetti({
+      particleCount: 60,
+      angle: 60,
+      spread: 60,
+      origin: { x: 0, y: 0.85 },
+      colors: ['#000000', '#d97706', '#ffffff']
+    });
+    // Single elegant burst from right side
+    confetti({
+      particleCount: 60,
+      angle: 120,
+      spread: 60,
+      origin: { x: 1, y: 0.85 },
+      colors: ['#000000', '#d97706', '#ffffff']
+    });
   };
 
   if (loadingSession) {

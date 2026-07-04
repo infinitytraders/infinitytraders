@@ -155,6 +155,7 @@ export async function updateProfileAction(data: {
   email: string;
   mobile: string;
   password?: string;
+  otpCode?: string;
 }): Promise<{ success: boolean; error?: string; user?: Omit<User, 'passwordHash'> }> {
   try {
     const currentUser = await getSessionUser();
@@ -167,8 +168,40 @@ export async function updateProfileAction(data: {
     if (!emailClean) return { success: false, error: 'Email Address is required.' };
     if (mobileClean.length < 10) return { success: false, error: 'Please enter a valid 10-digit mobile number.' };
 
+    const emailChanged = emailClean.toLowerCase() !== currentUser.email.toLowerCase();
+
+    // If email changed, verify the OTP code
+    if (emailChanged) {
+      if (!data.otpCode) {
+        return { success: false, error: 'Verification code is required to update your email address.' };
+      }
+
+      const cookieStore = await cookies();
+      const storedOtpCookie = cookieStore.get('infinity_otp_verification');
+      if (!storedOtpCookie || !storedOtpCookie.value) {
+        return { success: false, error: 'Verification code expired or not found. Please request a new OTP.' };
+      }
+
+      const { email: storedEmail, code: storedCode, expires } = JSON.parse(storedOtpCookie.value);
+      if (storedEmail.toLowerCase() !== emailClean.toLowerCase()) {
+        return { success: false, error: 'Verification email mismatch. Please request a new OTP.' };
+      }
+
+      if (Date.now() > expires) {
+        cookieStore.delete('infinity_otp_verification');
+        return { success: false, error: 'Verification code expired. Please request a new OTP.' };
+      }
+
+      if (storedCode !== data.otpCode.trim()) {
+        return { success: false, error: 'Invalid verification code. Please try again.' };
+      }
+
+      // Clean OTP cookie
+      cookieStore.delete('infinity_otp_verification');
+    }
+
     // Uniqueness checks
-    if (emailClean.toLowerCase() !== currentUser.email.toLowerCase()) {
+    if (emailChanged) {
       const existingEmail = await db.getUserByEmail(emailClean);
       if (existingEmail) return { success: false, error: 'Email address is already in use.' };
     }
@@ -213,6 +246,25 @@ export async function updateProfileAction(data: {
     return { success: true, user: userWithoutPassword };
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to update profile.' };
+  }
+}
+
+export async function sendProfileEmailUpdateOtpAction(newEmail: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const currentUser = await getSessionUser();
+    if (!currentUser) return { success: false, error: 'Unauthorized' };
+
+    const emailClean = newEmail.trim().toLowerCase();
+    if (emailClean === currentUser.email.toLowerCase()) {
+      return { success: false, error: 'New email must be different from current email.' };
+    }
+
+    const existingEmail = await db.getUserByEmail(emailClean);
+    if (existingEmail) return { success: false, error: 'Email address is already in use by another account.' };
+
+    return await sendOtpAction(emailClean);
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to send verification code.' };
   }
 }
 
@@ -1137,5 +1189,22 @@ export async function verifyOtpAction(
     return { success: true, user: loginRes.user };
   } catch (error: any) {
     return { success: false, error: error.message || 'OTP verification failed.' };
+  }
+}
+
+export async function sendRegistrationOtpAction(
+  email: string,
+  mobile: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const existingEmail = await db.getUserByEmail(email);
+    if (existingEmail) return { success: false, error: 'Email already registered.' };
+
+    const existingMobile = await db.getUserByMobile(mobile);
+    if (existingMobile) return { success: false, error: 'Mobile number already registered.' };
+
+    return await sendOtpAction(email);
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to send registration verification OTP.' };
   }
 }

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getSessionUser, loginAction, registerAction, getOrdersAction, getProductsAction, sendOtpAction, verifyOtpAction, cancelOrderAction, updateProfileAction } from '@/app/actions';
+import { getSessionUser, loginAction, registerAction, getOrdersAction, getProductsAction, sendOtpAction, verifyOtpAction, cancelOrderAction, updateProfileAction, sendRegistrationOtpAction, sendProfileEmailUpdateOtpAction } from '@/app/actions';
 import type { User, Order, Product } from '@/lib/db';
 import { Star, User as UserIcon, Package, Heart, Eye, EyeOff, LogOut, Plus, AlertCircle, FileText, CheckCircle2, ChevronRight, Edit2 } from 'lucide-react';
 import Link from 'next/link';
@@ -41,6 +41,9 @@ export default function AccountClient() {
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+  const [regOtpSent, setRegOtpSent] = useState(false);
+  const [regOtpCode, setRegOtpCode] = useState('');
+  const [verifyingReg, setVerifyingReg] = useState(false);
   
   // Profile edit states
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -72,20 +75,52 @@ export default function AccountClient() {
     }
   };
 
+  const [profileOtpSent, setProfileOtpSent] = useState(false);
+  const [profileOtpCode, setProfileOtpCode] = useState('');
+
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
     setEditError('');
     setUpdatingProfile(true);
+
     try {
+      const emailChanged = editEmail.trim().toLowerCase() !== user.email.toLowerCase();
+
+      // If email changed and OTP has not been sent yet
+      if (emailChanged && !profileOtpSent) {
+        const res = await sendProfileEmailUpdateOtpAction(editEmail);
+        if (res.success) {
+          setProfileOtpSent(true);
+          setProfileOtpCode('');
+          alert('A verification code has been sent to your new email address.');
+        } else {
+          setEditError(res.error || 'Failed to send verification email.');
+        }
+        setUpdatingProfile(false);
+        return;
+      }
+
+      // If OTP was sent, require the code
+      if (emailChanged && (!profileOtpCode || profileOtpCode.trim().length !== 6)) {
+        setEditError('Please enter the 6-digit verification code sent to your new email.');
+        setUpdatingProfile(false);
+        return;
+      }
+
       const res = await updateProfileAction({
         name: editName,
         email: editEmail,
         mobile: editMobile,
-        password: editPassword || undefined
+        password: editPassword || undefined,
+        otpCode: emailChanged ? profileOtpCode : undefined
       });
+
       if (res.success && res.user) {
         setUser(res.user as any);
         setIsEditingProfile(false);
+        setProfileOtpSent(false);
+        setProfileOtpCode('');
         setEditPassword('');
         alert('Profile updated successfully.');
       } else {
@@ -136,16 +171,53 @@ export default function AccountClient() {
         setAuthError('All fields are required.');
         return;
       }
-      const res = await registerAction({
+      if (!regEmail.includes('@')) {
+        setAuthError('Please enter a valid email address.');
+        return;
+      }
+      if (regPassword.length < 6) {
+        setAuthError('Password must be at least 6 characters long.');
+        return;
+      }
+
+      if (!regOtpSent) {
+        setVerifyingReg(true);
+        const res = await sendRegistrationOtpAction(regEmail, regMobile);
+        setVerifyingReg(false);
+        if (res.success) {
+          setRegOtpSent(true);
+          setAuthError('');
+        } else {
+          setAuthError(res.error || 'Failed to send verification email.');
+        }
+        return;
+      }
+
+      if (!regOtpCode || regOtpCode.trim().length !== 6) {
+        setAuthError('Please enter the 6-digit verification code sent to your email.');
+        return;
+      }
+
+      setVerifyingReg(true);
+      const verifyRes = await verifyOtpAction(regEmail, regOtpCode);
+      if (!verifyRes.success) {
+        setAuthError(verifyRes.error || 'Verification code failed.');
+        setVerifyingReg(false);
+        return;
+      }
+
+      const registerRes = await registerAction({
         name: regName,
         email: regEmail,
         mobile: regMobile,
         password: regPassword,
       });
-      if (res.success) {
+      setVerifyingReg(false);
+
+      if (registerRes.success) {
         handleAuthSuccess();
       } else {
-        setAuthError(res.error || 'Registration failed.');
+        setAuthError(registerRes.error || 'Registration failed.');
       }
     } else {
       if (!identifier) {
@@ -340,63 +412,95 @@ export default function AccountClient() {
                 )}
 
                 {isRegister ? (
-                  // REGISTER FIELDS
-                  <div className="space-y-4">
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Full Name</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="Enter your full name"
-                        value={regName}
-                        onChange={(e) => setRegName(e.target.value)}
-                        className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-medium"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Email Address</label>
-                      <input
-                        type="email"
-                        required
-                        placeholder="yourname@domain.shop"
-                        value={regEmail}
-                        onChange={(e) => setRegEmail(e.target.value)}
-                        className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-medium"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Mobile Number</label>
-                      <input
-                        type="tel"
-                        required
-                        pattern="[6-9][0-9]{9}"
-                        placeholder="10-digit Indian Mobile"
-                        value={regMobile}
-                        onChange={(e) => setRegMobile(e.target.value.replace(/\D/g, ''))}
-                        className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-medium"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Password</label>
-                      <div className="relative">
+                  regOtpSent ? (
+                    // REGISTER OTP VERIFICATION FIELD
+                    <div className="space-y-4 animate-fadeIn">
+                      <p className="text-xs text-[#065f46] bg-emerald-50 border border-emerald-100 rounded-xl p-3.5 font-semibold leading-relaxed">
+                        Verification code sent! We emailed a 6-digit OTP code to <strong className="font-extrabold">{regEmail}</strong>. Please enter it below to complete registration.
+                      </p>
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Verification Code (OTP)</label>
                         <input
-                          type={showRegisterPassword ? "text" : "password"}
+                          type="text"
                           required
-                          placeholder="Minimum 6 characters"
-                          value={regPassword}
-                          onChange={(e) => setRegPassword(e.target.value)}
-                          className="w-full bg-white border border-black/10 focus:border-black rounded-xl pl-4 pr-10 py-2.5 text-xs outline-none transition-all text-black font-medium"
+                          maxLength={6}
+                          placeholder="Enter 6-digit OTP"
+                          value={regOtpCode}
+                          onChange={(e) => setRegOtpCode(e.target.value.replace(/\D/g, ''))}
+                          className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-semibold text-center tracking-[0.25em]"
                         />
-                        <button
-                          type="button"
-                          onClick={() => setShowRegisterPassword(!showRegisterPassword)}
-                          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-black/40 hover:text-black transition-colors"
-                        >
-                          {showRegisterPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRegOtpSent(false);
+                          setRegOtpCode('');
+                          setAuthError('');
+                        }}
+                        className="text-[9px] text-black/60 hover:text-black font-bold uppercase tracking-wider underline transition-colors block text-center w-full"
+                      >
+                        Wrong email? Go back and change details
+                      </button>
+                    </div>
+                  ) : (
+                    // REGISTER FIELDS
+                    <div className="space-y-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Full Name</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Enter your full name"
+                          value={regName}
+                          onChange={(e) => setRegName(e.target.value)}
+                          className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-medium"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Email Address</label>
+                        <input
+                          type="email"
+                          required
+                          placeholder="yourname@domain.shop"
+                          value={regEmail}
+                          onChange={(e) => setRegEmail(e.target.value)}
+                          className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-medium"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Mobile Number</label>
+                        <input
+                          type="tel"
+                          required
+                          pattern="[6-9][0-9]{9}"
+                          placeholder="10-digit Indian Mobile"
+                          value={regMobile}
+                          onChange={(e) => setRegMobile(e.target.value.replace(/\D/g, ''))}
+                          className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-medium"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Password</label>
+                        <div className="relative">
+                          <input
+                            type={showRegisterPassword ? "text" : "password"}
+                            required
+                            placeholder="Minimum 6 characters"
+                            value={regPassword}
+                            onChange={(e) => setRegPassword(e.target.value)}
+                            className="w-full bg-white border border-black/10 focus:border-black rounded-xl pl-4 pr-10 py-2.5 text-xs outline-none transition-all text-black font-medium"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-black/40 hover:text-black transition-colors"
+                          >
+                            {showRegisterPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )
                 ) : (
                   // LOGIN FIELDS
                   <div className="space-y-4">
@@ -490,11 +594,20 @@ export default function AccountClient() {
                   </div>
                 )}
 
-                <button
+                 <button
                   type="submit"
-                  className="w-full bg-black hover:bg-black/90 text-white font-extrabold text-xs uppercase tracking-widest py-3 rounded-xl transition-all shadow-xs hover:shadow-sm active:scale-[0.98] mt-4"
+                  disabled={verifyingReg}
+                  className="w-full bg-black hover:bg-black/90 text-white font-extrabold text-xs uppercase tracking-widest py-3 rounded-xl transition-all shadow-xs hover:shadow-sm active:scale-[0.98] mt-4 disabled:opacity-50"
                 >
-                  {isRegister ? 'Register' : otpSent ? 'Verify & Login' : authMethod === 'otp' ? 'Request OTP' : 'Login'}
+                  {verifyingReg 
+                    ? 'Processing...' 
+                    : isRegister 
+                    ? (regOtpSent ? 'Verify & Register' : 'Register') 
+                    : otpSent 
+                    ? 'Verify & Login' 
+                    : authMethod === 'otp' 
+                    ? 'Request OTP' 
+                    : 'Login'}
                 </button>
               </form>
 
@@ -505,6 +618,8 @@ export default function AccountClient() {
                     setIsRegister(!isRegister);
                     setAuthError('');
                     setOtpSent(false);
+                    setRegOtpSent(false);
+                    setRegOtpCode('');
                   }}
                   className="text-[9px] text-black/55 hover:text-black transition-colors font-bold uppercase tracking-widest"
                 >
@@ -603,60 +718,97 @@ export default function AccountClient() {
                       {editError}
                     </p>
                   )}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Full Name</label>
-                      <input
-                        type="text"
-                        required
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
-                        className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-semibold animate-pulse-once"
-                      />
+                  {profileOtpSent ? (
+                    // PROFILE OTP VERIFICATION FIELD
+                    <div className="space-y-4 animate-fadeIn max-w-md">
+                      <p className="text-xs text-[#065f46] bg-emerald-50 border border-emerald-100 rounded-xl p-3.5 font-semibold leading-relaxed">
+                        Verification code sent! We emailed a 6-digit OTP code to <strong className="font-extrabold">{editEmail}</strong>. Please enter it below to confirm your new email address.
+                      </p>
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Verification Code (OTP)</label>
+                        <input
+                          type="text"
+                          required
+                          maxLength={6}
+                          placeholder="Enter 6-digit OTP"
+                          value={profileOtpCode}
+                          onChange={(e) => setProfileOtpCode(e.target.value.replace(/\D/g, ''))}
+                          className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-semibold text-center tracking-[0.25em]"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProfileOtpSent(false);
+                          setProfileOtpCode('');
+                          setEditError('');
+                        }}
+                        className="text-[9px] text-black/60 hover:text-black font-bold uppercase tracking-wider underline transition-colors block text-center w-full"
+                      >
+                        Change details / Cancel email update
+                      </button>
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Mobile Number</label>
-                      <input
-                        type="tel"
-                        required
-                        pattern="[6-9][0-9]{9}"
-                        value={editMobile}
-                        onChange={(e) => setEditMobile(e.target.value.replace(/\D/g, ''))}
-                        className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-semibold"
-                      />
+                  ) : (
+                    // PROFILE DETAILS FIELDS
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Full Name</label>
+                        <input
+                          type="text"
+                          required
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                          className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-semibold animate-pulse-once"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Mobile Number</label>
+                        <input
+                          type="tel"
+                          required
+                          pattern="[6-9][0-9]{9}"
+                          value={editMobile}
+                          onChange={(e) => setEditMobile(e.target.value.replace(/\D/g, ''))}
+                          className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-semibold"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Email Address</label>
+                        <input
+                          type="email"
+                          required
+                          value={editEmail}
+                          onChange={(e) => setEditEmail(e.target.value)}
+                          className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-semibold"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">New Password (Optional)</label>
+                        <input
+                          type="password"
+                          placeholder="Leave blank to keep current"
+                          value={editPassword}
+                          onChange={(e) => setEditPassword(e.target.value)}
+                          className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-semibold"
+                        />
+                      </div>
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Email Address</label>
-                      <input
-                        type="email"
-                        required
-                        value={editEmail}
-                        onChange={(e) => setEditEmail(e.target.value)}
-                        className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-semibold"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">New Password (Optional)</label>
-                      <input
-                        type="password"
-                        placeholder="Leave blank to keep current"
-                        value={editPassword}
-                        onChange={(e) => setEditPassword(e.target.value)}
-                        className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-semibold"
-                      />
-                    </div>
-                  </div>
+                  )}
                   <div className="flex gap-3 pt-2">
                     <button
                       type="submit"
                       disabled={updatingProfile}
                       className="bg-black hover:bg-transparent text-white hover:text-black border border-black px-5 py-2 text-[10px] uppercase tracking-widest font-bold rounded-full transition-all shadow-xs disabled:opacity-50 active:scale-[0.98]"
                     >
-                      {updatingProfile ? 'Saving...' : 'Save Changes'}
+                      {updatingProfile ? 'Saving...' : profileOtpSent ? 'Verify & Save' : 'Save Changes'}
                     </button>
                     <button
                       type="button"
-                      onClick={() => setIsEditingProfile(false)}
+                      onClick={() => {
+                        setIsEditingProfile(false);
+                        setProfileOtpSent(false);
+                        setProfileOtpCode('');
+                      }}
                       className="bg-white hover:bg-black text-black hover:text-white border border-black/15 hover:border-black px-5 py-2 text-[10px] uppercase tracking-widest font-bold rounded-full transition-all shadow-xs active:scale-[0.98]"
                     >
                       Cancel
