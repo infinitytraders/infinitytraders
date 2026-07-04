@@ -8,6 +8,7 @@ import { toggleWishlistAction, recordRecentlyViewedAction } from '@/app/actions'
 import { Star, Truck, Heart, Share2, Plus, Minus, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { getHexFromColorName } from '@/lib/colors';
 
 interface ProductDetailClientProps {
   product: Product;
@@ -193,6 +194,26 @@ export default function ProductDetailClient({ product, recommendations, initialU
                 : `MRP inclusive of all Indian taxes. GST breakdown (18% value: ~₹${productGst.toLocaleString('en-IN')}) shown transparently in cart.`}
             </p>
           </div>
+
+          {/* Color Display Swatch */}
+          {product.color && (
+            <div className="space-y-2 pb-2">
+              <span className="text-[10px] sm:text-xs tracking-wider uppercase font-extrabold text-black/85 block">
+                {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'रंग' : 'Color'}
+              </span>
+              <div className="flex items-center gap-2.5">
+                <span
+                  className="w-5 h-5 rounded-full border border-black/10 inline-block shadow-inner"
+                  style={{
+                    backgroundColor: product.color.startsWith('#') ? product.color : getHexFromColorName(product.color)
+                  }}
+                />
+                <span className="text-[11px] sm:text-xs font-bold text-black/60 capitalize">
+                  {product.color.startsWith('#') ? product.color : product.color}
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* Sizing Grid (Indian sizes) */}
           {product.category === 'Footwear' || product.category === 'Slippers' ? (

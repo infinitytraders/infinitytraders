@@ -24,6 +24,7 @@ import {
   deleteNewsletterSubscriberAction,
   retryDelhiveryBookingAction
 } from '@/app/actions';
+import { getHexFromColorName } from '@/lib/colors';
 import type { User, Product, Order, Coupon, PincodeServiceability, AuditLog, NewsletterSubscriber } from '@/lib/db';
 import { BarChart3, ShoppingCart, Users, BadgeAlert, Plus, Edit2, Trash2, Check, X, FileSpreadsheet, Package, AlertTriangle, ShieldCheck, Tag, History, MapPin } from 'lucide-react';
 import Link from 'next/link';
@@ -725,13 +726,57 @@ export default function AdminPage() {
                       className="w-full input-premium text-xs"
                     />
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Color</label>
-                    <input
-                      type="text" placeholder="Color name"
-                      value={productForm.color} onChange={(e) => setProductForm({...productForm, color: e.target.value})}
-                      className="w-full input-premium text-xs"
-                    />
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider block">Product Color</label>
+                    <div className="bg-[#fcfbf9] border border-black/10 p-4 rounded-2xl max-w-[240px] space-y-3 shadow-xs">
+                      {/* Swatches Grid */}
+                      <div className="grid grid-cols-4 gap-3">
+                        {[
+                          { name: 'white', hex: '#ffffff' },
+                          { name: 'green', hex: '#22c55e' },
+                          { name: 'red', hex: '#ef4444' },
+                          { name: 'tan', hex: '#d2b48c' },
+                          { name: 'grey', hex: '#8b8b8b' },
+                          { name: 'cyan', hex: '#06b6d4' },
+                          { name: 'orange', hex: '#f97316' },
+                          { name: 'lavender', hex: '#a855f7' },
+                          { name: 'black', hex: '#000000' },
+                          { name: 'blue', hex: '#3b82f6' },
+                          { name: 'yellow', hex: '#eab308' },
+                          { name: 'pink', hex: '#ec4899' }
+                        ].map((swatch) => {
+                          const isSelected = productForm.color.toLowerCase() === swatch.name || productForm.color.toLowerCase() === swatch.hex;
+                          return (
+                            <button
+                              key={swatch.name}
+                              type="button"
+                              onClick={() => setProductForm({ ...productForm, color: swatch.hex })}
+                              className={`w-7 h-7 rounded-full border transition-transform hover:scale-110 active:scale-95 ${
+                                isSelected ? 'border-black scale-105 shadow-[0_0_8px_rgba(0,0,0,0.15)]' : 'border-black/15'
+                              }`}
+                              style={{ backgroundColor: swatch.hex }}
+                              title={swatch.name}
+                            />
+                          );
+                        })}
+                      </div>
+                      
+                      {/* Hex/Name Custom Input */}
+                      <div className="bg-white rounded-xl px-3 py-2 flex items-center gap-2 border border-black/10 focus-within:border-black/35">
+                        <span className="text-black/30 text-xs font-mono">#</span>
+                        <input
+                          type="text"
+                          placeholder="00C543 or color name"
+                          value={productForm.color.startsWith('#') ? productForm.color.substring(1) : productForm.color}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const cleanVal = /^[0-9A-Fa-f]{6}$/.test(val) ? `#${val}` : val;
+                            setProductForm({ ...productForm, color: cleanVal });
+                          }}
+                          className="bg-transparent text-black font-mono text-xs uppercase w-full outline-none"
+                        />
+                      </div>
+                    </div>
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Material</label>

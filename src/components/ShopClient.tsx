@@ -8,6 +8,7 @@ import { useCart } from '@/context/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { Star, Search, SlidersHorizontal, Grid, X, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
+import { getHexFromColorName } from '@/lib/colors';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ShopClient() {
@@ -346,12 +347,23 @@ export default function ShopClient() {
                         <span>{product.brand}</span>
                         <span>{tc(product.category)}</span>
                       </div>
-                      <Link
-                        href={`/product/${product.id}`}
-                        className="block text-xs sm:text-sm font-extrabold text-black mt-1 hover:underline transition-colors line-clamp-1"
-                      >
-                        {tp(product.id, 'name', product.name)}
-                      </Link>
+                      <div className="flex items-center justify-between gap-2 mt-1">
+                        <Link
+                          href={`/product/${product.id}`}
+                          className="block text-xs sm:text-sm font-extrabold text-black hover:underline transition-colors line-clamp-1 flex-1"
+                        >
+                          {tp(product.id, 'name', product.name)}
+                        </Link>
+                        {product.color && (
+                          <span
+                            className="w-3.5 h-3.5 rounded-full border border-black/10 flex-shrink-0 inline-block shadow-inner"
+                            style={{
+                              backgroundColor: product.color.startsWith('#') ? product.color : getHexFromColorName(product.color)
+                            }}
+                            title={product.color}
+                          />
+                        )}
+                      </div>
                       <p className="hidden sm:block text-[11px] text-black/60 font-light line-clamp-2 mt-1.5 leading-relaxed">
                         {tp(product.id, 'desc', product.description)}
                       </p>

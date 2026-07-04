@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { Product } from '@/lib/db';
 import { useCart } from '@/context/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { getHexFromColorName } from '@/lib/colors';
 import { ArrowRight, ShoppingCart, Star, CheckCircle, ShieldAlert, Send, ChevronLeft, ChevronRight, MapPin, ExternalLink, X } from 'lucide-react';
 import { motion, AnimatePresence, useInView, animate } from 'framer-motion';
 import { subscribeNewsletterAction } from '@/app/actions';
@@ -1285,12 +1286,23 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
                     <span>{product.brand}</span>
                     <span className="hidden sm:inline">{product.category}</span>
                   </div>
-                  <Link
-                    href={`/product/${product.id}`}
-                    className="block text-xs sm:text-base font-extrabold text-black mt-1 hover:underline transition-all line-clamp-1"
-                  >
-                    {product.name}
-                  </Link>
+                  <div className="flex items-center justify-between gap-2 mt-1">
+                    <Link
+                      href={`/product/${product.id}`}
+                      className="block text-xs sm:text-base font-extrabold text-black hover:underline transition-all line-clamp-1 flex-1"
+                    >
+                      {product.name}
+                    </Link>
+                    {product.color && (
+                      <span
+                        className="w-3.5 h-3.5 rounded-full border border-black/10 flex-shrink-0 inline-block shadow-inner"
+                        style={{
+                          backgroundColor: product.color.startsWith('#') ? product.color : getHexFromColorName(product.color)
+                        }}
+                        title={product.color}
+                      />
+                    )}
+                  </div>
                   <p className="hidden sm:block text-xs text-black/60 font-light line-clamp-2 mt-1.5 leading-relaxed">
                     {product.description}
                   </p>
