@@ -49,24 +49,26 @@ export default function CheckoutPage() {
   // Load session
   useEffect(() => {
     getSessionUser().then((u) => {
+      if (!u) {
+        router.push('/account?redirect=/checkout');
+        return;
+      }
       setUser(u);
       setLoadingSession(false);
-      if (u) {
-        setName(u.name);
-        setEmail(u.email);
-        setMobile(u.mobile);
-        
-        // Auto fill default address if exists
-        const defaultAddr = u.addresses.find(a => a.isDefault);
-        if (defaultAddr) {
-          setStreet(defaultAddr.street);
-          setCity(defaultAddr.city);
-          setState(defaultAddr.state);
-          setPincode(defaultAddr.pincode);
-        }
+      setName(u.name);
+      setEmail(u.email);
+      setMobile(u.mobile);
+      
+      // Auto fill default address if exists
+      const defaultAddr = u.addresses.find(a => a.isDefault);
+      if (defaultAddr) {
+        setStreet(defaultAddr.street);
+        setCity(defaultAddr.city);
+        setState(defaultAddr.state);
+        setPincode(defaultAddr.pincode);
       }
     });
-  }, []);
+  }, [router, setPincode]);
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 

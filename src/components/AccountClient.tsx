@@ -57,6 +57,14 @@ export default function AccountClient() {
     });
   }, []);
 
+  const handleAuthSuccess = () => {
+    if (redirect && redirect !== '/') {
+      window.location.href = redirect;
+    } else {
+      window.location.reload();
+    }
+  };
+
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
@@ -73,7 +81,7 @@ export default function AccountClient() {
         password: regPassword,
       });
       if (res.success) {
-        window.location.reload();
+        handleAuthSuccess();
       } else {
         setAuthError(res.error || 'Registration failed.');
       }
@@ -106,7 +114,7 @@ export default function AccountClient() {
         if (isEmail) {
           const res = await verifyOtpAction(identifier, otpCode);
           if (res.success) {
-            window.location.reload();
+            handleAuthSuccess();
           } else {
             setAuthError(res.error || 'Invalid OTP code.');
           }
@@ -118,7 +126,7 @@ export default function AccountClient() {
           }
           const res = await loginAction(identifier, undefined, true);
           if (res.success) {
-            window.location.reload();
+            handleAuthSuccess();
           } else {
             setAuthError(res.error || 'OTP Login failed.');
           }
@@ -130,7 +138,7 @@ export default function AccountClient() {
         }
         const res = await loginAction(identifier, password, false);
         if (res.success) {
-          window.location.reload();
+          handleAuthSuccess();
         } else {
           setAuthError(res.error || 'Login failed.');
         }
