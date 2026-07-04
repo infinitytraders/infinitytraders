@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { trackOrderAction } from '@/app/actions';
+import { trackOrderAction, cancelOrderAction } from '@/app/actions';
 import type { Order } from '@/lib/db';
-import { Search, MapPin, Package, Calendar, Tag, CreditCard, ChevronRight, CheckCircle2, Truck, FileText, ArrowLeft, Loader2 } from 'lucide-react';
+import { Search, MapPin, Package, Calendar, Tag, CreditCard, ChevronRight, CheckCircle2, Truck, FileText, ArrowLeft, Loader2, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
 
@@ -19,6 +19,43 @@ export default function TrackClient() {
   const [order, setOrder] = useState<Order | null>(null);
   const [error, setError] = useState('');
   const [searched, setSearched] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+
+  const handleCancel = async () => {
+    if (!order) return;
+    const confirmMsg = t('home.newArrivals') === 'नए जूते (New Arrivals)' 
+      ? 'क्या आप वाकई इस ऑर्डर को रद्द करना चाहते हैं?' 
+      : 'Are you sure you want to cancel this order?';
+    if (!window.confirm(confirmMsg)) return;
+
+    setCancelling(true);
+    try {
+      const res = await cancelOrderAction(order.id);
+      if (res.success) {
+        alert(t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'ऑर्डर सफलतापूर्वक रद्द कर दिया गया है।' : 'Order cancelled successfully.');
+        // Re-track order to refresh local state
+        setLoading(true);
+        const trackRes = await trackOrderAction(order.id, order.customerEmail);
+        if (trackRes.success && trackRes.order) {
+          setOrder(trackRes.order);
+        }
+        setLoading(false);
+      } else {
+        if (res.error?.includes('Authentication required')) {
+          alert(t('home.newArrivals') === 'नए जूते (New Arrivals)' 
+            ? 'ऑर्डर रद्द करने के लिए आपको लॉग इन करना होगा।' 
+            : 'Please log in to cancel your order.');
+          router.push(`/account?redirect=/track?id=${order.id}`);
+        } else {
+          alert(res.error || 'Failed to cancel order.');
+        }
+      }
+    } catch (err: any) {
+      alert(err.message || 'Error cancelling order.');
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   // Automatically check if order ID is in search parameters
   useEffect(() => {
@@ -179,118 +216,156 @@ export default function TrackClient() {
 
           {/* 1. Visual Progress Timeline */}
           <div className="bg-white border border-black/5 p-6 sm:p-8 rounded-2xl shadow-xs space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-black/5 pb-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-black/5 pb-4">
               <div>
                 <span className="text-[9px] uppercase font-bold text-black/45 block tracking-wider">
                   {isHindi ? 'लाइव स्टेटस' : 'Live Status'}
                 </span>
-                <h2 className="text-sm font-extrabold uppercase text-black tracking-widest mt-0.5 flex items-center gap-2">
-                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-teal-600 animate-ping" />
+                <h2 className={`text-sm font-extrabold uppercase tracking-widest mt-0.5 flex items-center gap-2 ${
+                  order.orderStatus === 'CANCELLED' ? 'text-rose-600' : 'text-black'
+                }`}>
+                  <span className={`inline-block w-2.5 h-2.5 rounded-full animate-pulse ${
+                    order.orderStatus === 'CANCELLED' ? 'bg-rose-600' : 'bg-teal-600 animate-ping'
+                  }`} />
                   {order.orderStatus === 'PENDING' && (isHindi ? 'ऑर्डर की पुष्टि हो गई (सत्यापन)' : 'Order Verified (Fulfillment Pending)')}
                   {order.orderStatus === 'DISPATCHED' && (isHindi ? 'पारगमन में (Dispatched)' : 'In Transit (Dispatched)')}
                   {order.orderStatus === 'DELIVERED' && (isHindi ? 'सफलतापूर्वक वितरित (Delivered)' : 'Successfully Delivered')}
+                  {order.orderStatus === 'CANCELLED' && (isHindi ? 'रद्द किया गया (Cancelled)' : 'Cancelled (Order Annulled)')}
                 </h2>
               </div>
-              <div className="text-left sm:text-right">
-                <span className="text-[9px] uppercase font-bold text-black/45 block tracking-wider">
-                  {isHindi ? 'ऑर्डर आईडी' : 'Order ID'}
-                </span>
-                <span className="text-xs font-extrabold text-black tracking-widest font-mono select-all">
-                  {order.id}
-                </span>
+              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+                <div className="text-left sm:text-right">
+                  <span className="text-[9px] uppercase font-bold text-black/45 block tracking-wider">
+                    {isHindi ? 'ऑर्डर आईडी' : 'Order ID'}
+                  </span>
+                  <span className="text-xs font-extrabold text-black tracking-widest font-mono select-all">
+                    {order.id}
+                  </span>
+                </div>
+                {order.orderStatus !== 'CANCELLED' && order.orderStatus !== 'DELIVERED' && (
+                  <button
+                    onClick={handleCancel}
+                    disabled={cancelling}
+                    className="bg-white hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-200 hover:border-rose-600 px-4 py-2 text-[10px] uppercase tracking-widest font-bold flex items-center gap-1.5 rounded-full transition-all text-center justify-center shadow-xs disabled:opacity-50 active:scale-[0.98]"
+                  >
+                    {cancelling 
+                      ? (isHindi ? 'रद्द किया जा रहा है...' : 'Cancelling...') 
+                      : (isHindi ? 'ऑर्डर रद्द करें' : 'Cancel Order')}
+                  </button>
+                )}
               </div>
             </div>
 
-            {/* Steps Visual Bar */}
-            <div className="relative pt-4 pb-2">
-              <div className="absolute top-[28px] left-[15%] right-[15%] h-0.5 bg-black/5 -z-1" />
-              <div
-                className="absolute top-[28px] left-[15%] h-0.5 bg-black -z-1 transition-all duration-1000"
-                style={{
-                  width: `${
-                    currentStep === 1 ? '33.33%' : currentStep === 2 ? '66.66%' : currentStep === 3 ? '70%' : '0%'
-                  }`,
-                }}
-              />
-
-              <div className="grid grid-cols-4 text-center">
-                {/* Step 1: Placed */}
-                <div className="flex flex-col items-center space-y-2">
-                  <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
-                      currentStep >= 0
-                        ? 'bg-black text-white border-black scale-110 shadow-xs'
-                        : 'bg-white text-black/40 border-black/10'
-                    }`}
-                  >
-                    1
-                  </div>
-                  <span className="text-[9px] uppercase tracking-widest font-bold text-black block">
-                    {isHindi ? 'आदेश दिया' : 'Ordered'}
-                  </span>
-                  <span className="text-[8px] text-black/40 font-light block">
-                    {new Date(order.createdAt).toLocaleDateString('en-IN', { dateStyle: 'short' })}
-                  </span>
-                </div>
-
-                {/* Step 2: Verified */}
-                <div className="flex flex-col items-center space-y-2">
-                  <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
-                      currentStep >= 1
-                        ? 'bg-black text-white border-black scale-110 shadow-xs'
-                        : 'bg-white text-black/40 border-black/10'
-                    }`}
-                  >
-                    {currentStep >= 1 ? <CheckCircle2 className="w-4 h-4 text-white fill-black" /> : '2'}
-                  </div>
-                  <span className="text-[9px] uppercase tracking-widest font-bold text-black block">
-                    {isHindi ? 'सत्यापित' : 'Confirmed'}
-                  </span>
-                  <span className="text-[8px] text-teal-800 font-bold block uppercase tracking-wider">
-                    {isHindi ? 'कॉल सत्यापित' : 'COD Verified'}
-                  </span>
-                </div>
-
-                {/* Step 3: Dispatched */}
-                <div className="flex flex-col items-center space-y-2">
-                  <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
-                      currentStep >= 2
-                        ? 'bg-black text-white border-black scale-110 shadow-xs'
-                        : 'bg-white text-black/40 border-black/10'
-                    }`}
-                  >
-                    {currentStep >= 2 ? <Truck className="w-4 h-4 text-white" /> : '3'}
-                  </div>
-                  <span className="text-[9px] uppercase tracking-widest font-bold text-black block">
-                    {isHindi ? 'भेजा गया' : 'Dispatched'}
-                  </span>
-                  <span className="text-[8px] text-black/40 font-light block">
-                    {order.courierName || (isHindi ? 'लंबा पारगमन' : 'Express Air')}
-                  </span>
-                </div>
-
-                {/* Step 4: Delivered */}
-                <div className="flex flex-col items-center space-y-2">
-                  <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
-                      currentStep >= 3
-                        ? 'bg-black text-white border-black scale-110 shadow-xs'
-                        : 'bg-white text-black/40 border-black/10'
-                    }`}
-                  >
-                    {currentStep >= 3 ? <CheckCircle2 className="w-4 h-4 text-white fill-black" /> : '4'}
-                  </div>
-                  <span className="text-[9px] uppercase tracking-widest font-bold text-black block">
-                    {isHindi ? 'वितरित' : 'Delivered'}
-                  </span>
-                  <span className="text-[8px] text-black/40 font-light block">
-                    {order.orderStatus === 'DELIVERED' ? (isHindi ? 'पूर्ण' : 'Completed') : '---'}
-                  </span>
+            {order.orderStatus === 'CANCELLED' ? (
+              <div className="bg-rose-50/60 border border-rose-100/80 rounded-2xl p-4 sm:p-5 flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-rose-600 flex-shrink-0 mt-0.5" />
+                <div className="space-y-1 text-xs">
+                  <h4 className="font-extrabold text-rose-950 uppercase tracking-wider">
+                    {isHindi ? 'यह ऑर्डर रद्द कर दिया गया है' : 'Order Cancellation Completed'}
+                  </h4>
+                  <p className="text-rose-900/85 font-medium leading-relaxed">
+                    {order.paymentMethod === 'RAZORPAY' 
+                      ? (isHindi 
+                          ? 'ऑनलाइन भुगतान के लिए रिफंड प्रक्रिया शुरू कर दी गई है। यह आपके खाते में ३-४ कार्य दिवसों में जमा हो जाएगा।'
+                          : 'The refund process for your online payment has been initiated. Funds will credit back to your source account within 3-4 working days.')
+                      : (isHindi
+                          ? 'चूंकि यह कैश ऑन डिलीवरी (COD) ऑर्डर था, इसलिए कोई रिफंड आवश्यक नहीं है।'
+                          : 'As this was a Cash on Delivery (COD) order, no transaction refund is required.')}
+                  </p>
                 </div>
               </div>
-            </div>
+            ) : (
+              /* Steps Visual Bar */
+              <div className="relative pt-4 pb-2">
+                <div className="absolute top-[28px] left-[15%] right-[15%] h-0.5 bg-black/5 -z-1" />
+                <div
+                  className="absolute top-[28px] left-[15%] h-0.5 bg-black -z-1 transition-all duration-1000"
+                  style={{
+                    width: `${
+                      currentStep === 1 ? '33.33%' : currentStep === 2 ? '66.66%' : currentStep === 3 ? '70%' : '0%'
+                    }`,
+                  }}
+                />
+
+                <div className="grid grid-cols-4 text-center">
+                  {/* Step 1: Placed */}
+                  <div className="flex flex-col items-center space-y-2">
+                    <div
+                      className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
+                        currentStep >= 0
+                          ? 'bg-black text-white border-black scale-110 shadow-xs'
+                          : 'bg-white text-black/40 border-black/10'
+                      }`}
+                    >
+                      1
+                    </div>
+                    <span className="text-[9px] uppercase tracking-widest font-bold text-black block">
+                      {isHindi ? 'आदेश दिया' : 'Ordered'}
+                    </span>
+                    <span className="text-[8px] text-black/40 font-light block">
+                      {new Date(order.createdAt).toLocaleDateString('en-IN', { dateStyle: 'short' })}
+                    </span>
+                  </div>
+
+                  {/* Step 2: Verified */}
+                  <div className="flex flex-col items-center space-y-2">
+                    <div
+                      className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
+                        currentStep >= 1
+                          ? 'bg-black text-white border-black scale-110 shadow-xs'
+                          : 'bg-white text-black/40 border-black/10'
+                      }`}
+                    >
+                      {currentStep >= 1 ? <CheckCircle2 className="w-4 h-4 text-white fill-black" /> : '2'}
+                    </div>
+                    <span className="text-[9px] uppercase tracking-widest font-bold text-black block">
+                      {isHindi ? 'सत्यापित' : 'Confirmed'}
+                    </span>
+                    <span className="text-[8px] text-teal-800 font-bold block uppercase tracking-wider">
+                      {isHindi ? 'कॉल सत्यापित' : 'COD Verified'}
+                    </span>
+                  </div>
+
+                  {/* Step 3: Dispatched */}
+                  <div className="flex flex-col items-center space-y-2">
+                    <div
+                      className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
+                        currentStep >= 2
+                          ? 'bg-black text-white border-black scale-110 shadow-xs'
+                          : 'bg-white text-black/40 border-black/10'
+                      }`}
+                    >
+                      {currentStep >= 2 ? <Truck className="w-4 h-4 text-white" /> : '3'}
+                    </div>
+                    <span className="text-[9px] uppercase tracking-widest font-bold text-black block">
+                      {isHindi ? 'भेजा गया' : 'Dispatched'}
+                    </span>
+                    <span className="text-[8px] text-black/40 font-light block">
+                      {order.courierName || (isHindi ? 'लंबा पारगमन' : 'Express Air')}
+                    </span>
+                  </div>
+
+                  {/* Step 4: Delivered */}
+                  <div className="flex flex-col items-center space-y-2">
+                    <div
+                      className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
+                        currentStep >= 3
+                          ? 'bg-black text-white border-black scale-110 shadow-xs'
+                          : 'bg-white text-black/40 border-black/10'
+                      }`}
+                    >
+                      {currentStep >= 3 ? <CheckCircle2 className="w-4 h-4 text-white fill-black" /> : '4'}
+                    </div>
+                    <span className="text-[9px] uppercase tracking-widest font-bold text-black block">
+                      {isHindi ? 'वितरित' : 'Delivered'}
+                    </span>
+                    <span className="text-[8px] text-black/40 font-light block">
+                      {order.orderStatus === 'DELIVERED' ? (isHindi ? 'पूर्ण' : 'Completed') : '---'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 2. Dispatch Logistics Details (If Dispatched) */}

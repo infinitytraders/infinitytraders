@@ -602,6 +602,73 @@ export async function trackOrderAction(
   }
 }
 
+export async function cancelOrderAction(orderId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const user = await getSessionUser();
+    if (!user) {
+      return { success: false, error: 'Authentication required to cancel orders.' };
+    }
+
+    const order = await db.getOrderById(orderId);
+    if (!order) return { success: false, error: 'Order not found.' };
+
+    // Customers can only cancel their own orders
+    if (user.role === 'CUSTOMER' && order.customerEmail.toLowerCase() !== user.email.toLowerCase()) {
+      return { success: false, error: 'You do not have permission to cancel this order.' };
+    }
+
+    // Check if already cancelled or delivered
+    if (order.orderStatus === 'CANCELLED') {
+      return { success: false, error: 'Order is already cancelled.' };
+    }
+    if (order.orderStatus === 'DELIVERED') {
+      return { success: false, error: 'Order has been delivered and cannot be cancelled.' };
+    }
+
+    // Check Delhivery pickup status
+    if (order.trackingNumber && order.courierName === 'Delhivery') {
+      const tracking = await getDelhiveryTrackingDetails(order.trackingNumber);
+      if (tracking) {
+        // If there are physical scans other than Manifested, it has been picked up
+        if (tracking.Status?.Scans && tracking.Status.Scans.length > 0) {
+          const hasTransitScans = tracking.Status.Scans.some((scan: any) => {
+            const activity = (scan.ScanDetail?.Scan || '').toUpperCase();
+            return activity !== 'MANIFESTED' && activity !== 'SOFT DATA UPLOADED';
+          });
+          if (hasTransitScans) {
+            return { success: false, error: 'Order has already been picked up by the courier and cannot be cancelled.' };
+          }
+        }
+        
+        // Check main status field
+        const mainStatus = (tracking.Status?.Status || '').toUpperCase();
+        if (['IN TRANSIT', 'DISPATCHED', 'OUT FOR DELIVERY', 'DELIVERED'].includes(mainStatus)) {
+          return { success: false, error: 'Order has already been picked up by the courier and cannot be cancelled.' };
+        }
+      }
+    }
+
+    // Update order status to CANCELLED
+    await db.updateOrder(orderId, {
+      orderStatus: 'CANCELLED',
+      paymentStatus: order.paymentMethod === 'COD' ? 'PENDING' : 'FAILED',
+      dispatchDetails: 'Order cancelled by customer.'
+    });
+
+    // Create Audit Log
+    await db.createAuditLog(
+      user.id,
+      user.email,
+      'ORDER_CANCEL',
+      `Order ${orderId} cancelled. Payment method: ${order.paymentMethod}`
+    );
+
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to cancel order.' };
+  }
+}
+
 // --- HELPER LOGISTICS FUNCTIONS ---
 async function bookDelhiveryShipment(order: Order): Promise<string | null> {
   try {

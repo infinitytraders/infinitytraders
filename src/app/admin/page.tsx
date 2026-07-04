@@ -69,7 +69,7 @@ export default function AdminPage() {
   const [courierName, setCourierName] = useState('');
   const [trackingNumber, setTrackingNumber] = useState('');
   const [dispatchDetails, setDispatchDetails] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<'PENDING' | 'DISPATCHED' | 'DELIVERED' | 'RETURNED'>('PENDING');
+  const [selectedStatus, setSelectedStatus] = useState<'PENDING' | 'DISPATCHED' | 'DELIVERED' | 'RETURNED' | 'CANCELLED'>('PENDING');
   const [selectedPaymentStatus, setSelectedPaymentStatus] = useState<'PENDING' | 'PAID' | 'FAILED'>('PENDING');
 
   // Coupon create states
@@ -965,6 +965,7 @@ export default function AdminPage() {
                     <option value="DISPATCHED">DISPATCHED Shipment</option>
                     <option value="DELIVERED">DELIVERED Confirmation</option>
                     <option value="RETURNED">RETURNED Back (Refund/Cancel)</option>
+                    <option value="CANCELLED">CANCELLED (Order Annulled)</option>
                   </select>
                 </div>
 
@@ -1070,6 +1071,7 @@ export default function AdminPage() {
                             o.orderStatus === 'DELIVERED' ? 'bg-emerald-700/10 text-emerald-800' :
                             o.orderStatus === 'DISPATCHED' ? 'bg-blue-700/10 text-blue-800' :
                             o.orderStatus === 'RETURNED' ? 'bg-rose-700/10 text-rose-800' :
+                            o.orderStatus === 'CANCELLED' ? 'bg-rose-100 text-rose-600 font-extrabold' :
                             'bg-amber-600/10 text-amber-800'
                           }`}>
                             {o.orderStatus}

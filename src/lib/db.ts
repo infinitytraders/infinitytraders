@@ -74,10 +74,11 @@ export interface Order {
   finalAmount: number;
   paymentMethod: 'COD' | 'RAZORPAY';
   paymentStatus: 'PENDING' | 'PAID' | 'FAILED';
-  orderStatus: 'PENDING' | 'DISPATCHED' | 'DELIVERED' | 'RETURNED';
+  orderStatus: 'PENDING' | 'DISPATCHED' | 'DELIVERED' | 'RETURNED' | 'CANCELLED';
   courierName?: string;
   trackingNumber?: string;
   dispatchDetails?: string;
+  delhiveryTracking?: any;
   createdAt: string;
 }
 

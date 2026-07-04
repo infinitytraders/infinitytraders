@@ -169,6 +169,60 @@ async function run() {
     assert(codeInfo.state_code === 'JH', 'State should be parsed correctly');
   });
 
+  // 5. Delhivery pickup check logic mock test
+  await testAsync('Order Cancellation Delhivery pickup validation check', async () => {
+    function canCancelOrder(order, liveTracking) {
+      if (order.orderStatus === 'DELIVERED') return false;
+      if (order.orderStatus === 'CANCELLED') return false;
+      if (!order.trackingNumber) return true; // Not booked yet, can cancel
+      
+      if (liveTracking) {
+        if (liveTracking.Status?.Scans && liveTracking.Status.Scans.length > 0) {
+          const hasTransitScans = liveTracking.Status.Scans.some((scan) => {
+            const activity = (scan.ScanDetail?.Scan || '').toUpperCase();
+            return activity !== 'MANIFESTED' && activity !== 'SOFT DATA UPLOADED';
+          });
+          if (hasTransitScans) return false; // Already picked up
+        }
+        
+        const mainStatus = (liveTracking.Status?.Status || '').toUpperCase();
+        if (['IN TRANSIT', 'DISPATCHED', 'OUT FOR DELIVERY', 'DELIVERED'].includes(mainStatus)) {
+          return false; // Already picked up
+        }
+      }
+      return true;
+    }
+
+    // Case 1: Fresh order, no tracking code => should be allowed
+    const freshOrder = { orderStatus: 'PENDING' };
+    assert(canCancelOrder(freshOrder, null) === true, 'Fresh order without waybill must be cancellable');
+
+    // Case 2: Only Manifested (pre-pickup) => should be allowed
+    const manifestedOrder = { orderStatus: 'PENDING', trackingNumber: '12345' };
+    const prePickupTracking = {
+      Status: {
+        Status: 'Manifested',
+        Scans: [
+          { ScanDetail: { Scan: 'MANIFESTED', ScannedLocation: 'Dhanbad HQ' } }
+        ]
+      }
+    };
+    assert(canCancelOrder(manifestedOrder, prePickupTracking) === true, 'Manifested pre-pickup order must be cancellable');
+
+    // Case 3: Picked up scan present => should be blocked
+    const transitOrder = { orderStatus: 'DISPATCHED', trackingNumber: '12345' };
+    const transitTracking = {
+      Status: {
+        Status: 'In Transit',
+        Scans: [
+          { ScanDetail: { Scan: 'MANIFESTED', ScannedLocation: 'Dhanbad HQ' } },
+          { ScanDetail: { Scan: 'PICKED UP', ScannedLocation: 'Dhanbad Hub' } }
+        ]
+      }
+    };
+    assert(canCancelOrder(transitOrder, transitTracking) === false, 'Order already scanned as Picked Up must not be cancellable');
+  });
+
   console.log(`\n=========================================`);
   console.log(`Test Execution Summary:`);
   console.log(`- Passed: ${GREEN}${passedTests}${RESET}`);

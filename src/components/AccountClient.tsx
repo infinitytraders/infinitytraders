@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getSessionUser, loginAction, registerAction, getOrdersAction, getProductsAction, sendOtpAction, verifyOtpAction } from '@/app/actions';
+import { getSessionUser, loginAction, registerAction, getOrdersAction, getProductsAction, sendOtpAction, verifyOtpAction, cancelOrderAction } from '@/app/actions';
 import type { User, Order, Product } from '@/lib/db';
 import { Star, User as UserIcon, Package, Heart, Eye, LogOut, Plus, AlertCircle, FileText, CheckCircle2, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
@@ -38,6 +38,28 @@ export default function AccountClient() {
   const [recentProducts, setRecentProducts] = useState<Product[]>([]);
   const [newAddress, setNewAddress] = useState({ street: '', city: '', state: '', pincode: '' });
   const [addingAddress, setAddingAddress] = useState(false);
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
+
+  const handleCancelOrder = async (orderId: string) => {
+    if (!window.confirm('Are you sure you want to cancel this order?')) return;
+    setCancellingOrderId(orderId);
+    try {
+      const res = await cancelOrderAction(orderId);
+      if (res.success) {
+        alert('Order cancelled successfully.');
+        // Refresh orders list
+        getOrdersAction().then(res => {
+          if (res.success && res.orders) setOrders(res.orders);
+        });
+      } else {
+        alert(res.error || 'Failed to cancel order.');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Error cancelling order.');
+    } finally {
+      setCancellingOrderId(null);
+    }
+  };
 
   // Load Session
   useEffect(() => {
@@ -609,6 +631,8 @@ export default function AccountClient() {
                                   ? 'text-teal-800'
                                   : order.orderStatus === 'DISPATCHED'
                                   ? 'text-black underline'
+                                  : order.orderStatus === 'CANCELLED'
+                                  ? 'text-rose-600'
                                   : 'text-amber-800'
                               }`}
                             >
@@ -653,14 +677,26 @@ export default function AccountClient() {
                             <span className="text-sm font-extrabold text-black">₹{order.finalAmount.toLocaleString('en-IN')}</span>
                           </div>
 
-                          {/* Print Invoice Button */}
-                          <Link
-                            href={`/invoice/${order.id}`}
-                            target="_blank"
-                            className="bg-white hover:bg-black text-black hover:text-white border border-black/15 hover:border-black px-4 py-2 text-[10px] uppercase tracking-widest font-bold flex items-center gap-1.5 rounded-full transition-all w-full sm:w-auto text-center justify-center shadow-xs"
-                          >
-                            <FileText className="w-3.5 h-3.5" /> View GST Invoice
-                          </Link>
+                          <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-end">
+                            {order.orderStatus !== 'CANCELLED' && order.orderStatus !== 'DELIVERED' && (
+                              <button
+                                onClick={() => handleCancelOrder(order.id)}
+                                disabled={cancellingOrderId === order.id}
+                                className="bg-white hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-200 hover:border-rose-600 px-4 py-2 text-[10px] uppercase tracking-widest font-bold flex items-center gap-1.5 rounded-full transition-all w-full sm:w-auto text-center justify-center shadow-xs disabled:opacity-50 active:scale-[0.98]"
+                              >
+                                {cancellingOrderId === order.id ? 'Cancelling...' : 'Cancel Order'}
+                              </button>
+                            )}
+
+                            {/* Print Invoice Button */}
+                            <Link
+                              href={`/invoice/${order.id}`}
+                              target="_blank"
+                              className="bg-white hover:bg-black text-black hover:text-white border border-black/15 hover:border-black px-4 py-2 text-[10px] uppercase tracking-widest font-bold flex items-center gap-1.5 rounded-full transition-all w-full sm:w-auto text-center justify-center shadow-xs"
+                            >
+                              <FileText className="w-3.5 h-3.5" /> View GST Invoice
+                            </Link>
+                          </div>
                         </div>
                       </div>
                     );
