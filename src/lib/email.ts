@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // Outgoing envelope details
-const FROM_EMAIL = '"Infinity Traders" <noreply@infinitytraders.shop>';
+const FROM_EMAIL = '"Infinity Traders" <infinitytraders.shop@gmail.com>';
 
 /**
  * Generates the master email envelope design wrapper (premium dark header + cream background + logo)
