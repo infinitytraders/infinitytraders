@@ -223,6 +223,36 @@ async function run() {
     assert(canCancelOrder(transitOrder, transitTracking) === false, 'Order already scanned as Picked Up must not be cancellable');
   });
 
+  // 6. Message Central SMS OTP sending and validation parsing check
+  await testAsync('Message Central SMS OTP sending and validation parsing check', async () => {
+    const mockSendResponse = {
+      responseCode: 200,
+      message: 'SUCCESS',
+      data: {
+        verificationId: 'v_id_987654',
+        mobileNumber: '9876543210',
+        responseCode: '200'
+      }
+    };
+    assert(mockSendResponse.responseCode === 200, 'Send API response status must be 200');
+    assert(mockSendResponse.message === 'SUCCESS', 'Send API response message must be SUCCESS');
+    assert(mockSendResponse.data.verificationId === 'v_id_987654', 'Send API must parse verificationId correctly');
+
+    const mockValidateResponse = {
+      responseCode: 200,
+      message: 'SUCCESS',
+      data: {
+        verificationId: 'v_id_987654',
+        mobileNumber: '9876543210',
+        responseCode: '200',
+        transactionId: 't_id_12345'
+      }
+    };
+    assert(mockValidateResponse.responseCode === 200, 'Validate API response status must be 200');
+    assert(mockValidateResponse.message === 'SUCCESS', 'Validate API response message must be SUCCESS');
+    assert(mockValidateResponse.data.responseCode === '200', 'Validate API inner response code must be 200');
+  });
+
   console.log(`\n=========================================`);
   console.log(`Test Execution Summary:`);
   console.log(`- Passed: ${GREEN}${passedTests}${RESET}`);

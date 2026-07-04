@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getSessionUser, loginAction, registerAction, getOrdersAction, getProductsAction, sendOtpAction, verifyOtpAction, cancelOrderAction, updateProfileAction, sendRegistrationOtpAction, sendProfileEmailUpdateOtpAction } from '@/app/actions';
+import { getSessionUser, loginAction, registerAction, getOrdersAction, getProductsAction, sendOtpAction, verifyOtpAction, cancelOrderAction, updateProfileAction, sendRegistrationOtpAction, sendProfileEmailUpdateOtpAction, sendRegistrationMobileOtpAction, verifyRegistrationMobileOtpAction, sendProfileMobileUpdateOtpAction } from '@/app/actions';
 import type { User, Order, Product } from '@/lib/db';
 import { Star, User as UserIcon, Package, Heart, Eye, EyeOff, LogOut, Plus, AlertCircle, FileText, CheckCircle2, ChevronRight, Edit2 } from 'lucide-react';
 import Link from 'next/link';
@@ -43,6 +43,8 @@ export default function AccountClient() {
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [regOtpSent, setRegOtpSent] = useState(false);
   const [regOtpCode, setRegOtpCode] = useState('');
+  const [regSmsOtpSent, setRegSmsOtpSent] = useState(false);
+  const [regSmsOtpCode, setRegSmsOtpCode] = useState('');
   const [verifyingReg, setVerifyingReg] = useState(false);
   
   // Profile edit states
@@ -77,6 +79,8 @@ export default function AccountClient() {
 
   const [profileOtpSent, setProfileOtpSent] = useState(false);
   const [profileOtpCode, setProfileOtpCode] = useState('');
+  const [profileSmsOtpSent, setProfileSmsOtpSent] = useState(false);
+  const [profileSmsOtpCode, setProfileSmsOtpCode] = useState('');
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,6 +90,8 @@ export default function AccountClient() {
 
     try {
       const emailChanged = editEmail.trim().toLowerCase() !== user.email.toLowerCase();
+      const mobileClean = editMobile.trim().replace(/\D/g, '');
+      const mobileChanged = mobileClean !== user.mobile;
 
       // If email changed and OTP has not been sent yet
       if (emailChanged && !profileOtpSent) {
@@ -101,9 +107,30 @@ export default function AccountClient() {
         return;
       }
 
+      // If mobile changed and SMS OTP has not been sent yet
+      if (mobileChanged && !profileSmsOtpSent) {
+        const res = await sendProfileMobileUpdateOtpAction(editMobile);
+        if (res.success) {
+          setProfileSmsOtpSent(true);
+          setProfileSmsOtpCode('');
+          alert('A verification code has been sent to your new mobile number via SMS.');
+        } else {
+          setEditError(res.error || 'Failed to send verification SMS.');
+        }
+        setUpdatingProfile(false);
+        return;
+      }
+
       // If OTP was sent, require the code
       if (emailChanged && (!profileOtpCode || profileOtpCode.trim().length !== 6)) {
         setEditError('Please enter the 6-digit verification code sent to your new email.');
+        setUpdatingProfile(false);
+        return;
+      }
+
+      // If SMS OTP was sent, require the code
+      if (mobileChanged && (!profileSmsOtpCode || profileSmsOtpCode.trim().length !== 6)) {
+        setEditError('Please enter the 6-digit verification code sent to your new mobile number.');
         setUpdatingProfile(false);
         return;
       }
@@ -113,7 +140,8 @@ export default function AccountClient() {
         email: editEmail,
         mobile: editMobile,
         password: editPassword || undefined,
-        otpCode: emailChanged ? profileOtpCode : undefined
+        otpCode: emailChanged ? profileOtpCode : undefined,
+        smsOtpCode: mobileChanged ? profileSmsOtpCode : undefined
       });
 
       if (res.success && res.user) {
@@ -121,6 +149,8 @@ export default function AccountClient() {
         setIsEditingProfile(false);
         setProfileOtpSent(false);
         setProfileOtpCode('');
+        setProfileSmsOtpSent(false);
+        setProfileSmsOtpCode('');
         setEditPassword('');
         alert('Profile updated successfully.');
       } else {
@@ -198,10 +228,36 @@ export default function AccountClient() {
         return;
       }
 
+      if (!regSmsOtpSent) {
+        setVerifyingReg(true);
+        const verifyRes = await verifyOtpAction(regEmail, regOtpCode);
+        if (!verifyRes.success) {
+          setAuthError(verifyRes.error || 'Email verification code failed.');
+          setVerifyingReg(false);
+          return;
+        }
+
+        const smsRes = await sendRegistrationMobileOtpAction(regMobile);
+        setVerifyingReg(false);
+        if (smsRes.success) {
+          setRegSmsOtpSent(true);
+          setAuthError('');
+          alert('Email verified! A mobile verification code has been sent to your phone.');
+        } else {
+          setAuthError(smsRes.error || 'Failed to send mobile verification SMS.');
+        }
+        return;
+      }
+
+      if (!regSmsOtpCode || regSmsOtpCode.trim().length !== 6) {
+        setAuthError('Please enter the 6-digit verification code sent to your mobile phone.');
+        return;
+      }
+
       setVerifyingReg(true);
-      const verifyRes = await verifyOtpAction(regEmail, regOtpCode);
-      if (!verifyRes.success) {
-        setAuthError(verifyRes.error || 'Verification code failed.');
+      const verifySmsRes = await verifyRegistrationMobileOtpAction(regMobile, regSmsOtpCode);
+      if (!verifySmsRes.success) {
+        setAuthError(verifySmsRes.error || 'Mobile verification code failed.');
         setVerifyingReg(false);
         return;
       }
@@ -226,44 +282,23 @@ export default function AccountClient() {
       }
 
       if (authMethod === 'otp') {
-        const isEmail = identifier.includes('@');
         if (!otpSent) {
-          if (isEmail) {
-            const res = await sendOtpAction(identifier);
-            if (res.success) {
-              setOtpSent(true);
-              setAuthError('');
-            } else {
-              setAuthError(res.error || 'Failed to send verification code.');
-            }
-          } else {
-            // Mock Mobile OTP
+          const res = await sendOtpAction(identifier);
+          if (res.success) {
             setOtpSent(true);
             setAuthError('');
+          } else {
+            setAuthError(res.error || 'Failed to send verification code.');
           }
           return;
         }
 
         // Verification phase
-        if (isEmail) {
-          const res = await verifyOtpAction(identifier, otpCode);
-          if (res.success) {
-            handleAuthSuccess();
-          } else {
-            setAuthError(res.error || 'Invalid OTP code.');
-          }
+        const res = await verifyOtpAction(identifier, otpCode);
+        if (res.success) {
+          handleAuthSuccess();
         } else {
-          // Mock Mobile OTP Verification
-          if (otpCode !== '123456') {
-            setAuthError('Invalid OTP code. Enter 123456 to log in.');
-            return;
-          }
-          const res = await loginAction(identifier, undefined, true);
-          if (res.success) {
-            handleAuthSuccess();
-          } else {
-            setAuthError(res.error || 'OTP Login failed.');
-          }
+          setAuthError(res.error || 'Invalid OTP code.');
         }
       } else {
         if (!password) {
@@ -413,35 +448,69 @@ export default function AccountClient() {
 
                 {isRegister ? (
                   regOtpSent ? (
-                    // REGISTER OTP VERIFICATION FIELD
-                    <div className="space-y-4 animate-fadeIn">
-                      <p className="text-xs text-[#065f46] bg-emerald-50 border border-emerald-100 rounded-xl p-3.5 font-semibold leading-relaxed">
-                        Verification code sent! We emailed a 6-digit OTP code to <strong className="font-extrabold">{regEmail}</strong>. Please enter it below to complete registration.
-                      </p>
-                      <div className="space-y-1.5">
-                        <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Verification Code (OTP)</label>
-                        <input
-                          type="text"
-                          required
-                          maxLength={6}
-                          placeholder="Enter 6-digit OTP"
-                          value={regOtpCode}
-                          onChange={(e) => setRegOtpCode(e.target.value.replace(/\D/g, ''))}
-                          className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-semibold text-center tracking-[0.25em]"
-                        />
+                    regSmsOtpSent ? (
+                      // REGISTER MOBILE SMS OTP VERIFICATION FIELD
+                      <div className="space-y-4 animate-fadeIn">
+                        <p className="text-xs text-[#065f46] bg-emerald-50 border border-emerald-100 rounded-xl p-3.5 font-semibold leading-relaxed">
+                          Email verified! Now we have sent a 6-digit SMS verification code to your mobile <strong className="font-extrabold">+91{regMobile}</strong>. Please enter it below.
+                        </p>
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">SMS Verification Code (OTP)</label>
+                          <input
+                            type="text"
+                            required
+                            maxLength={6}
+                            placeholder="Enter 6-digit SMS OTP"
+                            value={regSmsOtpCode}
+                            onChange={(e) => setRegSmsOtpCode(e.target.value.replace(/\D/g, ''))}
+                            className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-semibold text-center tracking-[0.25em]"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRegOtpSent(false);
+                            setRegSmsOtpSent(false);
+                            setRegOtpCode('');
+                            setRegSmsOtpCode('');
+                            setAuthError('');
+                          }}
+                          className="text-[9px] text-black/60 hover:text-black font-bold uppercase tracking-wider underline transition-colors block text-center w-full"
+                        >
+                          Go back and change registration details
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setRegOtpSent(false);
-                          setRegOtpCode('');
-                          setAuthError('');
-                        }}
-                        className="text-[9px] text-black/60 hover:text-black font-bold uppercase tracking-wider underline transition-colors block text-center w-full"
-                      >
-                        Wrong email? Go back and change details
-                      </button>
-                    </div>
+                    ) : (
+                      // REGISTER EMAIL OTP VERIFICATION FIELD
+                      <div className="space-y-4 animate-fadeIn">
+                        <p className="text-xs text-[#065f46] bg-emerald-50 border border-emerald-100 rounded-xl p-3.5 font-semibold leading-relaxed">
+                          Verification code sent! We emailed a 6-digit OTP code to <strong className="font-extrabold">{regEmail}</strong>. Please enter it below to verify your email.
+                        </p>
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Email Verification Code (OTP)</label>
+                          <input
+                            type="text"
+                            required
+                            maxLength={6}
+                            placeholder="Enter 6-digit Email OTP"
+                            value={regOtpCode}
+                            onChange={(e) => setRegOtpCode(e.target.value.replace(/\D/g, ''))}
+                            className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-semibold text-center tracking-[0.25em]"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRegOtpSent(false);
+                            setRegOtpCode('');
+                            setAuthError('');
+                          }}
+                          className="text-[9px] text-black/60 hover:text-black font-bold uppercase tracking-wider underline transition-colors block text-center w-full"
+                        >
+                          Wrong email? Go back and change details
+                        </button>
+                      </div>
+                    )
                   ) : (
                     // REGISTER FIELDS
                     <div className="space-y-4">
@@ -719,13 +788,13 @@ export default function AccountClient() {
                     </p>
                   )}
                   {profileOtpSent ? (
-                    // PROFILE OTP VERIFICATION FIELD
+                    // PROFILE EMAIL OTP VERIFICATION FIELD
                     <div className="space-y-4 animate-fadeIn max-w-md">
                       <p className="text-xs text-[#065f46] bg-emerald-50 border border-emerald-100 rounded-xl p-3.5 font-semibold leading-relaxed">
                         Verification code sent! We emailed a 6-digit OTP code to <strong className="font-extrabold">{editEmail}</strong>. Please enter it below to confirm your new email address.
                       </p>
                       <div className="space-y-1.5">
-                        <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Verification Code (OTP)</label>
+                        <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Email Verification Code (OTP)</label>
                         <input
                           type="text"
                           required
@@ -746,6 +815,36 @@ export default function AccountClient() {
                         className="text-[9px] text-black/60 hover:text-black font-bold uppercase tracking-wider underline transition-colors block text-center w-full"
                       >
                         Change details / Cancel email update
+                      </button>
+                    </div>
+                  ) : profileSmsOtpSent ? (
+                    // PROFILE MOBILE SMS OTP VERIFICATION FIELD
+                    <div className="space-y-4 animate-fadeIn max-w-md">
+                      <p className="text-xs text-[#065f46] bg-emerald-50 border border-emerald-100 rounded-xl p-3.5 font-semibold leading-relaxed">
+                        A verification code has been sent to your new mobile number <strong className="font-extrabold">+91{editMobile}</strong> via SMS. Please enter it below.
+                      </p>
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">SMS Verification Code (OTP)</label>
+                        <input
+                          type="text"
+                          required
+                          maxLength={6}
+                          placeholder="Enter 6-digit SMS OTP"
+                          value={profileSmsOtpCode}
+                          onChange={(e) => setProfileSmsOtpCode(e.target.value.replace(/\D/g, ''))}
+                          className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-semibold text-center tracking-[0.25em]"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProfileSmsOtpSent(false);
+                          setProfileSmsOtpCode('');
+                          setEditError('');
+                        }}
+                        className="text-[9px] text-black/60 hover:text-black font-bold uppercase tracking-wider underline transition-colors block text-center w-full"
+                      >
+                        Change details / Cancel mobile update
                       </button>
                     </div>
                   ) : (
@@ -800,7 +899,7 @@ export default function AccountClient() {
                       disabled={updatingProfile}
                       className="bg-black hover:bg-transparent text-white hover:text-black border border-black px-5 py-2 text-[10px] uppercase tracking-widest font-bold rounded-full transition-all shadow-xs disabled:opacity-50 active:scale-[0.98]"
                     >
-                      {updatingProfile ? 'Saving...' : profileOtpSent ? 'Verify & Save' : 'Save Changes'}
+                      {updatingProfile ? 'Saving...' : (profileOtpSent || profileSmsOtpSent) ? 'Verify & Save' : 'Save Changes'}
                     </button>
                     <button
                       type="button"
@@ -808,6 +907,8 @@ export default function AccountClient() {
                         setIsEditingProfile(false);
                         setProfileOtpSent(false);
                         setProfileOtpCode('');
+                        setProfileSmsOtpSent(false);
+                        setProfileSmsOtpCode('');
                       }}
                       className="bg-white hover:bg-black text-black hover:text-white border border-black/15 hover:border-black px-5 py-2 text-[10px] uppercase tracking-widest font-bold rounded-full transition-all shadow-xs active:scale-[0.98]"
                     >
