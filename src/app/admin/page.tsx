@@ -21,7 +21,8 @@ import {
   deletePincodeAction,
   loginAction,
   getNewsletterSubscribersAction,
-  deleteNewsletterSubscriberAction
+  deleteNewsletterSubscriberAction,
+  retryDelhiveryBookingAction
 } from '@/app/actions';
 import type { User, Product, Order, Coupon, PincodeServiceability, AuditLog, NewsletterSubscriber } from '@/lib/db';
 import { BarChart3, ShoppingCart, Users, BadgeAlert, Plus, Edit2, Trash2, Check, X, FileSpreadsheet, Package, AlertTriangle, ShieldCheck, Tag, History, MapPin } from 'lucide-react';
@@ -980,6 +981,36 @@ export default function AdminPage() {
                         className="w-full input-premium text-xs"
                       />
                     </div>
+                  </div>
+                )}
+
+                {!updatingOrder.trackingNumber && (
+                  <div className="pt-2 border-t border-black/5 flex justify-between items-center gap-2">
+                    <span className="text-[10px] text-amber-700 font-extrabold bg-amber-50 px-2.5 py-1.5 rounded-lg border border-amber-100 flex items-center gap-1">
+                      <AlertTriangle className="w-3.5 h-3.5" /> Shipment Not Booked
+                    </span>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (window.confirm('Do you want to book this order shipment with Delhivery now?')) {
+                          try {
+                            const res = await retryDelhiveryBookingAction(updatingOrder.id);
+                            if (res.success && res.waybill) {
+                              alert(`Shipment booked successfully! Delhivery Waybill: ${res.waybill}`);
+                              setUpdatingOrder(null);
+                              loadAdminData();
+                            } else {
+                              alert(res.error || 'Failed to book shipment. Check your Delhivery wallet balance.');
+                            }
+                          } catch (err: any) {
+                            alert(err.message || 'Error booking shipment.');
+                          }
+                        }
+                      }}
+                      className="px-4 py-2 bg-emerald-800 hover:bg-emerald-950 text-white rounded-full text-[10px] font-bold uppercase tracking-widest transition-all active:scale-[0.98]"
+                    >
+                      Book Delhivery Shipping
+                    </button>
                   </div>
                 )}
 

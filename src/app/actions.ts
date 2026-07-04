@@ -1402,3 +1402,44 @@ export async function verifyRegistrationMobileOtpAction(
     return { success: false, error: error.message || 'Failed to verify OTP.' };
   }
 }
+
+export async function retryDelhiveryBookingAction(
+  orderId: string
+): Promise<{ success: boolean; waybill?: string; error?: string }> {
+  const currentUser = await getSessionUser();
+  if (!currentUser || currentUser.role === 'CUSTOMER') {
+    return { success: false, error: 'Unauthorized.' };
+  }
+
+  try {
+    const order = await db.getOrderById(orderId);
+    if (!order) return { success: false, error: 'Order not found.' };
+
+    if (order.trackingNumber) {
+      return { success: false, error: 'Order already has a tracking waybill assigned.' };
+    }
+
+    const waybill = await bookDelhiveryShipment(order);
+    if (!waybill) {
+      return { success: false, error: 'Delhivery shipment booking failed. Check your prepaid balance or logs.' };
+    }
+
+    await db.updateOrder(orderId, {
+      trackingNumber: waybill,
+      courierName: 'Delhivery',
+      orderStatus: 'DISPATCHED'
+    });
+
+    await db.createAuditLog(
+      currentUser.id,
+      currentUser.email,
+      'DELHIVERY_RETRY_BOOKING',
+      `Manually booked Delhivery shipment for order ${orderId}. Waybill: ${waybill}`
+    );
+
+    return { success: true, waybill };
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to retry booking.' };
+  }
+}
+
