@@ -852,37 +852,7 @@ export default function AdminPage() {
               </form>
             )}
 
-            {/* Bulk Upload Spreadsheet Paste Box */}
-            <div className="bg-[#fcfbf9] border border-black/5 p-6 rounded-2xl space-y-4">
-              <h3 className="text-xs uppercase tracking-widest font-extrabold text-black flex items-center gap-1.5">
-                <FileSpreadsheet className="w-4 h-4 text-black/60" /> Bulk Product Upload Simulation (Excel/TSV)
-              </h3>
-              <p className="text-[11px] text-black/50 font-bold leading-relaxed">
-                Paste tabular columns directly copied from your product Excel spreadsheet.
-                Required column sequence (separated by Tabs): <br />
-                <strong>SKU &emsp; Brand &emsp; Category &emsp; Product Name &emsp; SellingPrice &emsp; Stock</strong>
-              </p>
-              <form onSubmit={handleBulkUpload} className="space-y-3">
-                <textarea
-                  placeholder="SKU-01	BrandName	Footwear	Sneaker Pro	4999	20"
-                  value={excelDataInput}
-                  onChange={(e) => setExcelDataInput(e.target.value)}
-                  className="w-full input-premium text-xs h-20 font-mono"
-                />
-                <button
-                  type="submit"
-                  disabled={!excelDataInput.trim()}
-                  className="px-4 py-2 border border-black/10 hover:border-black rounded-full text-[10px] font-bold text-black uppercase tracking-widest transition-all bg-white disabled:opacity-50 disabled:pointer-events-none"
-                >
-                  Simulate Excel Ingest
-                </button>
-                {bulkMessage && (
-                  <p className="text-xs text-emerald-800 font-extrabold mt-1">{bulkMessage}</p>
-                )}
-              </form>
-            </div>
-
-            {/* Products Table list */}
+{/* Products Table list */}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
