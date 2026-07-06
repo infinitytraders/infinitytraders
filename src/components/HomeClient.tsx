@@ -376,6 +376,38 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
   const [newsletterLastName, setNewsletterLastName] = useState('');
   const [newsletterSubscribed, setNewsletterSubscribed] = useState(false);
 
+  // Hero Swiper States
+  const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
+  
+  const heroSlides = [
+    {
+      img: '/hero_runner.png',
+      title: t('home.hero.title'),
+      subtitle: t('home.hero.subtitle'),
+      showOverlay: true
+    },
+    {
+      img: '/swiper-1.png',
+      title: '',
+      subtitle: '',
+      showOverlay: false
+    },
+    {
+      img: '/swiper-2.png',
+      title: '',
+      subtitle: '',
+      showOverlay: false
+    }
+  ];
+
+  // Auto-play hero swiper slides
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentHeroSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [heroSlides.length]);
+
   const [recommendationModal, setRecommendationModal] = useState<{
     isOpen: boolean;
     category: string;
@@ -462,50 +494,83 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
 
   return (
     <div className="space-y-24 pb-0 bg-[#f4f3ef]">
-      {/* 1. HERO SECTION (ENA Style) */}
-      <section className="relative h-screen -mt-24 flex flex-col justify-end overflow-hidden pb-28 sm:pb-32 px-4 sm:px-6 lg:px-8">
-        {/* Background Image / Overlay */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-black/15 z-10" />
-          <img
-            src="/hero_runner.png"
-            alt="Athletic runners hero"
-            className="w-full h-full object-cover filter brightness-95 contrast-105"
-            style={{ objectPosition: 'center 35%' }}
-          />
-        </div>
-
-        {/* Hero Content - Minimal bottom centered overlay */}
-        <div className="max-w-7xl mx-auto w-full z-20 relative text-center space-y-6">
+      {/* 1. HERO SECTION (Premium Swiper) */}
+      <section className="relative h-screen -mt-24 overflow-hidden">
+        {/* Background Swiper with AnimatePresence */}
+        <AnimatePresence mode="wait">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="space-y-2"
+            key={currentHeroSlide}
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute inset-0 z-0"
           >
-            <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white uppercase leading-none">
-              {t('home.hero.title')}
-            </h1>
-            <p className="text-sm sm:text-base text-white/90 font-light tracking-[0.25em] uppercase">
-              {t('home.hero.subtitle')}
-            </p>
+            <div className="absolute inset-0 bg-black/25 z-10" />
+            <img
+              src={heroSlides[currentHeroSlide].img}
+              alt={heroSlides[currentHeroSlide].title}
+              className="w-full h-full object-cover filter brightness-95 contrast-[1.02]"
+              style={{ objectPosition: 'center 35%' }}
+            />
           </motion.div>
+        </AnimatePresence>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex justify-center gap-4 pt-2"
-          >
-            <Link
-              href="/shop"
-              className="bg-black text-white hover:bg-white hover:text-black border border-black/10 px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all"
-            >
-              {t('home.hero.cta')}
-            </Link>
-          </motion.div>
+        {/* Hero Content - Only show text & button overlay on slides configured with showOverlay: true */}
+        {heroSlides[currentHeroSlide].showOverlay && (
+          <div className="absolute inset-0 flex flex-col justify-end pb-28 sm:pb-32 px-4 sm:px-6 lg:px-8 z-20">
+            <div className="max-w-7xl mx-auto w-full text-center space-y-6 animate-fadeIn">
+              <div className="space-y-2">
+                <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white uppercase leading-none drop-shadow-md">
+                  {heroSlides[currentHeroSlide].title}
+                </h1>
+                <p className="text-sm sm:text-base text-white/95 font-medium tracking-[0.25em] uppercase drop-shadow-sm">
+                  {heroSlides[currentHeroSlide].subtitle}
+                </p>
+              </div>
 
+              <div className="flex justify-center gap-4 pt-2">
+                <Link
+                  href="/shop"
+                  className="bg-black text-white hover:bg-white hover:text-black border border-black/10 px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all shadow-lg hover:shadow-xl"
+                >
+                  {t('home.hero.cta')}
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Slide Chevron Navigation Controls */}
+        <button
+          type="button"
+          onClick={() => setCurrentHeroSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length)}
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-3 bg-white/10 hover:bg-white/20 active:bg-white/30 text-white rounded-full transition-all backdrop-blur-xs border border-white/10 hidden md:block"
+          aria-label="Previous Slide"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+        <button
+          type="button"
+          onClick={() => setCurrentHeroSlide((prev) => (prev + 1) % heroSlides.length)}
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-3 bg-white/10 hover:bg-white/20 active:bg-white/30 text-white rounded-full transition-all backdrop-blur-xs border border-white/10 hidden md:block"
+          aria-label="Next Slide"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
 
+        {/* Slide Bullet Indicators */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 flex gap-2.5">
+          {heroSlides.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => setCurrentHeroSlide(idx)}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                currentHeroSlide === idx ? 'w-8 bg-white' : 'w-1.5 bg-white/50 hover:bg-white/70'
+              }`}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
+          ))}
         </div>
       </section>
 

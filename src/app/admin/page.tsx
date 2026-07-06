@@ -210,7 +210,32 @@ export default function AdminPage() {
     setProducts(prods);
 
     const ords = await getOrdersAction();
-    if (ords.success && ords.orders) setOrders(ords.orders);
+    if (ords.success && ords.orders) {
+      setOrders(ords.orders);
+      
+      // Auto-fetch live statuses for active Delhivery shipments
+      const activeDelhivery = ords.orders.filter(
+        o => o.courierName === 'Delhivery' && o.trackingNumber && o.orderStatus !== 'CANCELLED'
+      );
+      if (activeDelhivery.length > 0) {
+        setIsFetchingLiveStatuses(true);
+        const statuses: Record<string, any> = {};
+        for (const o of activeDelhivery) {
+          if (o.trackingNumber) {
+            try {
+              const details = await getDelhiveryTrackingDetails(o.trackingNumber);
+              if (details) {
+                statuses[o.trackingNumber] = details;
+              }
+            } catch (err) {
+              console.error('Failed to auto-fetch live status for waybill:', o.trackingNumber, err);
+            }
+          }
+        }
+        setOrderLiveStatuses(prev => ({ ...prev, ...statuses }));
+        setIsFetchingLiveStatuses(false);
+      }
+    }
 
     const coups = await getCouponsAction();
     setCoupons(coups);
@@ -1282,15 +1307,40 @@ export default function AdminPage() {
                         <td className="py-3.5 text-center font-medium">{totalQty} articles</td>
                         <td className="py-3.5 text-right font-extrabold text-black">₹{o.finalAmount.toLocaleString('en-IN')}</td>
                         <td className="py-3.5 text-center">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold tracking-wider ${
-                            o.orderStatus === 'DELIVERED' ? 'bg-emerald-700/10 text-emerald-800' :
-                            o.orderStatus === 'DISPATCHED' ? 'bg-blue-700/10 text-blue-800' :
-                            o.orderStatus === 'RETURNED' ? 'bg-rose-700/10 text-rose-800' :
-                            o.orderStatus === 'CANCELLED' ? 'bg-rose-100 text-rose-600 font-extrabold' :
-                            'bg-amber-600/10 text-amber-800'
-                          }`}>
-                            {o.orderStatus}
-                          </span>
+                          {(() => {
+                            let displayStatus = o.orderStatus as string;
+                            let badgeClass = 'bg-amber-600/10 text-amber-800';
+                            
+                            if (o.orderStatus === 'DELIVERED') {
+                              badgeClass = 'bg-emerald-700/10 text-emerald-800';
+                            } else if (o.orderStatus === 'RETURNED') {
+                              badgeClass = 'bg-rose-700/10 text-rose-800';
+                            } else if (o.orderStatus === 'CANCELLED') {
+                              badgeClass = 'bg-rose-100 text-rose-600 font-extrabold';
+                            } else if (o.orderStatus === 'DISPATCHED') {
+                              // Check if there are physical scans in Delhivery tracker
+                              const live = o.trackingNumber ? orderLiveStatuses[o.trackingNumber] : null;
+                              const scans = live?.Status?.Scans || [];
+                              const hasTransitScans = scans.some((scan: any) => {
+                                const activity = (scan.ScanDetail?.Scan || '').toUpperCase();
+                                return activity !== 'MANIFESTED' && activity !== 'SOFT DATA UPLOADED';
+                              });
+                              
+                              if (o.courierName === 'Delhivery' && o.trackingNumber && !hasTransitScans) {
+                                displayStatus = 'AWAITING PICKUP';
+                                badgeClass = 'bg-orange-500/15 text-orange-800 font-bold';
+                              } else {
+                                displayStatus = 'DISPATCHED';
+                                badgeClass = 'bg-blue-700/10 text-blue-800';
+                              }
+                            }
+                            
+                            return (
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold tracking-wider ${badgeClass}`}>
+                                {displayStatus}
+                              </span>
+                            );
+                          })()}
                         </td>
                         <td className="py-3.5 text-right">
                           <button
