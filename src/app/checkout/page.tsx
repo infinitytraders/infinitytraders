@@ -5,7 +5,7 @@ import { useCart } from '@/context/CartContext';
 import { getSessionUser, createOrderAction, sendCheckoutMobileOtpAction, verifyCheckoutMobileOtpAction } from '@/app/actions';
 import { User, Order } from '@/lib/db';
 import { useLanguage } from '@/context/LanguageContext';
-import { ShoppingBag, CreditCard, CheckCircle2, AlertTriangle, Truck, Sparkles, Printer } from 'lucide-react';
+import { ShoppingBag, CreditCard, CheckCircle2, AlertTriangle, Truck, Sparkles, Printer, MapPin, Navigation } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import confetti from 'canvas-confetti';
@@ -53,6 +53,176 @@ export default function CheckoutPage() {
   const [otpVerificationError, setOtpVerificationError] = useState('');
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+
+  // Map and location selection states
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
+  const [mapAddressLoading, setMapAddressLoading] = useState(false);
+  const [mapAddressText, setMapAddressText] = useState('');
+  const [tempCoords, setTempCoords] = useState<{ lat: number; lon: number } | null>(null);
+
+  // Load Leaflet resources dynamically on the client
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!document.getElementById('leaflet-css')) {
+      const link = document.createElement('link');
+      link.id = 'leaflet-css';
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(link);
+    }
+    if (!document.getElementById('leaflet-js')) {
+      const script = document.createElement('script');
+      script.id = 'leaflet-js';
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.async = true;
+      document.head.appendChild(script);
+    }
+  }, []);
+
+  // Initialize and handle Leaflet map instance
+  useEffect(() => {
+    if (!isMapModalOpen || typeof window === 'undefined') return;
+
+    const timer = setTimeout(() => {
+      const L = (window as any).L;
+      if (!L) return;
+
+      const mapContainer = document.getElementById('checkout-map');
+      if (!mapContainer) return;
+
+      if ((window as any).checkoutLeafletMap) {
+        (window as any).checkoutLeafletMap.remove();
+      }
+
+      const defaultLat = 20.5937;
+      const defaultLon = 78.9629;
+      const defaultZoom = 5;
+
+      const map = L.map('checkout-map').setView([defaultLat, defaultLon], defaultZoom);
+      (window as any).checkoutLeafletMap = map;
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      const marker = L.marker([defaultLat, defaultLon], { draggable: true }).addTo(map);
+
+      const updateAddressFromCoords = async (lat: number, lon: number) => {
+        setMapAddressLoading(true);
+        setTempCoords({ lat, lon });
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`);
+          const data = await res.json();
+          if (data && data.display_name) {
+            setMapAddressText(data.display_name);
+            const addr = data.address || {};
+            const road = addr.road || addr.suburb || addr.neighbourhood || addr.city_district || '';
+            const roadDetail = addr.house_number ? `${addr.house_number}, ${road}` : road;
+            const fetchedStreet = roadDetail || data.display_name.split(',')[0] || '';
+            const fetchedCity = addr.city || addr.town || addr.village || addr.county || '';
+            const fetchedState = addr.state || '';
+            const fetchedPincode = addr.postcode || '';
+
+            (window as any).selectedMapAddress = {
+              street: fetchedStreet,
+              city: fetchedCity,
+              state: fetchedState,
+              pincode: fetchedPincode
+            };
+          } else {
+            setMapAddressText('Could not resolve address. Try dragging the marker.');
+          }
+        } catch (err) {
+          setMapAddressText('Error reaching geocoding service.');
+        } finally {
+          setMapAddressLoading(false);
+        }
+      };
+
+      navigator.geolocation.getCurrentPosition((pos) => {
+        const { latitude, longitude } = pos.coords;
+        map.setView([latitude, longitude], 16);
+        marker.setLatLng([latitude, longitude]);
+        updateAddressFromCoords(latitude, longitude);
+      }, () => {
+        updateAddressFromCoords(defaultLat, defaultLon);
+      });
+
+      marker.on('dragend', () => {
+        const position = marker.getLatLng();
+        updateAddressFromCoords(position.lat, position.lng);
+      });
+
+      map.on('click', (e: any) => {
+        marker.setLatLng(e.latlng);
+        updateAddressFromCoords(e.latlng.lat, e.latlng.lng);
+      });
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [isMapModalOpen]);
+
+  const handleConfirmMapAddress = () => {
+    const selected = (window as any).selectedMapAddress;
+    if (selected) {
+      if (selected.street) setStreet(selected.street);
+      if (selected.city) setCity(selected.city);
+      if (selected.state) setState(selected.state);
+      if (selected.pincode) setPincode(selected.pincode);
+    }
+    setIsMapModalOpen(false);
+  };
+
+  const handleFetchLiveLocation = () => {
+    if (typeof window === 'undefined' || !navigator.geolocation) {
+      alert('Geolocation is not supported by your browser.');
+      return;
+    }
+
+    setIsLocating(true);
+    setValidationError('');
+
+    const isHindiMode = t('home.newArrivals') === 'नए जूते (New Arrivals)';
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`);
+          const data = await res.json();
+          if (data && data.address) {
+            const addr = data.address;
+            const road = addr.road || addr.suburb || addr.neighbourhood || addr.city_district || '';
+            const roadDetail = addr.house_number ? `${addr.house_number}, ${road}` : road;
+            
+            setStreet(roadDetail || data.display_name.split(',')[0] || '');
+            setCity(addr.city || addr.town || addr.village || addr.county || '');
+            setState(addr.state || '');
+            if (addr.postcode) {
+              setPincode(addr.postcode.replace(/\D/g, '').slice(0, 6));
+            }
+            alert(isHindiMode ? 'लोकेशन सफलतापूर्वक प्राप्त कर ली गई है!' : 'Location successfully resolved & filled!');
+          } else {
+            setValidationError('Could not resolve your coordinate to an address.');
+          }
+        } catch (err) {
+          setValidationError('Error fetching address from coordinates.');
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      (error) => {
+        setIsLocating(false);
+        if (error.code === error.PERMISSION_DENIED) {
+          setValidationError('Location access denied. Please enable location permissions or select on map.');
+        } else {
+          setValidationError('Failed to retrieve your current location.');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 5000 }
+    );
+  };
 
   // Load session
   useEffect(() => {
@@ -443,9 +613,70 @@ export default function CheckoutPage() {
 
           {/* Section 2: Shipping Destination */}
           <div className="bg-white border border-black/5 p-6 rounded-2xl space-y-4 shadow-xs">
-            <h2 className="text-xs font-extrabold uppercase tracking-widest text-black border-b border-black/5 pb-3">
-              {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? '२. शिपिंग पता' : '2. Shipping Address'}
-            </h2>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-black/5 pb-3">
+              <h2 className="text-xs font-extrabold uppercase tracking-widest text-black">
+                {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? '२. शिपिंग पता' : '2. Shipping Address'}
+              </h2>
+              <div className="flex gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={handleFetchLiveLocation}
+                  disabled={isLocating}
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 border border-black/10 hover:border-black bg-[#fcfbf9] hover:bg-white text-[9px] font-extrabold uppercase tracking-wider rounded-full transition-all text-black disabled:opacity-50"
+                  title="Detect coordinates and autofill address details"
+                >
+                  <Navigation className={`w-3.5 h-3.5 ${isLocating ? 'animate-spin' : ''}`} />
+                  {isLocating ? (t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'लोकेटिंग...' : 'Locating...') : (t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'लाइव लोकेशन' : 'Use Live Location')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsMapModalOpen(true)}
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 border border-black/10 hover:border-black bg-[#fcfbf9] hover:bg-white text-[9px] font-extrabold uppercase tracking-wider rounded-full transition-all text-black"
+                  title="Pinpoint your location on an interactive map"
+                >
+                  <MapPin className="w-3.5 h-3.5 text-teal-800" />
+                  {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'नक्शे पर चुनें' : 'Select on Map'}
+                </button>
+              </div>
+            </div>
+
+            {/* Saved Addresses Picker */}
+            {user && user.addresses && user.addresses.length > 0 && (
+              <div className="space-y-2 border-b border-black/5 pb-4">
+                <span className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">
+                  {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'बचाए गए पते से चुनें' : 'Select from Saved Addresses'}
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {user.addresses.map((addr) => (
+                    <button
+                      key={addr.id}
+                      type="button"
+                      onClick={() => {
+                        setStreet(addr.street);
+                        setCity(addr.city);
+                        setState(addr.state);
+                        setPincode(addr.pincode);
+                      }}
+                      className="p-3 border border-black/10 hover:border-black rounded-xl text-left text-[10px] bg-[#fcfbf9] transition-all hover:bg-white flex flex-col justify-between"
+                    >
+                      <div>
+                        <span className="font-extrabold block uppercase tracking-wider text-[8px] text-black">
+                          {addr.street.slice(0, 30)}{addr.street.length > 30 ? '...' : ''}
+                        </span>
+                        <span className="text-black/50 block font-medium mt-0.5">
+                          {addr.city}, {addr.state} - {addr.pincode}
+                        </span>
+                      </div>
+                      {addr.isDefault && (
+                        <span className="text-[7px] bg-black text-white px-1.5 py-0.5 rounded font-extrabold mt-1.5 self-start uppercase">
+                          Default
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
               <div className="md:col-span-6 space-y-1.5">
                 <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'फ्लैट/इमारत, सड़क का पता' : 'Flat/Building, Street Address'}</label>
@@ -601,6 +832,87 @@ export default function CheckoutPage() {
       </div>
 
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+
+      {/* Interactive Map Selector Modal */}
+      {isMapModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-[#f4f3ef] border border-black/10 rounded-2xl w-full max-w-lg overflow-hidden flex flex-col shadow-2xl">
+            {/* Modal Header */}
+            <div className="p-4 border-b border-black/5 bg-white flex justify-between items-center">
+              <div>
+                <h3 className="text-xs font-extrabold uppercase tracking-widest text-black">
+                  {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'नक्शे पर डिलीवरी पॉइंट चुनें' : 'Select Delivery Point on Map'}
+                </h3>
+                <p className="text-[9px] text-black/50 font-bold mt-0.5 uppercase tracking-wider">
+                  {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सटीक पते के लिए मार्कर खींचें या नक्शे पर क्लिक करें' : 'Drag the marker or click to locate your address'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsMapModalOpen(false)}
+                className="text-black/50 hover:text-black font-extrabold text-xs uppercase tracking-widest transition-colors"
+              >
+                {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'बंद करें' : 'Close'}
+              </button>
+            </div>
+
+            {/* Map Area */}
+            <div className="relative bg-white flex-1 p-4">
+              <div
+                id="checkout-map"
+                className="h-64 sm:h-80 w-full rounded-xl border border-black/15 z-10"
+              />
+              
+              {/* Geolocation indicator inside map */}
+              {mapAddressLoading && (
+                <div className="absolute inset-0 bg-white/70 backdrop-blur-xs flex items-center justify-center z-20">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                    <span className="text-[9px] font-extrabold uppercase tracking-widest text-black/60">
+                      {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सटीक पता खोजा जा रहा है...' : 'Reverse Geocoding Coords...'}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Selected Address Display */}
+            <div className="p-4 bg-white border-t border-black/5 space-y-3">
+              <div className="bg-[#fcfbf9] border border-black/5 p-3 rounded-xl space-y-1">
+                <span className="text-[8px] uppercase tracking-wider text-black/45 font-bold block">
+                  {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'चयनित कूरियर पता' : 'Resolved Courier Address'}
+                </span>
+                <p className="text-[10px] text-black font-bold leading-normal">
+                  {mapAddressText || (t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'स्थान प्राप्त किया जा रहा है...' : 'Awaiting position selection...')}
+                </p>
+                {tempCoords && (
+                  <span className="text-[8px] text-black/40 font-mono block pt-1">
+                    GPS: {tempCoords.lat.toFixed(6)}, {tempCoords.lon.toFixed(6)}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsMapModalOpen(false)}
+                  className="flex-1 bg-white hover:bg-black/5 text-black border border-black/10 py-3 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all text-center"
+                >
+                  {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'रद्द करें' : 'Cancel'}
+                </button>
+                <button
+                  type="button"
+                  disabled={mapAddressLoading || !mapAddressText}
+                  onClick={handleConfirmMapAddress}
+                  className="flex-1 bg-black text-white hover:bg-black/85 py-3 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all text-center disabled:opacity-50"
+                >
+                  {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'पता की पुष्टि करें' : 'Confirm Location'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
