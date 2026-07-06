@@ -22,11 +22,13 @@ import {
   loginAction,
   getNewsletterSubscribersAction,
   deleteNewsletterSubscriberAction,
-  retryDelhiveryBookingAction
+  retryDelhiveryBookingAction,
+  checkDelhiveryPincodeServiceabilityAction,
+  getDelhiveryTrackingDetails
 } from '@/app/actions';
 import { getHexFromColorName, getColorsArray } from '@/lib/colors';
 import type { User, Product, Order, Coupon, PincodeServiceability, AuditLog, NewsletterSubscriber } from '@/lib/db';
-import { BarChart3, ShoppingCart, Users, BadgeAlert, Plus, Edit2, Trash2, Check, X, FileSpreadsheet, Package, AlertTriangle, ShieldCheck, Tag, History, MapPin } from 'lucide-react';
+import { BarChart3, ShoppingCart, Users, BadgeAlert, Plus, Edit2, Trash2, Check, X, FileSpreadsheet, Package, AlertTriangle, ShieldCheck, Tag, History, MapPin, Truck } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminPage() {
@@ -40,7 +42,21 @@ export default function AdminPage() {
   const [loginError, setLoginError] = useState('');
 
   // Active board tab
-  const [activeTab, setActiveTab] = useState<'metrics' | 'products' | 'orders' | 'coupons' | 'pincodes' | 'logs' | 'newsletter'>('metrics');
+  const [activeTab, setActiveTab] = useState<'metrics' | 'products' | 'orders' | 'coupons' | 'pincodes' | 'logs' | 'newsletter' | 'delhivery'>('metrics');
+
+  // Delhivery Live API Dashboard States
+  const [delhiveryPincode, setDelhiveryPincode] = useState('');
+  const [delhiveryPincodeResult, setDelhiveryPincodeResult] = useState<any>(null);
+  const [delhiveryPincodeError, setDelhiveryPincodeError] = useState('');
+  const [isCheckingPincode, setIsCheckingPincode] = useState(false);
+  
+  const [externalAwb, setExternalAwb] = useState('');
+  const [externalTrackingResult, setExternalTrackingResult] = useState<any>(null);
+  const [externalTrackingError, setExternalTrackingError] = useState('');
+  const [isTrackingAwb, setIsTrackingAwb] = useState(false);
+  
+  const [orderLiveStatuses, setOrderLiveStatuses] = useState<Record<string, any>>({});
+  const [isFetchingLiveStatuses, setIsFetchingLiveStatuses] = useState(false);
 
   // Loaded database items
   const [metrics, setMetrics] = useState<any>(null);
@@ -426,6 +442,60 @@ export default function AdminPage() {
     }
   };
 
+  const handleCheckDelhiveryPincode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setDelhiveryPincodeError('');
+    setDelhiveryPincodeResult(null);
+    if (!delhiveryPincode || delhiveryPincode.length !== 6) {
+      setDelhiveryPincodeError('Please enter a valid 6-digit destination pincode.');
+      return;
+    }
+    setIsCheckingPincode(true);
+    const res = await checkDelhiveryPincodeServiceabilityAction(delhiveryPincode);
+    setIsCheckingPincode(false);
+    if (res.success && res.data) {
+      setDelhiveryPincodeResult(res.data);
+    } else {
+      setDelhiveryPincodeError(res.error || 'Failed to check pincode serviceability.');
+    }
+  };
+
+  const handleTrackExternalAwb = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setExternalTrackingError('');
+    setExternalTrackingResult(null);
+    if (!externalAwb.trim()) {
+      setExternalTrackingError('Please enter a valid Delhivery AWB tracking number.');
+      return;
+    }
+    setIsTrackingAwb(true);
+    const details = await getDelhiveryTrackingDetails(externalAwb.trim());
+    setIsTrackingAwb(false);
+    if (details) {
+      setExternalTrackingResult(details);
+    } else {
+      setExternalTrackingError('Failed to fetch tracking details from Delhivery. Verify the AWB is correct.');
+    }
+  };
+
+  const handleFetchOrderLiveStatuses = async () => {
+    const delhiveryOrders = orders.filter(o => o.courierName === 'Delhivery' && o.trackingNumber && o.orderStatus !== 'CANCELLED');
+    if (delhiveryOrders.length === 0) return;
+    
+    setIsFetchingLiveStatuses(true);
+    const statuses: Record<string, any> = {};
+    for (const o of delhiveryOrders) {
+      if (o.trackingNumber) {
+        const details = await getDelhiveryTrackingDetails(o.trackingNumber);
+        if (details) {
+          statuses[o.trackingNumber] = details;
+        }
+      }
+    }
+    setOrderLiveStatuses(statuses);
+    setIsFetchingLiveStatuses(false);
+  };
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center uppercase tracking-widest text-xs text-black/45 font-extrabold">
@@ -528,6 +598,7 @@ export default function AdminPage() {
           { id: 'orders', label: 'Orders & Tracking', icon: ShoppingCart },
           { id: 'coupons', label: 'Marketing & Coupons', icon: Tag },
           { id: 'pincodes', label: 'Pincode Serviceability', icon: MapPin },
+          { id: 'delhivery', label: 'Delhivery Logistics', icon: Truck },
           { id: 'newsletter', label: 'Newsletter Subscribers', icon: Users },
           { id: 'logs', label: 'Super Audit Logs', icon: History }
         ].map((tab) => {
@@ -1560,6 +1631,250 @@ export default function AdminPage() {
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: DELHIVERY LOGISTICS */}
+        {activeTab === 'delhivery' && (
+          <div className="space-y-8">
+            {/* Header / Info bar */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-black/5 pb-6">
+              <div>
+                <h2 className="text-xs font-extrabold uppercase tracking-widest text-black">
+                  Delhivery Logistics Control Center
+                </h2>
+                <p className="text-[10px] text-black/50 mt-0.5 font-bold">
+                  Verify pincode delivery serviceability and track dispatched packages in real time directly from Delhivery API.
+                </p>
+              </div>
+            </div>
+
+            {/* Main content split */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              
+              {/* Column 1 & 2: Live Shipment Tracking Dashboard */}
+              <div className="lg:col-span-2 space-y-6">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black flex items-center gap-1.5">
+                    <Truck className="w-4 h-4 text-black/60" /> Active Shipments Tracking Dashboard
+                  </h3>
+                  
+                  {orders.filter(o => o.courierName === 'Delhivery' && o.trackingNumber && o.orderStatus !== 'CANCELLED').length > 0 && (
+                    <button
+                      onClick={handleFetchOrderLiveStatuses}
+                      disabled={isFetchingLiveStatuses}
+                      className="px-4 py-2 border border-black hover:bg-black hover:text-white rounded-full text-[10px] font-bold uppercase tracking-widest transition-all shadow-xs"
+                    >
+                      {isFetchingLiveStatuses ? 'Refreshing Live Statuses...' : 'Refresh All Statuses'}
+                    </button>
+                  )}
+                </div>
+
+                <div className="overflow-x-auto border border-black/5 rounded-2xl bg-white shadow-xs">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="bg-[#fcfbf9] border-b border-black/5 text-[9px] uppercase tracking-wider font-extrabold text-black/50">
+                        <th className="p-3">Order / AWB</th>
+                        <th className="p-3">Customer / City</th>
+                        <th className="p-3">Delhivery Live Status</th>
+                        <th className="p-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-black/5 font-bold">
+                      {orders.filter(o => o.courierName === 'Delhivery' && o.trackingNumber && o.orderStatus !== 'CANCELLED').length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="p-8 text-center text-black/45 font-normal">
+                            No orders currently shipped via Delhivery found in database.
+                          </td>
+                        </tr>
+                      ) : (
+                        orders
+                          .filter(o => o.courierName === 'Delhivery' && o.trackingNumber && o.orderStatus !== 'CANCELLED')
+                          .map(order => {
+                            const liveData = orderLiveStatuses[order.trackingNumber || ''];
+                            return (
+                              <tr key={order.id} className="hover:bg-black/[0.01]">
+                                <td className="p-3">
+                                  <div className="text-[10px] font-extrabold text-black">{order.id}</div>
+                                  <div className="text-[9px] font-mono text-black/50">{order.trackingNumber}</div>
+                                </td>
+                                <td className="p-3">
+                                  <div className="text-[10px] font-extrabold text-black">{order.customerName}</div>
+                                  <div className="text-[9px] text-black/50">{order.shippingAddress.state}</div>
+                                </td>
+                                <td className="p-3">
+                                  {liveData ? (
+                                    <div className="space-y-1">
+                                      <span className={`text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded ${
+                                        (liveData.Status?.Status || '').toUpperCase() === 'DELIVERED' 
+                                          ? 'bg-emerald-500/10 text-emerald-800' 
+                                          : 'bg-blue-500/10 text-blue-800'
+                                      }`}>
+                                        {liveData.Status?.Status || 'Unknown'}
+                                      </span>
+                                      <div className="text-[8px] text-black/50 font-normal">
+                                        Last scan: {liveData.Status?.Instructions || 'No scan detail'}
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <span className="text-[9px] text-black/40 font-medium">Not checked yet</span>
+                                  )}
+                                </td>
+                                <td className="p-3 text-right">
+                                  <button
+                                    onClick={async () => {
+                                      if (order.trackingNumber) {
+                                        const details = await getDelhiveryTrackingDetails(order.trackingNumber);
+                                        if (details) {
+                                          setOrderLiveStatuses({ ...orderLiveStatuses, [order.trackingNumber]: details });
+                                        } else {
+                                          alert('Failed to get status from Delhivery.');
+                                        }
+                                      }
+                                    }}
+                                    className="px-2.5 py-1 bg-black text-white hover:bg-black/80 text-[9px] uppercase tracking-wider font-bold rounded"
+                                  >
+                                    Get Live Status
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Column 3: Real API Tools Sidebar */}
+              <div className="space-y-8">
+                
+                {/* A. Live Pincode Serviceability Lookup */}
+                <div className="bg-[#fcfbf9] border border-black/5 p-6 rounded-2xl space-y-4 shadow-xs">
+                  <h3 className="text-[10px] uppercase tracking-widest font-extrabold text-black border-b border-black/5 pb-2">
+                    Delhivery Pincode Checker
+                  </h3>
+                  
+                  <form onSubmit={handleCheckDelhiveryPincode} className="space-y-3.5">
+                    {delhiveryPincodeError && (
+                      <div className="text-red-700 text-[10px] bg-red-50 border border-red-200 p-2.5 rounded-lg font-bold">
+                        {delhiveryPincodeError}
+                      </div>
+                    )}
+                    
+                    <div className="space-y-1">
+                      <label className="text-[8px] uppercase tracking-widest text-black/50 font-extrabold block">Check Pincode Serviceability</label>
+                      <input
+                        type="text"
+                        maxLength={6}
+                        required
+                        placeholder="e.g. 110001"
+                        value={delhiveryPincode}
+                        onChange={(e) => setDelhiveryPincode(e.target.value.replace(/\D/g, ''))}
+                        className="w-full input-premium text-xs rounded-full px-4 py-2 border border-black/10 outline-none focus:border-black"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={isCheckingPincode}
+                      className="w-full bg-black text-white hover:bg-black/80 py-2.5 text-[9px] uppercase tracking-widest font-bold rounded-full transition-all"
+                    >
+                      {isCheckingPincode ? 'Checking...' : 'Check Serviceability'}
+                    </button>
+                  </form>
+
+                  {delhiveryPincodeResult && (
+                    <div className="bg-white border border-black/5 p-4 rounded-xl space-y-2.5 text-[10px] font-bold">
+                      <div className="flex justify-between border-b border-black/5 pb-1.5">
+                        <span className="text-black/50">Location:</span>
+                        <span>{delhiveryPincodeResult.district}, {delhiveryPincodeResult.state}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-black/50">Prepaid Delivery:</span>
+                        <span>{delhiveryPincodeResult.prepaid ? '🟢 Serviceable' : '🔴 Unserviceable'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-black/50">Cash On Delivery (COD):</span>
+                        <span>{delhiveryPincodeResult.cod ? '🟢 Serviceable' : '🔴 Unserviceable'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-black/50">Courier Pickup:</span>
+                        <span>{delhiveryPincodeResult.pickup ? '🟢 Serviceable' : '🔴 Unserviceable'}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* B. Live Tracking Scan Timeline (External Lookup) */}
+                <div className="bg-[#fcfbf9] border border-black/5 p-6 rounded-2xl space-y-4 shadow-xs">
+                  <h3 className="text-[10px] uppercase tracking-widest font-extrabold text-black border-b border-black/5 pb-2">
+                    Delhivery Quick Waybill Tracker
+                  </h3>
+                  
+                  <form onSubmit={handleTrackExternalAwb} className="space-y-3.5">
+                    {externalTrackingError && (
+                      <div className="text-red-700 text-[10px] bg-red-50 border border-red-200 p-2.5 rounded-lg font-bold">
+                        {externalTrackingError}
+                      </div>
+                    )}
+                    
+                    <div className="space-y-1">
+                      <label className="text-[8px] uppercase tracking-widest text-black/50 font-extrabold block">Enter Waybill / AWB</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. 5774381000066"
+                        value={externalAwb}
+                        onChange={(e) => setExternalAwb(e.target.value)}
+                        className="w-full input-premium text-xs rounded-full px-4 py-2 border border-black/10 outline-none focus:border-black"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={isTrackingAwb}
+                      className="w-full bg-black text-white hover:bg-black/80 py-2.5 text-[9px] uppercase tracking-widest font-bold rounded-full transition-all"
+                    >
+                      {isTrackingAwb ? 'Tracking...' : 'Track Shipment'}
+                    </button>
+                  </form>
+
+                  {externalTrackingResult && (
+                    <div className="bg-white border border-black/5 p-4 rounded-xl space-y-3 text-[10px] font-bold">
+                      <div className="flex justify-between border-b border-black/5 pb-1.5">
+                        <span className="text-black/50">Current Status:</span>
+                        <span className="uppercase text-black">{externalTrackingResult.Status || 'Unknown'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-black/50 font-bold">Recipient:</span>
+                        <span>{externalTrackingResult.Recipient || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-black/50">Instructions:</span>
+                        <span className="text-black/80 text-right">{externalTrackingResult.Instructions || 'None'}</span>
+                      </div>
+                      
+                      {externalTrackingResult.Scans && externalTrackingResult.Scans.length > 0 && (
+                        <div className="border-t border-black/5 pt-2 space-y-2">
+                          <span className="text-[8px] uppercase tracking-widest text-black/50 block">Scan timeline log:</span>
+                          <div className="space-y-1.5 max-h-[150px] overflow-y-auto pr-1">
+                            {externalTrackingResult.Scans.map((scan: any, i: number) => (
+                              <div key={i} className="border-l border-black/10 pl-2 py-0.5 text-left">
+                                <div className="text-black/80 font-bold">{scan.ScanDetail?.Scan}</div>
+                                <div className="text-[8px] text-black/40 font-normal">{scan.ScanDetail?.ScanDateTime} - {scan.ScanDetail?.ScannedLocation}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+              </div>
+
             </div>
           </div>
         )}

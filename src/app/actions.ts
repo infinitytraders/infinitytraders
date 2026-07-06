@@ -1583,4 +1583,53 @@ export async function verifyCheckoutMobileOtpAction(mobile: string, code: string
   }
 }
 
+export async function checkDelhiveryPincodeServiceabilityAction(
+  pincode: string
+): Promise<{ success: boolean; data?: any; error?: string }> {
+  try {
+    const currentUser = await getSessionUser();
+    if (!currentUser || currentUser.role === 'CUSTOMER') {
+      return { success: false, error: 'Unauthorized.' };
+    }
+    
+    const apiKey = process.env.DELHIVERY_API_KEY;
+    const env = process.env.DELHIVERY_ENV || 'production';
+    const baseUrl = env === 'sandbox' ? 'https://staging-express.delhivery.com' : 'https://track.delhivery.com';
+    
+    if (!apiKey) {
+      return { success: false, error: 'Delhivery API Key is not configured in .env.' };
+    }
+    
+    const response = await fetch(`${baseUrl}/c/api/pin-codes/json/?pincode=${pincode}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Token ${apiKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data && data.delivery_codes && data.delivery_codes.length > 0) {
+        const pinData = data.delivery_codes[0].postal_code;
+        return {
+          success: true,
+          data: {
+            pincode: pinData.pincode,
+            district: pinData.district,
+            state: pinData.state_code,
+            prepaid: pinData.pre_paid === 'Y' || pinData.pre_paid === 'true',
+            cod: pinData.cod === 'Y' || pinData.cash === 'Y' || pinData.cod === 'true',
+            pickup: pinData.pickup === 'Y' || pinData.pickup === 'true'
+          }
+        };
+      }
+      return { success: false, error: `Pincode ${pincode} is not serviceable or not found in Delhivery database.` };
+    }
+    return { success: false, error: `Delhivery API returned error status: ${response.status}` };
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to verify pincode with Delhivery.' };
+  }
+}
+
 
