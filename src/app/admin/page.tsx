@@ -24,7 +24,10 @@ import {
   deleteNewsletterSubscriberAction,
   retryDelhiveryBookingAction,
   checkDelhiveryPincodeServiceabilityAction,
-  getDelhiveryTrackingDetails
+  getDelhiveryTrackingDetails,
+  getUsersAction,
+  updateUserAction,
+  deleteUserAction
 } from '@/app/actions';
 import { getHexFromColorName, getColorsArray } from '@/lib/colors';
 import type { User, Product, Order, Coupon, PincodeServiceability, AuditLog, NewsletterSubscriber } from '@/lib/db';
@@ -42,7 +45,7 @@ export default function AdminPage() {
   const [loginError, setLoginError] = useState('');
 
   // Active board tab
-  const [activeTab, setActiveTab] = useState<'metrics' | 'products' | 'orders' | 'coupons' | 'pincodes' | 'logs' | 'newsletter' | 'delhivery'>('metrics');
+  const [activeTab, setActiveTab] = useState<'metrics' | 'products' | 'orders' | 'coupons' | 'pincodes' | 'logs' | 'newsletter' | 'delhivery' | 'users'>('metrics');
 
   // Delhivery Live API Dashboard States
   const [delhiveryPincode, setDelhiveryPincode] = useState('');
@@ -57,6 +60,16 @@ export default function AdminPage() {
   
   const [orderLiveStatuses, setOrderLiveStatuses] = useState<Record<string, any>>({});
   const [isFetchingLiveStatuses, setIsFetchingLiveStatuses] = useState(false);
+
+  // User Manager states
+  const [usersList, setUsersList] = useState<User[]>([]);
+  const [searchQueryUsers, setSearchQueryUsers] = useState('');
+  const [roleFilterUsers, setRoleFilterUsers] = useState<string>('ALL');
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [userForm, setUserForm] = useState({
+    name: '', email: '', mobile: '', role: 'CUSTOMER' as any
+  });
+  const [isSavingUser, setIsSavingUser] = useState(false);
 
   // Loaded database items
   const [metrics, setMetrics] = useState<any>(null);
@@ -210,6 +223,9 @@ export default function AdminPage() {
 
     const subs = await getNewsletterSubscribersAction();
     setSubscribers(subs);
+
+    const usrRes = await getUsersAction();
+    if (usrRes.success && usrRes.users) setUsersList(usrRes.users);
   };
 
   // Product submit (create or update)
@@ -496,6 +512,45 @@ export default function AdminPage() {
     setIsFetchingLiveStatuses(false);
   };
 
+  const handleEditUserClick = (u: User) => {
+    setEditingUser(u);
+    setUserForm({
+      name: u.name,
+      email: u.email,
+      mobile: u.mobile,
+      role: u.role
+    });
+  };
+
+  const handleUserFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    setIsSavingUser(true);
+    const res = await updateUserAction(editingUser.id, {
+      name: userForm.name,
+      email: userForm.email,
+      mobile: userForm.mobile,
+      role: userForm.role
+    });
+    setIsSavingUser(false);
+    if (res.success) {
+      setEditingUser(null);
+      loadAdminData();
+    } else {
+      alert(res.error || 'Failed to update user.');
+    }
+  };
+
+  const handleDeleteUserClick = async (userId: string) => {
+    if (!confirm('Are you sure you want to permanently delete this user account? This action cannot be undone.')) return;
+    const res = await deleteUserAction(userId);
+    if (res.success) {
+      loadAdminData();
+    } else {
+      alert(res.error || 'Failed to delete user.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center uppercase tracking-widest text-xs text-black/45 font-extrabold">
@@ -596,6 +651,7 @@ export default function AdminPage() {
           { id: 'metrics', label: 'Metrics Overview', icon: BarChart3 },
           { id: 'products', label: 'Product Catalog Manager', icon: Package },
           { id: 'orders', label: 'Orders & Tracking', icon: ShoppingCart },
+          { id: 'users', label: 'User Accounts Manager', icon: Users },
           { id: 'coupons', label: 'Marketing & Coupons', icon: Tag },
           { id: 'pincodes', label: 'Pincode Serviceability', icon: MapPin },
           { id: 'delhivery', label: 'Delhivery Logistics', icon: Truck },
@@ -604,6 +660,7 @@ export default function AdminPage() {
         ].map((tab) => {
           const Icon = tab.icon;
           if (tab.id === 'logs' && user.role !== 'SUPER_ADMIN') return null; // restrict audit logs
+          if (tab.id === 'users' && !['SUPER_ADMIN', 'STORE_MANAGER'].includes(user.role)) return null; // restrict users
           if (tab.id === 'newsletter' && !['SUPER_ADMIN', 'STORE_MANAGER', 'MARKETING_MANAGER'].includes(user.role)) return null; // restrict newsletter
           return (
             <button
@@ -1876,6 +1933,246 @@ export default function AdminPage() {
               </div>
 
             </div>
+          </div>
+        )}
+        {/* TAB: USER ACCOUNTS MANAGER */}
+        {activeTab === 'users' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-black/5 pb-6">
+              <div>
+                <h2 className="text-xs font-extrabold uppercase tracking-widest text-black">
+                  User Accounts Directory
+                </h2>
+                <p className="text-[10px] text-black/50 mt-0.5 font-bold">
+                  Manage registered customer accounts, staff privileges, roles, and platform permissions.
+                </p>
+              </div>
+            </div>
+
+            {/* Search & Filter Controls */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  placeholder="Search users by name, email, or mobile..."
+                  value={searchQueryUsers}
+                  onChange={(e) => setSearchQueryUsers(e.target.value)}
+                  className="w-full input-premium text-xs rounded-full px-4 py-2 border border-black/10 outline-none focus:border-black"
+                />
+              </div>
+              <div className="w-full sm:w-64">
+                <select
+                  value={roleFilterUsers}
+                  onChange={(e) => setRoleFilterUsers(e.target.value)}
+                  className="w-full input-premium text-xs rounded-full px-4 py-2 border border-black/10 outline-none focus:border-black bg-white font-bold"
+                >
+                  <option value="ALL">All Roles</option>
+                  <option value="SUPER_ADMIN">Super Admins</option>
+                  <option value="STORE_MANAGER">Store Managers</option>
+                  <option value="MARKETING_MANAGER">Marketing Managers</option>
+                  <option value="CUSTOMER_SUPPORT">Customer Support</option>
+                  <option value="CUSTOMER">Customers Only</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Users Table */}
+            <div className="overflow-x-auto border border-black/5 rounded-2xl bg-white shadow-xs">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-[#fcfbf9] border-b border-black/5 text-[9px] uppercase tracking-wider font-extrabold text-black/50">
+                    <th className="p-3">User Details</th>
+                    <th className="p-3">Contact Information</th>
+                    <th className="p-3">System Role</th>
+                    <th className="p-3">Addresses</th>
+                    <th className="p-3">Date Registered</th>
+                    <th className="p-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-black/5 font-bold">
+                  {usersList
+                    .filter(u => {
+                      const query = searchQueryUsers.toLowerCase().trim();
+                      const matchesSearch = !query || 
+                        u.name.toLowerCase().includes(query) ||
+                        u.email.toLowerCase().includes(query) ||
+                        (u.mobile && u.mobile.includes(query));
+                      
+                      const matchesRole = roleFilterUsers === 'ALL' || u.role === roleFilterUsers;
+                      return matchesSearch && matchesRole;
+                    })
+                    .length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="p-8 text-center text-black/45 font-normal">
+                          No registered users found matching the search filters.
+                        </td>
+                      </tr>
+                    ) : (
+                      usersList
+                        .filter(u => {
+                          const query = searchQueryUsers.toLowerCase().trim();
+                          const matchesSearch = !query || 
+                            u.name.toLowerCase().includes(query) ||
+                            u.email.toLowerCase().includes(query) ||
+                            (u.mobile && u.mobile.includes(query));
+                          
+                          const matchesRole = roleFilterUsers === 'ALL' || u.role === roleFilterUsers;
+                          return matchesSearch && matchesRole;
+                        })
+                        .map(item => (
+                          <tr key={item.id} className="hover:bg-black/[0.01]">
+                            <td className="p-3">
+                              <div className="text-[10px] font-extrabold text-black">{item.name || 'Unnamed Guest'}</div>
+                              <div className="text-[8px] text-black/40 font-mono mt-0.5">{item.id}</div>
+                            </td>
+                            <td className="p-3">
+                              <div className="text-[10px] text-black font-semibold">{item.email}</div>
+                              <div className="text-[9px] text-black/50 mt-0.5">{item.mobile || 'No Mobile'}</div>
+                            </td>
+                            <td className="p-3">
+                              <span className={`text-[9px] uppercase tracking-wider font-extrabold px-2.5 py-0.5 rounded ${
+                                item.role === 'SUPER_ADMIN' ? 'bg-red-500/10 text-red-800' :
+                                item.role === 'STORE_MANAGER' ? 'bg-amber-500/10 text-amber-800' :
+                                item.role === 'CUSTOMER' ? 'bg-black/5 text-black/70' : 'bg-blue-500/10 text-blue-800'
+                              }`}>
+                                {item.role}
+                              </span>
+                            </td>
+                            <td className="p-3 text-black/60 font-medium">
+                              {item.addresses && item.addresses.length > 0 ? (
+                                <div className="space-y-1.5 max-w-xs text-[10px]">
+                                  {item.addresses.map((addr) => (
+                                    <div key={addr.id} className="border-l border-black/10 pl-2 leading-tight py-0.5">
+                                      <span className="font-semibold block text-black">{addr.street}</span>
+                                      <span className="text-[9px] text-black/50">{addr.city}, {addr.state} - {addr.pincode}</span>
+                                      {addr.isDefault && (
+                                        <span className="inline-block text-[7px] bg-black/5 text-black px-1.5 py-0.2 rounded font-extrabold ml-1 uppercase">Default</span>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <span className="text-black/40 font-normal">No addresses registered</span>
+                              )}
+                            </td>
+                            <td className="p-3 text-black/50 text-[10px]">
+                              {item.createdAt ? new Date(item.createdAt).toLocaleDateString('en-IN', {
+                                day: 'numeric', month: 'short', year: 'numeric'
+                              }) : 'N/A'}
+                            </td>
+                            <td className="p-3 text-right">
+                              <div className="flex gap-2 justify-end">
+                                <button
+                                  onClick={() => handleEditUserClick(item)}
+                                  className="text-black/60 hover:text-black p-1.5 border border-black/10 hover:border-black bg-white rounded-lg transition-all shadow-xs"
+                                  title="Edit User Details"
+                                >
+                                  <Edit2 className="w-3 h-3" />
+                                </button>
+                                {user?.role === 'SUPER_ADMIN' && user?.id !== item.id && (
+                                  <button
+                                    onClick={() => handleDeleteUserClick(item.id)}
+                                    className="text-red-700 hover:text-red-800 p-1.5 border border-black/10 hover:border-red-700 hover:bg-red-50 rounded-lg transition-all shadow-xs"
+                                    title="Delete User"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                    )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* EDIT USER OVERLAY MODAL */}
+            {editingUser && (
+              <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in">
+                <div className="bg-white border border-black/10 p-8 rounded-3xl w-full max-w-md shadow-lg space-y-6">
+                  <div className="flex justify-between items-center border-b border-black/5 pb-4">
+                    <h3 className="text-xs font-extrabold uppercase tracking-widest text-black">
+                      Edit User Profile
+                    </h3>
+                    <button
+                      onClick={() => setEditingUser(null)}
+                      className="p-1 text-black/40 hover:text-black border border-black/5 hover:border-black/20 rounded-full transition-all"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleUserFormSubmit} className="space-y-4">
+                    <div className="space-y-1">
+                      <label className="text-[8px] uppercase tracking-widest text-black/50 font-extrabold block">Full Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={userForm.name}
+                        onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
+                        className="w-full input-premium text-xs rounded-full px-4 py-2 border border-black/10 outline-none focus:border-black"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[8px] uppercase tracking-widest text-black/50 font-extrabold block">Email Address</label>
+                      <input
+                        type="email"
+                        required
+                        value={userForm.email}
+                        onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
+                        className="w-full input-premium text-xs rounded-full px-4 py-2 border border-black/10 outline-none focus:border-black"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[8px] uppercase tracking-widest text-black/50 font-extrabold block">Mobile Number</label>
+                      <input
+                        type="text"
+                        value={userForm.mobile}
+                        onChange={(e) => setUserForm({ ...userForm, mobile: e.target.value })}
+                        className="w-full input-premium text-xs rounded-full px-4 py-2 border border-black/10 outline-none focus:border-black"
+                      />
+                    </div>
+
+                    {user?.role === 'SUPER_ADMIN' && (
+                      <div className="space-y-1">
+                        <label className="text-[8px] uppercase tracking-widest text-black/50 font-extrabold block">System Role</label>
+                        <select
+                          value={userForm.role}
+                          onChange={(e) => setUserForm({ ...userForm, role: e.target.value as any })}
+                          className="w-full input-premium text-xs rounded-full px-4 py-2 border border-black/10 outline-none focus:border-black bg-white font-bold"
+                        >
+                          <option value="CUSTOMER">Customer</option>
+                          <option value="CUSTOMER_SUPPORT">Customer Support</option>
+                          <option value="MARKETING_MANAGER">Marketing Manager</option>
+                          <option value="STORE_MANAGER">Store Manager</option>
+                          <option value="SUPER_ADMIN">Super Admin</option>
+                        </select>
+                      </div>
+                    )}
+
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setEditingUser(null)}
+                        className="flex-1 py-2.5 border border-black/10 hover:border-black text-[9px] uppercase tracking-widest font-bold rounded-full transition-all"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSavingUser}
+                        className="flex-1 bg-black text-white hover:bg-black/85 py-2.5 text-[9px] uppercase tracking-widest font-bold rounded-full transition-all"
+                      >
+                        {isSavingUser ? 'Saving...' : 'Save Changes'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

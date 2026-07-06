@@ -433,6 +433,11 @@ export const db = {
     return mapUserFromDb(res.rows[0]);
   },
 
+  async deleteUser(id: string): Promise<boolean> {
+    const res = await pool.query('DELETE FROM users WHERE id = $1', [id]);
+    return (res.rowCount ?? 0) > 0;
+  },
+
   // COUPONS
   async getCoupons(): Promise<Coupon[]> {
     const res = await pool.query('SELECT * FROM coupons');

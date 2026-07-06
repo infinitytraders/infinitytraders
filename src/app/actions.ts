@@ -1632,4 +1632,53 @@ export async function checkDelhiveryPincodeServiceabilityAction(
   }
 }
 
+export async function getUsersAction(): Promise<{ success: boolean; users?: User[]; error?: string }> {
+  const currentUser = await getSessionUser();
+  if (!currentUser || (currentUser.role !== 'SUPER_ADMIN' && currentUser.role !== 'STORE_MANAGER')) {
+    return { success: false, error: 'Unauthorized.' };
+  }
+  try {
+    const users = await db.getUsers();
+    return { success: true, users };
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to fetch users.' };
+  }
+}
+
+export async function updateUserAction(
+  userId: string,
+  updates: Partial<User>
+): Promise<{ success: boolean; user?: User; error?: string }> {
+  const currentUser = await getSessionUser();
+  if (!currentUser || (currentUser.role !== 'SUPER_ADMIN' && currentUser.role !== 'STORE_MANAGER')) {
+    return { success: false, error: 'Unauthorized.' };
+  }
+  try {
+    const user = await db.updateUser(userId, updates);
+    if (!user) return { success: false, error: 'User not found.' };
+    return { success: true, user };
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to update user.' };
+  }
+}
+
+export async function deleteUserAction(
+  userId: string
+): Promise<{ success: boolean; error?: string }> {
+  const currentUser = await getSessionUser();
+  if (!currentUser || currentUser.role !== 'SUPER_ADMIN') {
+    return { success: false, error: 'Unauthorized. Only super administrators can delete user accounts.' };
+  }
+  if (currentUser.id === userId) {
+    return { success: false, error: 'You cannot delete your own admin account.' };
+  }
+  try {
+    const success = await db.deleteUser(userId);
+    if (!success) return { success: false, error: 'User not found.' };
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to delete user.' };
+  }
+}
+
 
