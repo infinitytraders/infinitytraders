@@ -106,7 +106,20 @@ export default function TrackClient() {
 
   // Helper to determine status progress step indexes
   // Steps: 0 = Ordered, 1 = Confirmed, 2 = Dispatched, 3 = Delivered
-  const getStepIndex = (status: Order['orderStatus']) => {
+  const getStepIndex = (status: Order['orderStatus'], orderObj?: Order | null) => {
+    if (status === 'DISPATCHED' && orderObj && orderObj.courierName === 'Delhivery' && orderObj.trackingNumber) {
+      const tracking = (orderObj as any).delhiveryTracking;
+      if (tracking && tracking.Status?.Scans && tracking.Status.Scans.length > 0) {
+        const hasTransitScans = tracking.Status.Scans.some((scan: any) => {
+          const activity = (scan.ScanDetail?.Scan || '').toUpperCase();
+          return activity !== 'MANIFESTED' && activity !== 'SOFT DATA UPLOADED';
+        });
+        if (hasTransitScans) {
+          return 2; // Real pickup/transit scan exists
+        }
+      }
+      return 1; // Manifested but not yet scanned by the pickup agent
+    }
     switch (status) {
       case 'PENDING':
         return 1; // Confirmed (We confirm COD orders via phone immediately)
@@ -119,8 +132,103 @@ export default function TrackClient() {
     }
   };
 
-  const currentStep = order ? getStepIndex(order.orderStatus) : 0;
+  const currentStep = order ? getStepIndex(order.orderStatus, order) : 0;
   const isHindi = t('home.newArrivals') === 'नए जूते (New Arrivals)';
+
+  const getStages = () => {
+    if (!order) return [];
+    const tracking = (order as any).delhiveryTracking;
+    const scans = tracking?.Status?.Scans || [];
+
+    const formatDate = (dateStr: string) => {
+      return new Date(dateStr).toLocaleString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    };
+
+    // 1. Order Received
+    const stage1 = {
+      completed: true,
+      time: formatDate(order.createdAt),
+      desc: isHindi ? 'ऑर्डर सफलतापूर्वक प्राप्त हुआ' : 'Order successfully placed on platform'
+    };
+
+    // 2. Ready to Ship
+    const stage2 = {
+      completed: ['PENDING', 'DISPATCHED', 'DELIVERED'].includes(order.orderStatus),
+      time: ['PENDING', 'DISPATCHED', 'DELIVERED'].includes(order.orderStatus)
+        ? formatDate(order.createdAt)
+        : '',
+      desc: isHindi ? 'सत्यापित और पैकेजिंग पूरी हुई' : 'Fulfillment processed & packed'
+    };
+
+    // 3. Scheduled for Pickup
+    const pickupScan = scans.find((s: any) => {
+      const act = (s.ScanDetail?.Scan || '').toUpperCase();
+      return act === 'MANIFESTED' || act === 'SOFT DATA UPLOADED';
+    });
+    const stage3 = {
+      completed: !!(order.courierName === 'Delhivery' && order.trackingNumber),
+      time: pickupScan?.ScanDetail?.ScanDateTime 
+        ? formatDate(pickupScan.ScanDetail.ScanDateTime) 
+        : (order.trackingNumber ? formatDate(order.createdAt) : ''),
+      desc: isHindi ? 'दिल्लीवरी कूरियर पिकअप निर्धारित' : 'Delhivery pickup requested & scheduled'
+    };
+
+    // 4. In-Transit
+    const transitScan = scans.find((s: any) => {
+      const act = (s.ScanDetail?.Scan || '').toUpperCase();
+      return act !== 'MANIFESTED' && act !== 'SOFT DATA UPLOADED';
+    });
+    const stage4 = {
+      completed: !!transitScan,
+      time: transitScan?.ScanDetail?.ScanDateTime ? formatDate(transitScan.ScanDetail.ScanDateTime) : '',
+      desc: transitScan?.ScanDetail?.Scan 
+        ? `${transitScan.ScanDetail.Scan} - ${transitScan.ScanDetail.ScannedLocation || ''}` 
+        : (isHindi ? 'पिकअप कूरियर द्वारा उठाया जाना शेष' : 'Awaiting origin center reception scans')
+    };
+
+    // 5. Out for Delivery
+    const outScan = scans.find((s: any) => {
+      const act = (s.ScanDetail?.Scan || '').toUpperCase();
+      return act.includes('OUT FOR DELIVERY') || act.includes('RUNSHEET') || act.includes('DISPATCHED TO RIDER');
+    });
+    const stage5 = {
+      completed: !!outScan,
+      time: outScan?.ScanDetail?.ScanDateTime ? formatDate(outScan.ScanDetail.ScanDateTime) : '',
+      desc: outScan?.ScanDetail?.Scan 
+        ? `${outScan.ScanDetail.Scan}` 
+        : (isHindi ? 'वितरण केंद्र पर आगमन लंबित' : 'Awaiting arrival at destination delivery hub')
+    };
+
+    // 6. Delivered
+    const deliveryScan = scans.find((s: any) => {
+      const act = (s.ScanDetail?.Scan || '').toUpperCase();
+      return act.includes('DELIVERED') || act.includes('SUCCESSFULLY DELIVERED');
+    });
+    const stage6 = {
+      completed: order.orderStatus === 'DELIVERED' || !!deliveryScan,
+      time: deliveryScan?.ScanDetail?.ScanDateTime 
+        ? formatDate(deliveryScan.ScanDetail.ScanDateTime) 
+        : (order.orderStatus === 'DELIVERED' ? formatDate(order.createdAt) : ''),
+      desc: isHindi ? 'सुरक्षित रूप से प्राप्तकर्ता को दिया गया' : 'Package successfully handed over to consignee'
+    };
+
+    return [
+      { label: isHindi ? 'ऑर्डर प्राप्त हुआ' : 'Order Received', ...stage1, stepNum: 1 },
+      { label: isHindi ? 'शिप करने के लिए तैयार' : 'Ready to Ship', ...stage2, stepNum: 2 },
+      { label: isHindi ? 'पिकअप के लिए निर्धारित' : 'Scheduled for Pickup', ...stage3, stepNum: 3 },
+      { label: isHindi ? 'पारगमन में' : 'In-Transit', ...stage4, stepNum: 4 },
+      { label: isHindi ? 'वितरण के लिए बाहर' : 'Out for Delivery', ...stage5, stepNum: 5 },
+      { label: isHindi ? 'वितरित' : 'Delivered', ...stage6, stepNum: 6 }
+    ];
+  };
+
+  const stages = getStages();
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-16 sm:py-24 space-y-8 bg-[#f4f3ef] min-h-[85vh] flex flex-col justify-center">
@@ -228,7 +336,11 @@ export default function TrackClient() {
                     order.orderStatus === 'CANCELLED' ? 'bg-rose-600' : 'bg-teal-600 animate-ping'
                   }`} />
                   {order.orderStatus === 'PENDING' && (isHindi ? 'ऑर्डर की पुष्टि हो गई (सत्यापन)' : 'Order Verified (Fulfillment Pending)')}
-                  {order.orderStatus === 'DISPATCHED' && (isHindi ? 'पारगमन में (Dispatched)' : 'In Transit (Dispatched)')}
+                  {order.orderStatus === 'DISPATCHED' && (
+                    currentStep < 2
+                      ? (isHindi ? 'कूरियर पिकअप की प्रतीक्षा है (Awaiting Pickup)' : 'Awaiting Courier Pickup')
+                      : (isHindi ? 'पारगमन में (Dispatched)' : 'In Transit (Dispatched)')
+                  )}
                   {order.orderStatus === 'DELIVERED' && (isHindi ? 'सफलतापूर्वक वितरित (Delivered)' : 'Successfully Delivered')}
                   {order.orderStatus === 'CANCELLED' && (isHindi ? 'रद्द किया गया (Cancelled)' : 'Cancelled (Order Annulled)')}
                 </h2>
@@ -275,94 +387,55 @@ export default function TrackClient() {
                 </div>
               </div>
             ) : (
-              /* Steps Visual Bar */
-              <div className="relative pt-4 pb-2">
-                <div className="absolute top-[28px] left-[15%] right-[15%] h-0.5 bg-black/5 -z-1" />
-                <div
-                  className="absolute top-[28px] left-[15%] h-0.5 bg-black -z-1 transition-all duration-1000"
-                  style={{
-                    width: `${
-                      currentStep === 1 ? '33.33%' : currentStep === 2 ? '66.66%' : currentStep === 3 ? '70%' : '0%'
-                    }`,
-                  }}
-                />
+              /* Premium Vertical 6-Step Timeline */
+              <div className="space-y-6 pt-4 pb-2 px-2 max-w-xl mx-auto">
+                <div className="flex flex-col gap-6 relative">
+                  {stages.map((stage, idx) => {
+                    const isCompleted = stage.completed;
+                    const isLast = idx === stages.length - 1;
+                    return (
+                      <div key={idx} className="relative flex gap-4 text-left items-start">
+                        {/* Circle & Connecting Line */}
+                        <div className="flex flex-col items-center flex-shrink-0 relative">
+                          <div
+                            className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border-2 transition-all z-10 ${
+                              isCompleted
+                                ? 'bg-black border-black text-white shadow-xs scale-105'
+                                : 'bg-white border-black/10 text-black/30'
+                            }`}
+                          >
+                            {stage.stepNum}
+                          </div>
+                          {!isLast && (
+                            <div
+                              className={`w-0.5 absolute top-7 bottom-[-28px] left-[13px] z-0 transition-all ${
+                                stages[idx + 1].completed ? 'bg-black' : 'bg-black/5'
+                              }`}
+                            />
+                          )}
+                        </div>
 
-                <div className="grid grid-cols-4 text-center">
-                  {/* Step 1: Placed */}
-                  <div className="flex flex-col items-center space-y-2">
-                    <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
-                        currentStep >= 0
-                          ? 'bg-black text-white border-black scale-110 shadow-xs'
-                          : 'bg-white text-black/40 border-black/10'
-                      }`}
-                    >
-                      1
-                    </div>
-                    <span className="text-[9px] uppercase tracking-widest font-bold text-black block">
-                      {isHindi ? 'आदेश दिया' : 'Ordered'}
-                    </span>
-                    <span className="text-[8px] text-black/40 font-light block">
-                      {new Date(order.createdAt).toLocaleDateString('en-IN', { dateStyle: 'short' })}
-                    </span>
-                  </div>
-
-                  {/* Step 2: Verified */}
-                  <div className="flex flex-col items-center space-y-2">
-                    <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
-                        currentStep >= 1
-                          ? 'bg-black text-white border-black scale-110 shadow-xs'
-                          : 'bg-white text-black/40 border-black/10'
-                      }`}
-                    >
-                      {currentStep >= 1 ? <CheckCircle2 className="w-4 h-4 text-white fill-black" /> : '2'}
-                    </div>
-                    <span className="text-[9px] uppercase tracking-widest font-bold text-black block">
-                      {isHindi ? 'सत्यापित' : 'Confirmed'}
-                    </span>
-                    <span className="text-[8px] text-teal-800 font-bold block uppercase tracking-wider">
-                      {isHindi ? 'कॉल सत्यापित' : 'COD Verified'}
-                    </span>
-                  </div>
-
-                  {/* Step 3: Dispatched */}
-                  <div className="flex flex-col items-center space-y-2">
-                    <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
-                        currentStep >= 2
-                          ? 'bg-black text-white border-black scale-110 shadow-xs'
-                          : 'bg-white text-black/40 border-black/10'
-                      }`}
-                    >
-                      {currentStep >= 2 ? <Truck className="w-4 h-4 text-white" /> : '3'}
-                    </div>
-                    <span className="text-[9px] uppercase tracking-widest font-bold text-black block">
-                      {isHindi ? 'भेजा गया' : 'Dispatched'}
-                    </span>
-                    <span className="text-[8px] text-black/40 font-light block">
-                      {order.courierName || (isHindi ? 'लंबा पारगमन' : 'Express Air')}
-                    </span>
-                  </div>
-
-                  {/* Step 4: Delivered */}
-                  <div className="flex flex-col items-center space-y-2">
-                    <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all ${
-                        currentStep >= 3
-                          ? 'bg-black text-white border-black scale-110 shadow-xs'
-                          : 'bg-white text-black/40 border-black/10'
-                      }`}
-                    >
-                      {currentStep >= 3 ? <CheckCircle2 className="w-4 h-4 text-white fill-black" /> : '4'}
-                    </div>
-                    <span className="text-[9px] uppercase tracking-widest font-bold text-black block">
-                      {isHindi ? 'वितरित' : 'Delivered'}
-                    </span>
-                    <span className="text-[8px] text-black/40 font-light block">
-                      {order.orderStatus === 'DELIVERED' ? (isHindi ? 'पूर्ण' : 'Completed') : '---'}
-                    </span>
-                  </div>
+                        {/* Text labels */}
+                        <div className="space-y-1 pt-0.5 flex-1">
+                          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-1">
+                            <h4 className={`text-xs font-extrabold uppercase tracking-wider ${
+                              isCompleted ? 'text-black font-extrabold' : 'text-black/30 font-bold'
+                            }`}>
+                              {stage.label}
+                            </h4>
+                            {stage.time && (
+                              <span className="text-[9px] text-black/45 font-semibold">
+                                {stage.time}
+                              </span>
+                            )}
+                          </div>
+                          <p className={`text-[10px] ${isCompleted ? 'text-black/60 font-medium' : 'text-black/25 font-light'}`}>
+                            {stage.desc}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -395,7 +468,9 @@ export default function TrackClient() {
                     {isHindi ? 'शिपमेंट रूट' : 'Shipment Route'}
                   </span>
                   <span className="text-sm font-extrabold text-black">
-                    {order.dispatchDetails || (isHindi ? 'धनबाद हब से रवाना' : 'Dispatched from Dhanbad HQ')}
+                    {currentStep < 2
+                      ? (isHindi ? 'कूरियर पिकअप निर्धारित (हस्तांतरण लंबित)' : 'Courier Pickup Scheduled (Awaiting Handover)')
+                      : (order.dispatchDetails || (isHindi ? 'धनबाद हब से रवाना' : 'Dispatched from Dhanbad HQ'))}
                   </span>
                 </div>
               </div>
