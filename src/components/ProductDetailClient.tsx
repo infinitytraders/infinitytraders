@@ -222,7 +222,7 @@ export default function ProductDetailClient({ product, recommendations, initialU
           )}
 
           {/* Sizing Grid (Indian sizes) */}
-          {product.category === 'Footwear' || product.category === 'Slippers' ? (
+          {['Footwear', 'Slippers', 'Running Shoes', 'Air Saga', 'Sneakers'].includes(product.category) ? (
             <div className="space-y-3">
               <div className="flex justify-between items-center text-xs tracking-wider uppercase font-extrabold text-black/85">
                 <span>{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'जूते का आकार चुनें (UK / भारत)' : 'Select Shoe Size (UK / India)'}</span>
@@ -249,7 +249,7 @@ export default function ProductDetailClient({ product, recommendations, initialU
                 ))}
               </div>
             </div>
-          ) : product.category === 'Apparel' ? (
+          ) : ['Apparel', 'Lowers', 'T-shirts'].includes(product.category) ? (
             <div className="space-y-3">
               <div className="text-xs tracking-wider uppercase font-extrabold text-black/85">
                 {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'आकार चुनें' : 'Select Size'}
@@ -273,7 +273,7 @@ export default function ProductDetailClient({ product, recommendations, initialU
           ) : null}
 
           {/* Width selection (shoes specific) */}
-          {(product.category === 'Footwear' || product.category === 'Slippers') && (
+          {((['Footwear', 'Slippers', 'Running Shoes', 'Air Saga', 'Sneakers'].includes(product.category))) && (
             <div className="space-y-3">
               <span className="text-xs uppercase tracking-wider font-extrabold text-black/85 block">
                 {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'जूते की चौड़ाई की सेटिंग' : 'Shoe Width Configuration'}

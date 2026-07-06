@@ -802,16 +802,23 @@ export default function AdminPage() {
                         const newCat = e.target.value;
                         let updatedSizes = productForm.sizes;
                         if (productForm.sizes === '7,8,9,10,11' || productForm.sizes === 'S,M,L,XL,XXL') {
-                          updatedSizes = newCat === 'Apparel' ? 'S,M,L,XL,XXL' : '7,8,9,10,11';
+                          const isApparelCat = ['Apparel', 'Lowers', 'T-shirts'].includes(newCat);
+                          updatedSizes = isApparelCat ? 'S,M,L,XL,XXL' : '7,8,9,10,11';
                         }
                         setProductForm({...productForm, category: newCat, sizes: updatedSizes});
                       }}
                       className="w-full bg-white border border-black/10 rounded-lg p-2 text-xs text-black font-semibold"
                     >
-                      <option value="Footwear">Footwear</option>
+                      <option value="Running Shoes">Running Shoes</option>
+                      <option value="Air Saga">Air Saga</option>
+                      <option value="Sneakers">Sneakers</option>
                       <option value="Slippers">Slippers</option>
-                      <option value="Apparel">Apparel</option>
-                      <option value="Accessories">Accessories</option>
+                      <option value="Lowers">Lowers</option>
+                      <option value="T-shirts">T-shirts</option>
+                      <option value="Running Kit">Running Kit</option>
+                      <option value="Footwear">Footwear (Legacy)</option>
+                      <option value="Apparel">Apparel (Legacy)</option>
+                      <option value="Accessories">Accessories (Legacy)</option>
                     </select>
                   </div>
                   <div className="md:col-span-3 space-y-1.5">

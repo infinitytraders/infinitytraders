@@ -646,37 +646,37 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
             {
               name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'रनिंग शूज़ (Running Shoes)' : 'Running Shoes',
               img: '/categories/Running shoes.png',
-              link: '/shop?category=Footwear&q=running',
+              link: '/shop?category=Running Shoes',
               desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'प्रदर्शन दौड़ना' : 'Performance running'
             },
             {
               name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'एयर सागा (Air Saga)' : 'Air Saga',
               img: '/categories/Air Saga.png',
-              link: '/shop?category=Footwear&q=saga',
+              link: '/shop?category=Air Saga',
               desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'प्रीमियम दौड़ना' : 'Premium running'
             },
             {
               name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'स्नीकर्स (Sneakers)' : 'Sneakers',
               img: '/categories/Sneakers.png',
-              link: '/shop?category=Footwear&q=sneaker',
+              link: '/shop?category=Sneakers',
               desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'स्ट्रीट लाइफस्टाइल' : 'Street lifestyle'
             },
             {
               name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'लोअर्स (Lowers)' : 'Lowers',
               img: '/categories/Lowers.png',
-              link: '/shop?category=Apparel&q=lower',
+              link: '/shop?category=Lowers',
               desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सक्रिय ट्रैकवियर' : 'Active trackwear'
             },
             {
               name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'टी-शर्ट (T-shirts)' : 'T-shirts',
               img: '/categories/T-shirts.png',
-              link: '/shop?category=Apparel&q=shirt',
+              link: '/shop?category=T-shirts',
               desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'एथलेटिक एक्टिववियर' : 'Athletic activewear'
             },
             {
               name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'रनिंग किट (Running Kit)' : 'Running Kit',
               img: '/categories/running kit.png',
-              link: '/shop?category=Accessories&q=kit',
+              link: '/shop?category=Running Kit',
               desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'आवश्यक सहायक उपकरण' : 'Essential accessories'
             }
           ].map((cat) => (
@@ -1016,7 +1016,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
                   {product.stockQuantity > 0 ? (
                     <button
                       suppressHydrationWarning
-                      onClick={() => addToCart(product, 1, product.sizes[0] || (product.category === 'Footwear' ? 8 : 'M'))}
+                      onClick={() => addToCart(product, 1, product.sizes[0] || (['Footwear', 'Slippers', 'Running Shoes', 'Air Saga', 'Sneakers'].includes(product.category) ? 8 : 'M'))}
                       className="w-full bg-black hover:bg-transparent text-white hover:text-black border border-black py-2 text-[9px] sm:text-[10px] uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 rounded-full transition-all"
                     >
                       <ShoppingCart className="w-3.5 h-3.5" /> {t('prod.addToCart')}

@@ -393,7 +393,7 @@ export default function ShopClient() {
 
                       {product.stockQuantity > 0 ? (
                         <button
-                          onClick={() => addToCart(product, 1, product.sizes[0] || (product.category === 'Footwear' ? 8 : 'M'))}
+                          onClick={() => addToCart(product, 1, product.sizes[0] || (['Footwear', 'Slippers', 'Running Shoes', 'Air Saga', 'Sneakers'].includes(product.category) ? 8 : 'M'))}
                           className="w-full bg-black hover:bg-transparent text-white hover:text-black border border-black py-2 sm:py-2.5 text-[8px] sm:text-[9px] uppercase tracking-widest font-bold flex items-center justify-center gap-1 sm:gap-1.5 rounded-full transition-all"
                         >
                           <ShoppingCart className="w-3.5 h-3.5" /> {t('prod.addToCart')}

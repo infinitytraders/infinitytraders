@@ -224,6 +224,75 @@ export default function CheckoutPage() {
     );
   };
 
+  // Autocomplete suggestion states
+  const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isFetchingSuggestions, setIsFetchingSuggestions] = useState(false);
+
+  // Debounced address search
+  useEffect(() => {
+    if (!street || street.trim().length < 3) {
+      setAddressSuggestions([]);
+      return;
+    }
+
+    const delayDebounceFn = setTimeout(() => {
+      const fetchSuggestions = async () => {
+        setIsFetchingSuggestions(true);
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+              street
+            )}&addressdetails=1&countrycodes=in&limit=5`
+          );
+          const data = await res.json();
+          if (data) {
+            setAddressSuggestions(data);
+          }
+        } catch (err) {
+          console.error('Error fetching address suggestions', err);
+        } finally {
+          setIsFetchingSuggestions(false);
+        }
+      };
+
+      fetchSuggestions();
+    }, 450);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [street]);
+
+  // Click outside to dismiss suggestions dropdown
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.relative')) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener('click', handleOutsideClick);
+    return () => document.removeEventListener('click', handleOutsideClick);
+  }, []);
+
+  const handleSelectSuggestion = (item: any) => {
+    setAddressSuggestions([]);
+    setShowSuggestions(false);
+
+    const addr = item.address || {};
+    const road = addr.road || addr.suburb || addr.neighbourhood || addr.city_district || '';
+    const roadDetail = addr.house_number ? `${addr.house_number}, ${road}` : road;
+
+    setStreet(roadDetail || item.display_name.split(',')[0] || item.display_name);
+    setCity(addr.city || addr.town || addr.village || addr.county || '');
+    setState(addr.state || '');
+    if (addr.postcode) {
+      setPincode(addr.postcode.replace(/\D/g, '').slice(0, 6));
+    }
+  };
+
   // Load session
   useEffect(() => {
     getSessionUser().then((u) => {
@@ -626,7 +695,7 @@ export default function CheckoutPage() {
                   title="Detect coordinates and autofill address details"
                 >
                   <Navigation className={`w-3.5 h-3.5 ${isLocating ? 'animate-spin' : ''}`} />
-                  {isLocating ? (t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'लोकेटिंग...' : 'Locating...') : (t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'लाइव लोकेशन' : 'Use Live Location')}
+                  {isLocating ? (t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'लोकेटिंग...' : 'Locating...') : (t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'वर्तमान स्थान का उपयोग करें' : 'Use My Current Location')}
                 </button>
                 <button
                   type="button"
@@ -678,16 +747,66 @@ export default function CheckoutPage() {
               </div>
             )}
             <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-              <div className="md:col-span-6 space-y-1.5">
+              <div className="md:col-span-6 space-y-1.5 relative">
                 <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'फ्लैट/इमारत, सड़क का पता' : 'Flat/Building, Street Address'}</label>
                 <input
                   type="text"
                   required
                   placeholder={t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सड़क का पता दर्ज करें' : 'Enter street address'}
                   value={street}
-                  onChange={(e) => setStreet(e.target.value)}
+                  onChange={(e) => {
+                    setStreet(e.target.value);
+                    if (e.target.value.trim().length >= 3) {
+                      setShowSuggestions(true);
+                    } else {
+                      setShowSuggestions(false);
+                      setAddressSuggestions([]);
+                    }
+                  }}
+                  onFocus={() => {
+                    if (street.trim().length >= 3) {
+                      setShowSuggestions(true);
+                    }
+                  }}
                   className="w-full border border-black/10 focus:border-black rounded-full px-4 py-2.5 text-xs outline-none bg-[#fdfdfd] transition-all text-black"
+                  autoComplete="off"
                 />
+
+                {/* Suggestions Dropdown */}
+                {showSuggestions && (addressSuggestions.length > 0 || isFetchingSuggestions) && (
+                  <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-black/10 rounded-2xl shadow-xl z-55 max-h-60 overflow-y-auto divide-y divide-black/5 animate-fadeIn">
+                    {isFetchingSuggestions && addressSuggestions.length === 0 ? (
+                      <div className="p-3 text-[10px] text-black/50 font-bold uppercase tracking-wider text-center flex items-center justify-center gap-2">
+                        <div className="w-3.5 h-3.5 border border-black border-t-transparent rounded-full animate-spin" />
+                        {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'खोज की जा रही है...' : 'Searching...'}
+                      </div>
+                    ) : (
+                      addressSuggestions.map((item, idx) => {
+                        const addr = item.address || {};
+                        const displayRoad = addr.road || addr.suburb || addr.neighbourhood || '';
+                        const displayCity = addr.city || addr.town || addr.village || addr.county || '';
+                        const displayState = addr.state || '';
+                        const displayPincode = addr.postcode || '';
+                        
+                        return (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => handleSelectSuggestion(item)}
+                            className="w-full p-3 text-left hover:bg-black/[0.02] active:bg-black/[0.04] transition-colors flex flex-col gap-0.5"
+                          >
+                            <span className="text-[10px] font-extrabold text-black line-clamp-1 uppercase tracking-wider">
+                              {displayRoad || item.display_name.split(',')[0]}
+                            </span>
+                            <span className="text-[9px] text-black/50 font-medium line-clamp-1">
+                              {displayCity ? `${displayCity}, ` : ''}{displayState ? `${displayState} ` : ''}{displayPincode ? `- ${displayPincode}` : ''}
+                            </span>
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
               </div>
               <div className="md:col-span-2 space-y-1.5">
                 <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'शहर' : 'City'}</label>
