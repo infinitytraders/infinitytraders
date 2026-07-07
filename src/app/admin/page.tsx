@@ -653,12 +653,12 @@ export default function AdminPage() {
 
   // --- RENDER FULL ADMIN BOARD ---
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-black pt-28">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-black pt-28 w-full overflow-x-hidden">
       {/* Admin Panel Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-black/5 pb-6">
         <div>
           <span className="text-[10px] uppercase tracking-[0.3em] text-black/50 font-extrabold">Control Center</span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-widest text-black uppercase mt-1">
+          <h1 className="text-xl sm:text-3xl font-extrabold tracking-wide sm:tracking-widest text-black uppercase mt-1 break-words">
             Infinity Management Panel
           </h1>
           <p className="text-xs text-black/60 mt-1 font-bold">
@@ -673,8 +673,34 @@ export default function AdminPage() {
         </Link>
       </div>
 
-      {/* Admin Nav Tabs */}
-      <div className="flex overflow-x-auto flex-nowrap md:flex-wrap gap-2 border-b border-black/5 pb-4 scrollbar-none">
+      {/* Mobile Nav Dropdown */}
+      <div className="block sm:hidden space-y-1.5">
+        <label className="text-[9px] uppercase tracking-wider text-black/50 font-extrabold block">Select Section</label>
+        <select
+          value={activeTab}
+          onChange={(e) => setActiveTab(e.target.value as any)}
+          className="w-full bg-white border border-black/10 rounded-xl p-3 text-xs text-black font-semibold shadow-xs"
+        >
+          <option value="metrics">Metrics Overview</option>
+          <option value="products">Product Catalog Manager</option>
+          <option value="orders">Orders & Tracking</option>
+          {['SUPER_ADMIN', 'STORE_MANAGER'].includes(user.role) && (
+            <option value="users">User Accounts Manager</option>
+          )}
+          <option value="coupons">Marketing & Coupons</option>
+          <option value="pincodes">Pincode Serviceability</option>
+          <option value="delhivery">Delhivery Logistics</option>
+          {['SUPER_ADMIN', 'STORE_MANAGER', 'MARKETING_MANAGER'].includes(user.role) && (
+            <option value="newsletter">Newsletter Subscribers</option>
+          )}
+          {user.role === 'SUPER_ADMIN' && (
+            <option value="logs">Super Audit Logs</option>
+          )}
+        </select>
+      </div>
+
+      {/* Desktop Nav Tabs */}
+      <div className="hidden sm:flex flex-wrap gap-2 border-b border-black/5 pb-4">
         {[
           { id: 'metrics', label: 'Metrics Overview', icon: BarChart3 },
           { id: 'products', label: 'Product Catalog Manager', icon: Package },
@@ -707,7 +733,7 @@ export default function AdminPage() {
       </div>
 
       {/* Tab Boards Content */}
-      <div className="bg-white border border-black/5 rounded-3xl p-6 sm:p-8 min-h-[50vh] shadow-xs">
+      <div className="bg-white border border-black/5 rounded-3xl p-6 sm:p-8 min-h-[50vh] shadow-xs max-w-full overflow-hidden">
         
         {/* TAB 1: METRICS OVERVIEW */}
         {activeTab === 'metrics' && metrics && (
@@ -756,8 +782,9 @@ export default function AdminPage() {
             {/* Top Products */}
             <div className="bg-[#fcfbf9] border border-black/5 p-6 rounded-3xl space-y-4">
               <h3 className="text-xs font-extrabold uppercase tracking-widest text-black">Top 5 Best Selling Articles</h3>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse min-w-[600px]">
+              {/* Desktop View: Table */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
                   <thead>
                     <tr className="border-b border-black/10 pb-2 text-black/45 font-bold uppercase tracking-widest text-[9px]">
                       <th className="pb-3">Name</th>
@@ -777,6 +804,22 @@ export default function AdminPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Mobile View: Cards */}
+              <div className="block md:hidden space-y-3">
+                {metrics.topProducts.map((item: any, i: number) => (
+                  <div key={i} className="bg-white border border-black/5 p-4 rounded-xl flex justify-between items-center text-xs shadow-xs font-bold">
+                    <div>
+                      <h4 className="font-extrabold text-black">{item.name}</h4>
+                      <p className="text-[10px] text-black/50 font-bold mt-0.5">{item.brand}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className="font-extrabold text-black block">{item.count} sold</span>
+                      <span className="text-[10px] text-emerald-800 font-extrabold mt-0.5 block">₹{item.revenue.toLocaleString('en-IN')}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -1097,8 +1140,9 @@ export default function AdminPage() {
             )}
 
 {/* Products Table list */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse min-w-[800px]">
+            {/* Desktop View: Table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="border-b border-black/10 pb-2 text-black/45 font-bold uppercase tracking-widest text-[9px]">
                     <th className="pb-3">SKU</th>
@@ -1143,6 +1187,41 @@ export default function AdminPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile View: Stacked Cards */}
+            <div className="block md:hidden space-y-4">
+              {products.map((p) => (
+                <div key={p.id} className="bg-[#fcfbf9] border border-black/5 p-4 rounded-2xl space-y-3 shadow-xs">
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="space-y-1">
+                      <span className="text-[9px] font-mono text-black/45 bg-black/5 px-2 py-0.5 rounded font-bold">{p.sku}</span>
+                      <h4 className="text-xs font-extrabold text-black pt-1">{p.name}</h4>
+                      <p className="text-[10px] text-black/50 font-bold">{p.brand} &bull; {p.category}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className="text-xs font-extrabold text-black block">₹{p.sellingPrice.toLocaleString('en-IN')}</span>
+                      <span className={`text-[10px] font-extrabold block mt-1 ${p.stockQuantity <= 5 ? 'text-amber-800 font-extrabold' : 'text-black/60'}`}>
+                        Stock: {p.stockQuantity}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 justify-end pt-2.5 border-t border-black/5">
+                    <button
+                      onClick={() => handleEditClick(p)}
+                      className="px-3 py-1.5 border border-black/10 hover:border-black rounded-lg transition-all text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 bg-white text-black/60 hover:text-black shadow-xs"
+                    >
+                      <Edit2 className="w-3 h-3" /> Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteProductClick(p.id)}
+                      className="px-3 py-1.5 border border-black/10 hover:border-red-750 rounded-lg transition-all text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 bg-white text-red-650 hover:text-red-750 hover:bg-red-50 shadow-xs"
+                    >
+                      <Trash2 className="w-3 h-3" /> Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -1301,8 +1380,9 @@ export default function AdminPage() {
             )}
 
             {/* Orders listing table */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse min-w-[1100px]">
+            {/* Desktop View: Table */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="border-b border-black/10 pb-2 text-black/45 font-bold uppercase tracking-widest text-[9px]">
                     <th className="pb-3">Order ID</th>
@@ -1416,6 +1496,109 @@ export default function AdminPage() {
                   })}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile View: Stacked Cards */}
+            <div className="block lg:hidden space-y-4">
+              {orders.map((o) => {
+                const totalQty = o.items.reduce((sum, item) => sum + item.quantity, 0);
+                return (
+                  <div key={o.id} className="bg-[#fcfbf9] border border-black/5 p-4 rounded-2xl space-y-3 shadow-xs font-bold text-xs">
+                    <div className="flex justify-between items-start gap-4">
+                      <div>
+                        <span className="text-[9px] font-mono text-black/45 bg-black/5 px-2 py-0.5 rounded font-bold">{o.id}</span>
+                        <span className="text-[9px] text-black/40 block mt-1.5">{new Date(o.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                        <h4 className="text-xs font-extrabold text-black mt-2">{o.customerName}</h4>
+                        <p className="text-[10px] text-black/50 font-bold">{o.customerEmail} | Pincode: {o.shippingAddress.pincode}</p>
+                        <p className="text-[9px] text-black/60 font-bold mt-1 uppercase tracking-wider">
+                          Method: <span className="text-black font-extrabold">{o.paymentMethod}</span> &nbsp;|&nbsp; 
+                          Payment: <span className={`font-extrabold ${
+                            o.paymentStatus === 'PAID' ? 'text-emerald-700' : 
+                            o.paymentStatus === 'FAILED' ? 'text-rose-700' : 'text-amber-700'
+                          }`}>{o.paymentStatus}</span>
+                        </p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span className="text-xs font-extrabold text-black block">₹{o.finalAmount.toLocaleString('en-IN')}</span>
+                        <span className="text-[10px] text-black/50 font-bold">{totalQty} items</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-white border border-black/5 p-3 rounded-xl space-y-3">
+                      <span className="text-[8px] uppercase tracking-wider text-black/50 font-extrabold block">Ordered Items</span>
+                      {o.items.map((item, idx) => {
+                        const currentStock = products.find(p => p.id === item.productId)?.stockQuantity ?? 0;
+                        return (
+                          <div key={idx} className="flex items-start gap-2.5 text-[10px] font-bold">
+                            <img src={item.image} alt={item.name} className="w-8 h-10 object-cover rounded-md border border-black/5 flex-shrink-0" />
+                            <div className="flex-1 leading-tight space-y-0.5">
+                              <p className="text-black font-extrabold line-clamp-1">{item.name}</p>
+                              <p className="text-black/50 text-[9px] font-bold">{item.brand} &bull; Size: {item.size}</p>
+                              <p className="text-black/70 font-extrabold">{item.quantity} x ₹{item.price.toLocaleString('en-IN')}</p>
+                              <p className="text-black/40 text-[9px] font-bold">
+                                Stock: <span className={`font-extrabold ${currentStock === 0 ? 'text-rose-700' : currentStock <= 5 ? 'text-amber-700' : 'text-black/50'}`}>{currentStock} avail</span>
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="flex justify-between items-center pt-2.5 border-t border-black/5">
+                      <div>
+                        {(() => {
+                          let displayStatus = o.orderStatus as string;
+                          let badgeClass = 'bg-amber-600/10 text-amber-800';
+                          
+                          if (o.orderStatus === 'DELIVERED') {
+                            badgeClass = 'bg-emerald-700/10 text-emerald-800';
+                          } else if (o.orderStatus === 'RETURNED') {
+                            badgeClass = 'bg-rose-700/10 text-rose-800';
+                          } else if (o.orderStatus === 'CANCELLED') {
+                            badgeClass = 'bg-rose-100 text-rose-600 font-extrabold';
+                          } else if (o.orderStatus === 'DISPATCHED') {
+                            const live = o.trackingNumber ? orderLiveStatuses[o.trackingNumber] : null;
+                            const scans = live?.Status?.Scans || [];
+                            const hasTransitScans = scans.some((scan: any) => {
+                              const activity = (scan.ScanDetail?.Scan || '').toUpperCase();
+                              return activity !== 'MANIFESTED' && activity !== 'SOFT DATA UPLOADED';
+                            });
+                            
+                            if (o.courierName === 'Delhivery' && o.trackingNumber && !hasTransitScans) {
+                              displayStatus = 'AWAITING PICKUP';
+                              badgeClass = 'bg-orange-500/15 text-orange-800 font-bold';
+                            } else {
+                              displayStatus = 'DISPATCHED';
+                              badgeClass = 'bg-blue-700/10 text-blue-800';
+                            }
+                          }
+                          
+                          return (
+                            <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold tracking-wider ${badgeClass}`}>
+                              {displayStatus}
+                            </span>
+                          );
+                        })()}
+                        {o.trackingNumber && (
+                          <span className="text-[8px] font-mono text-black/50 block mt-1">AWB: {o.trackingNumber}</span>
+                        )}
+                      </div>
+                      <div className="flex gap-1.5">
+                        <button
+                          onClick={() => {
+                            setUpdatingOrder(o);
+                            setSelectedStatus(o.orderStatus);
+                            setSelectedPaymentStatus(o.paymentStatus);
+                          }}
+                          className="px-2.5 py-1.5 border border-black/10 hover:border-black text-[9px] font-extrabold uppercase tracking-widest rounded-lg bg-white"
+                        >
+                          Update
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -1545,8 +1728,9 @@ export default function AdminPage() {
             <h2 className="text-xs font-extrabold uppercase tracking-widest text-black border-b border-black/5 pb-2">
               Super Admin System Audit Trail
             </h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-[11px] font-mono leading-relaxed border-collapse min-w-[700px]">
+            {/* Desktop View: Table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-[11px] font-mono leading-relaxed border-collapse">
                 <thead>
                   <tr className="border-b border-black/10 pb-2 text-black/45 font-bold uppercase tracking-widest text-[9px]">
                     <th className="pb-3">Timestamp</th>
@@ -1570,6 +1754,26 @@ export default function AdminPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile View: Cards */}
+            <div className="block md:hidden space-y-3">
+              {auditLogs.map((log) => (
+                <div key={log.id} className="bg-white border border-black/5 p-4 rounded-xl space-y-2 shadow-xs text-[11px] font-mono leading-relaxed">
+                  <div className="flex justify-between items-start gap-4">
+                    <div>
+                      <h4 className="font-extrabold text-black">{log.userEmail}</h4>
+                      <p className="text-[9px] text-black/45 mt-0.5">{new Date(log.timestamp).toLocaleString('en-IN')}</p>
+                    </div>
+                    <span className="text-[9px] uppercase tracking-wider font-extrabold bg-black/5 px-2 py-0.5 rounded text-black shrink-0">
+                      {log.action}
+                    </span>
+                  </div>
+                  <div className="border-t border-black/5 pt-2 text-black/70 font-semibold break-words">
+                    {log.details}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -1671,9 +1875,9 @@ export default function AdminPage() {
               </form>
             )}
 
-            {/* Pincodes listing */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse min-w-[700px]">
+            {/* Desktop View: Table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="border-b border-black/10 pb-2 text-black/45 font-bold uppercase tracking-widest text-[9px]">
                     <th className="pb-3">Pincode</th>
@@ -1739,6 +1943,60 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Mobile View: Cards */}
+            <div className="block md:hidden space-y-3">
+              {pincodes.length === 0 ? (
+                <div className="py-8 text-center text-black/40 text-xs font-normal">
+                  No explicit pincode rules defined. Standard Indian pincodes default to 4-day delivery.
+                </div>
+              ) : (
+                pincodes.map((p) => (
+                  <div key={p.pincode} className="bg-[#fcfbf9] border border-black/5 p-4 rounded-xl flex justify-between items-center text-xs shadow-xs font-bold">
+                    <div>
+                      <h4 className="font-extrabold text-black font-mono">{p.pincode}</h4>
+                      <p className="text-[10px] text-black/50 font-bold mt-0.5">{p.state}</p>
+                      <p className="text-[9px] text-black/70 font-semibold mt-1">{p.estimatedDays} Working Days</p>
+                    </div>
+                    <div className="flex flex-col items-end gap-2.5 shrink-0">
+                      {p.serviceable ? (
+                        <span className="bg-emerald-500/10 text-emerald-800 px-2 py-0.5 text-[8px] uppercase tracking-wider font-extrabold rounded">
+                          Serviceable
+                        </span>
+                      ) : (
+                        <span className="bg-rose-500/10 text-rose-800 px-2 py-0.5 text-[8px] uppercase tracking-wider font-extrabold rounded">
+                          Blocked
+                        </span>
+                      )}
+                      <div className="flex gap-1.5 mt-1">
+                        <button
+                          onClick={() => {
+                            setPincodeForm({
+                              pincode: p.pincode,
+                              serviceable: p.serviceable,
+                              estimatedDays: String(p.estimatedDays),
+                              state: p.state
+                            });
+                            setShowPincodeForm(true);
+                          }}
+                          className="text-black/60 hover:text-black p-1 border border-black/10 bg-white rounded-lg transition-all"
+                          title="Edit"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handlePincodeDelete(p.pincode)}
+                          className="text-red-700 hover:text-red-800 p-1 border border-black/10 hover:border-red-700 hover:bg-red-50 rounded-lg transition-all"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         )}
 
@@ -1756,8 +2014,9 @@ export default function AdminPage() {
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse min-w-[600px]">
+            {/* Desktop View: Table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="border-b border-black/10 pb-2 text-black/45 font-bold uppercase tracking-widest text-[9px]">
                     <th className="pb-3">Subscriber Name</th>
@@ -1803,6 +2062,33 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Mobile View: Cards */}
+            <div className="block md:hidden space-y-3">
+              {subscribers.length === 0 ? (
+                <div className="py-8 text-center text-black/40 text-xs font-normal">
+                  No newsletter subscriptions found.
+                </div>
+              ) : (
+                subscribers.map((sub) => (
+                  <div key={sub.id} className="bg-white border border-black/5 p-4 rounded-xl flex justify-between items-center text-xs shadow-xs font-bold">
+                    <div>
+                      <h4 className="font-extrabold text-black">{sub.firstName} {sub.lastName}</h4>
+                      <p className="text-[10px] text-black/50 font-mono mt-0.5">{sub.email}</p>
+                      <p className="text-[9px] text-black/40 mt-1">
+                        {new Date(sub.subscribedAt).toLocaleDateString('en-IN')}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleSubscriberDelete(sub.email)}
+                      className="text-red-700 hover:text-red-800 p-1.5 border border-black/10 hover:border-red-700 hover:bg-red-50 rounded-lg transition-all shrink-0"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         )}
 
@@ -1842,8 +2128,9 @@ export default function AdminPage() {
                   )}
                 </div>
 
-                <div className="overflow-x-auto border border-black/5 rounded-2xl bg-white shadow-xs">
-                  <table className="w-full text-left text-xs border-collapse min-w-[800px]">
+                {/* Desktop View */}
+                <div className="hidden md:block overflow-x-auto border border-black/5 rounded-2xl bg-white shadow-xs">
+                  <table className="w-full text-left text-xs border-collapse">
                     <thead>
                       <tr className="bg-[#fcfbf9] border-b border-black/5 text-[9px] uppercase tracking-wider font-extrabold text-black/50">
                         <th className="p-3">Order / AWB</th>
@@ -1915,6 +2202,72 @@ export default function AdminPage() {
                       )}
                     </tbody>
                   </table>
+                </div>
+
+                {/* Mobile View */}
+                <div className="block md:hidden space-y-3">
+                  {orders.filter(o => o.courierName === 'Delhivery' && o.trackingNumber && o.orderStatus !== 'CANCELLED').length === 0 ? (
+                    <div className="p-8 text-center text-black/45 text-xs font-normal">
+                      No orders currently shipped via Delhivery found in database.
+                    </div>
+                  ) : (
+                    orders
+                      .filter(o => o.courierName === 'Delhivery' && o.trackingNumber && o.orderStatus !== 'CANCELLED')
+                      .map(order => {
+                        const liveData = orderLiveStatuses[order.trackingNumber || ''];
+                        return (
+                          <div key={order.id} className="bg-[#fcfbf9] border border-black/5 p-4 rounded-xl space-y-2.5 shadow-xs text-xs font-bold">
+                            <div className="flex justify-between items-start gap-4">
+                              <div>
+                                <h4 className="font-extrabold text-black">{order.customerName}</h4>
+                                <p className="text-[10px] text-black/50 font-mono mt-0.5">AWB: {order.trackingNumber}</p>
+                                <p className="text-[9px] text-black/45">Order ID: {order.id}</p>
+                              </div>
+                              <div className="text-right shrink-0">
+                                <span className="text-[9px] uppercase tracking-wider font-extrabold bg-black/5 px-2 py-0.5 rounded">
+                                  {order.shippingAddress.state}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="border-t border-black/5 pt-2.5 flex justify-between items-center">
+                              <div>
+                                {liveData ? (
+                                  <div className="space-y-0.5">
+                                    <span className={`text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded ${
+                                      (liveData.Status?.Status || '').toUpperCase() === 'DELIVERED' 
+                                        ? 'bg-emerald-500/10 text-emerald-800' 
+                                        : 'bg-blue-500/10 text-blue-800'
+                                    }`}>
+                                      {liveData.Status?.Status || 'Unknown'}
+                                    </span>
+                                    <p className="text-[8px] text-black/50 mt-1 font-normal">
+                                      {liveData.Status?.Instructions || 'No scan detail'}
+                                    </p>
+                                  </div>
+                                ) : (
+                                  <span className="text-[9px] text-black/40 font-medium">Not checked yet</span>
+                                )}
+                              </div>
+                              <button
+                                onClick={async () => {
+                                  if (order.trackingNumber) {
+                                    const details = await getDelhiveryTrackingDetails(order.trackingNumber);
+                                    if (details) {
+                                      setOrderLiveStatuses({ ...orderLiveStatuses, [order.trackingNumber]: details });
+                                    } else {
+                                      alert('Failed to get status from Delhivery.');
+                                    }
+                                  }
+                                }}
+                                className="px-2.5 py-1 bg-black text-white text-[9px] uppercase tracking-wider font-bold rounded"
+                              >
+                                Get Status
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })
+                  )}
                 </div>
               </div>
 
@@ -2091,8 +2444,9 @@ export default function AdminPage() {
             </div>
 
             {/* Users Table */}
-            <div className="overflow-x-auto border border-black/5 rounded-2xl bg-white shadow-xs">
-              <table className="w-full text-left text-xs border-collapse min-w-[900px]">
+            {/* Desktop View */}
+            <div className="hidden lg:block overflow-x-auto border border-black/5 rounded-2xl bg-white shadow-xs">
+              <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="bg-[#fcfbf9] border-b border-black/5 text-[9px] uppercase tracking-wider font-extrabold text-black/50">
                     <th className="p-3">User Details</th>
@@ -2199,6 +2553,92 @@ export default function AdminPage() {
                     )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile View */}
+            <div className="block lg:hidden space-y-4">
+              {usersList
+                .filter(u => {
+                  const query = searchQueryUsers.toLowerCase().trim();
+                  const matchesSearch = !query || 
+                    u.name.toLowerCase().includes(query) ||
+                    u.email.toLowerCase().includes(query) ||
+                    (u.mobile && u.mobile.includes(query));
+                  
+                  const matchesRole = roleFilterUsers === 'ALL' || u.role === roleFilterUsers;
+                  return matchesSearch && matchesRole;
+                })
+                .length === 0 ? (
+                  <div className="p-8 text-center text-black/45 text-xs font-normal">
+                    No registered users found matching the search filters.
+                  </div>
+                ) : (
+                  usersList
+                    .filter(u => {
+                      const query = searchQueryUsers.toLowerCase().trim();
+                      const matchesSearch = !query || 
+                        u.name.toLowerCase().includes(query) ||
+                        u.email.toLowerCase().includes(query) ||
+                        (u.mobile && u.mobile.includes(query));
+                      
+                      const matchesRole = roleFilterUsers === 'ALL' || u.role === roleFilterUsers;
+                      return matchesSearch && matchesRole;
+                    })
+                    .map(item => (
+                      <div key={item.id} className="bg-[#fcfbf9] border border-black/5 p-4 rounded-xl space-y-3.5 shadow-xs text-xs font-bold">
+                        <div className="flex justify-between items-start gap-4">
+                          <div>
+                            <h4 className="font-extrabold text-black">{item.name || 'Unnamed Guest'}</h4>
+                            <p className="text-[9px] text-black/40 font-mono mt-0.5">{item.id}</p>
+                            <p className="text-[10px] text-black/60 font-semibold mt-1">{item.email}</p>
+                            <p className="text-[10px] text-black/60 font-semibold">{item.mobile || 'No Mobile'}</p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span className={`text-[9px] uppercase tracking-wider font-extrabold px-2.5 py-0.5 rounded ${
+                              item.role === 'SUPER_ADMIN' ? 'bg-red-500/10 text-red-800' :
+                              item.role === 'STORE_MANAGER' ? 'bg-amber-500/10 text-amber-800' :
+                              item.role === 'CUSTOMER' ? 'bg-black/5 text-black/70' : 'bg-blue-500/10 text-blue-800'
+                            }`}>
+                              {item.role}
+                            </span>
+                            <span className="text-[9px] text-black/40 block mt-1.5">
+                              {item.createdAt ? new Date(item.createdAt).toLocaleDateString('en-IN', {
+                                day: 'numeric', month: 'short', year: 'numeric'
+                              }) : 'N/A'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="bg-white border border-black/5 p-3 rounded-xl text-[10px] leading-relaxed">
+                          <span className="text-[8px] uppercase tracking-wider text-black/50 font-extrabold block">Saved Addresses ({item.addresses?.length || 0})</span>
+                          {item.addresses && item.addresses.length > 0 ? (
+                            item.addresses.map((addr: any, idx: number) => (
+                              <div key={idx} className="mt-1 pb-1 border-b border-black/5 last:border-b-0 font-medium">
+                                {addr.street}, {addr.city}, {addr.state} - {addr.pincode} {addr.isDefault && <span className="text-emerald-800 font-extrabold text-[8px]">(Default)</span>}
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-black/40 font-normal">No addresses saved.</p>
+                          )}
+                        </div>
+                        <div className="flex gap-2 justify-end pt-2 border-t border-black/5">
+                          <button
+                            onClick={() => handleEditUserClick(item)}
+                            className="px-2.5 py-1.5 border border-black/10 hover:border-black bg-white rounded-lg transition-all text-[10px] font-bold"
+                          >
+                            Edit
+                          </button>
+                          {user?.role === 'SUPER_ADMIN' && user?.id !== item.id && (
+                            <button
+                              onClick={() => handleDeleteUserClick(item.id)}
+                              className="px-2.5 py-1.5 border border-black/10 hover:border-red-700 bg-white text-red-650 hover:text-red-750 hover:bg-red-50 rounded-lg transition-all shadow-xs text-[10px] font-bold"
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                )}
             </div>
 
             {/* EDIT USER OVERLAY MODAL */}
