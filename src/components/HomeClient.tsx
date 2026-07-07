@@ -723,9 +723,9 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
               desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'प्रदर्शन दौड़ना' : 'Performance running'
             },
             {
-              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'एयर सागा (Air Saga)' : 'Air Saga',
-              img: '/categories/Air Saga.png',
-              link: '/shop?category=Air Saga',
+              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'एयर सेगा (Air Sega)' : 'Air Sega',
+              img: '/categories/Air Sega.png',
+              link: '/shop?category=Air Sega',
               desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'प्रीमियम दौड़ना' : 'Premium running'
             },
             {
@@ -1089,7 +1089,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
                   {product.stockQuantity > 0 ? (
                     <button
                       suppressHydrationWarning
-                      onClick={() => addToCart(product, 1, product.sizes[0] || (['Footwear', 'Slippers', 'Running Shoes', 'Air Saga', 'Sneakers'].includes(product.category) ? 8 : 'M'))}
+                      onClick={() => addToCart(product, 1, product.sizes[0] || (['Footwear', 'Slippers', 'Running Shoes', 'Air Sega', 'Air Saga', 'Sneakers'].includes(product.category) ? 8 : 'M'))}
                       className="w-full bg-black hover:bg-transparent text-white hover:text-black border border-black py-2 text-[9px] sm:text-[10px] uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 rounded-full transition-all"
                     >
                       <ShoppingCart className="w-3.5 h-3.5" /> {t('prod.addToCart')}

@@ -838,7 +838,7 @@ export default function AdminPage() {
                       className="w-full bg-white border border-black/10 rounded-lg p-2 text-xs text-black font-semibold"
                     >
                       <option value="Running Shoes">Running Shoes</option>
-                      <option value="Air Saga">Air Saga</option>
+                      <option value="Air Sega">Air Sega</option>
                       <option value="Sneakers">Sneakers</option>
                       <option value="Slippers">Slippers</option>
                       <option value="Lowers">Lowers</option>
