@@ -384,19 +384,25 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
       img: '/hero_runner.png',
       title: t('home.hero.title'),
       subtitle: t('home.hero.subtitle'),
-      showOverlay: true
+      showOverlay: true,
+      fitClass: 'object-cover',
+      bgClass: 'bg-black'
     },
     {
       img: '/swiper-1.png',
       title: '',
       subtitle: '',
-      showOverlay: false
+      showOverlay: false,
+      fitClass: 'object-cover',
+      bgClass: 'bg-black'
     },
     {
       img: '/swiper-2.png',
       title: '',
       subtitle: '',
-      showOverlay: false
+      showOverlay: false,
+      fitClass: 'object-cover',
+      bgClass: 'bg-black'
     }
   ];
 
@@ -495,7 +501,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
   return (
     <div className="space-y-24 pb-0 bg-[#f4f3ef]">
       {/* 1. HERO SECTION (Premium Swiper) */}
-      <section className="relative h-screen -mt-24 overflow-hidden">
+      <section className="relative h-[40vh] sm:h-screen -mt-24 overflow-hidden">
         {/* Background Swiper with AnimatePresence */}
         <AnimatePresence mode="wait">
           <motion.div
@@ -504,14 +510,16 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute inset-0 z-0"
+            className={`absolute inset-0 z-0 ${heroSlides[currentHeroSlide].bgClass}`}
           >
-            <div className="absolute inset-0 bg-black/25 z-10" />
+            {/* Dark overlay for text readability - only shown when slide has text overlay */}
+            {heroSlides[currentHeroSlide].showOverlay && (
+              <div className="absolute inset-0 bg-black/25 z-10" />
+            )}
             <img
               src={heroSlides[currentHeroSlide].img}
               alt={heroSlides[currentHeroSlide].title}
-              className="w-full h-full object-cover filter brightness-95 contrast-[1.02]"
-              style={{ objectPosition: 'center 35%' }}
+              className={`w-full h-full ${heroSlides[currentHeroSlide].fitClass} sm:object-[center_35%] object-center filter brightness-95 contrast-[1.02]`}
             />
           </motion.div>
         </AnimatePresence>
