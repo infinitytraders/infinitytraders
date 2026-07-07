@@ -674,7 +674,7 @@ export default function AdminPage() {
       </div>
 
       {/* Admin Nav Tabs */}
-      <div className="flex flex-wrap gap-2 border-b border-black/5 pb-4">
+      <div className="flex overflow-x-auto flex-nowrap md:flex-wrap gap-2 border-b border-black/5 pb-4 scrollbar-none">
         {[
           { id: 'metrics', label: 'Metrics Overview', icon: BarChart3 },
           { id: 'products', label: 'Product Catalog Manager', icon: Package },
@@ -694,7 +694,7 @@ export default function AdminPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`px-4 py-2.5 text-[10px] uppercase tracking-widest font-bold flex items-center gap-2 rounded-full transition-all border ${
+              className={`shrink-0 px-4 py-2.5 text-[10px] uppercase tracking-widest font-bold flex items-center gap-2 rounded-full transition-all border ${
                 activeTab === tab.id
                   ? 'bg-black border-black text-white shadow-xs'
                   : 'border-black/10 text-black/60 hover:border-black hover:text-black bg-white/50'
@@ -757,7 +757,7 @@ export default function AdminPage() {
             <div className="bg-[#fcfbf9] border border-black/5 p-6 rounded-3xl space-y-4">
               <h3 className="text-xs font-extrabold uppercase tracking-widest text-black">Top 5 Best Selling Articles</h3>
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
+                <table className="w-full text-left text-xs border-collapse min-w-[600px]">
                   <thead>
                     <tr className="border-b border-black/10 pb-2 text-black/45 font-bold uppercase tracking-widest text-[9px]">
                       <th className="pb-3">Name</th>
@@ -1098,7 +1098,7 @@ export default function AdminPage() {
 
 {/* Products Table list */}
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="w-full text-left text-xs border-collapse min-w-[800px]">
                 <thead>
                   <tr className="border-b border-black/10 pb-2 text-black/45 font-bold uppercase tracking-widest text-[9px]">
                     <th className="pb-3">SKU</th>
@@ -1302,7 +1302,7 @@ export default function AdminPage() {
 
             {/* Orders listing table */}
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="w-full text-left text-xs border-collapse min-w-[1100px]">
                 <thead>
                   <tr className="border-b border-black/10 pb-2 text-black/45 font-bold uppercase tracking-widest text-[9px]">
                     <th className="pb-3">Order ID</th>
@@ -1546,7 +1546,7 @@ export default function AdminPage() {
               Super Admin System Audit Trail
             </h2>
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-[11px] font-mono leading-relaxed border-collapse">
+              <table className="w-full text-left text-[11px] font-mono leading-relaxed border-collapse min-w-[700px]">
                 <thead>
                   <tr className="border-b border-black/10 pb-2 text-black/45 font-bold uppercase tracking-widest text-[9px]">
                     <th className="pb-3">Timestamp</th>
@@ -1673,7 +1673,7 @@ export default function AdminPage() {
 
             {/* Pincodes listing */}
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="w-full text-left text-xs border-collapse min-w-[700px]">
                 <thead>
                   <tr className="border-b border-black/10 pb-2 text-black/45 font-bold uppercase tracking-widest text-[9px]">
                     <th className="pb-3">Pincode</th>
@@ -1757,7 +1757,7 @@ export default function AdminPage() {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="w-full text-left text-xs border-collapse min-w-[600px]">
                 <thead>
                   <tr className="border-b border-black/10 pb-2 text-black/45 font-bold uppercase tracking-widest text-[9px]">
                     <th className="pb-3">Subscriber Name</th>
@@ -1843,7 +1843,7 @@ export default function AdminPage() {
                 </div>
 
                 <div className="overflow-x-auto border border-black/5 rounded-2xl bg-white shadow-xs">
-                  <table className="w-full text-left text-xs border-collapse">
+                  <table className="w-full text-left text-xs border-collapse min-w-[800px]">
                     <thead>
                       <tr className="bg-[#fcfbf9] border-b border-black/5 text-[9px] uppercase tracking-wider font-extrabold text-black/50">
                         <th className="p-3">Order / AWB</th>
@@ -2092,7 +2092,7 @@ export default function AdminPage() {
 
             {/* Users Table */}
             <div className="overflow-x-auto border border-black/5 rounded-2xl bg-white shadow-xs">
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="w-full text-left text-xs border-collapse min-w-[900px]">
                 <thead>
                   <tr className="bg-[#fcfbf9] border-b border-black/5 text-[9px] uppercase tracking-wider font-extrabold text-black/50">
                     <th className="p-3">User Details</th>
