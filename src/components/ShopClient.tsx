@@ -36,8 +36,10 @@ function normalizeCategoryName(cat: string): string {
   if (c === 'slippers') return 'Slippers';
   if (c === 'apparel') return 'Apparel';
   if (c === 'accessories') return 'Accessories';
-  if (c === 'sneakers') return 'Sneakers';
+  if (c === 'sneakers' || c === 'casuals' || c === 'training shoes' || c === 'training-shoes') return 'Training Shoes';
   if (c === 'air saga' || c === 'air sega') return 'Air Sega';
+  if (c === 't-shirts' || c === 'gym wear' || c === 'gymwear') return 'Gym Wear';
+  if (c === 'halfpants' || c === 'tracksuit') return 'Tracksuit';
   return cat.trim().charAt(0).toUpperCase() + cat.trim().slice(1);
 }
 

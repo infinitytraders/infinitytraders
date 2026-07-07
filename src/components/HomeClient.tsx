@@ -125,7 +125,7 @@ const RECOMMENDATION_CONFIGS: Record<string, QuestionConfig> = {
     }
   },
   'casuals': {
-    title: 'Casual Shoes Matcher',
+    title: 'Training Shoes Matcher',
     question: 'Select your preferred style:',
     options: ['Sports Shoes', 'Sneakers'],
     recommendations: {
@@ -180,7 +180,7 @@ const RECOMMENDATION_CONFIGS: Record<string, QuestionConfig> = {
     recommendations: {}
   },
   't-shirts': {
-    title: 'T-Shirts Matcher',
+    title: 'Gym Wear Matcher',
     question: 'Which collar style do you prefer?',
     options: ['Round Neck', 'Polo'],
     recommendations: {
@@ -207,7 +207,7 @@ const RECOMMENDATION_CONFIGS: Record<string, QuestionConfig> = {
     }
   },
   'halfpants': {
-    title: 'Halfpants Matcher',
+    title: 'Tracksuit Matcher',
     question: 'Select your preferred brand:',
     options: ALL_BRANDS,
     recommendations: {}
@@ -741,9 +741,9 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
               desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सक्रिय ट्रैकवियर' : 'Active trackwear'
             },
             {
-              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'टी-शर्ट (T-shirts)' : 'T-shirts',
+              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'जिम वियर (Gym Wear)' : 'Gym Wear',
               img: '/categories/T-shirts.png',
-              link: '/shop?category=T-shirts',
+              link: '/shop?category=Gym Wear',
               desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'एथलेटिक एक्टिववियर' : 'Athletic activewear'
             },
             {
@@ -801,8 +801,8 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
             },
             {
               id: 'casuals',
-              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'कैजुअल जूते' : 'Casuals',
-              img: '/what-we-sell/Casuals.png'
+              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'ट्रेनिंग जूते' : 'Training Shoes',
+              img: '/what-we-sell/Training-Shoes.png'
             },
             {
               id: 'daily-wear',
@@ -816,12 +816,12 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
             },
             {
               id: 't-shirts',
-              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'टी-शर्ट' : 'T Shirts',
+              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'जिम वियर' : 'Gym Wear',
               img: '/what-we-sell/t-shirts.png'
             },
             {
               id: 'halfpants',
-              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'हाफ पैंट' : 'Halfpants',
+              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'ट्रैकसूट' : 'Tracksuit',
               img: '/what-we-sell/halfpants.png'
             },
             {

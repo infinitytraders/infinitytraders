@@ -830,7 +830,7 @@ export default function AdminPage() {
                         const newCat = e.target.value;
                         let updatedSizes = productForm.sizes;
                         if (productForm.sizes === '7,8,9,10,11' || productForm.sizes === 'S,M,L,XL,XXL') {
-                          const isApparelCat = ['Apparel', 'Lowers', 'T-shirts'].includes(newCat);
+                          const isApparelCat = ['Apparel', 'Lowers', 'T-shirts', 'Gym Wear', 'Tracksuit'].includes(newCat);
                           updatedSizes = isApparelCat ? 'S,M,L,XL,XXL' : '7,8,9,10,11';
                         }
                         setProductForm({...productForm, category: newCat, sizes: updatedSizes});
@@ -839,10 +839,11 @@ export default function AdminPage() {
                     >
                       <option value="Running Shoes">Running Shoes</option>
                       <option value="Air Sega">Air Sega</option>
-                      <option value="Sneakers">Sneakers</option>
+                      <option value="Training Shoes">Training Shoes</option>
                       <option value="Slippers">Slippers</option>
                       <option value="Lowers">Lowers</option>
-                      <option value="T-shirts">T-shirts</option>
+                      <option value="Tracksuit">Tracksuit</option>
+                      <option value="Gym Wear">Gym Wear</option>
                       <option value="Running Kit">Running Kit</option>
                       <option value="Footwear">Footwear (Legacy)</option>
                       <option value="Apparel">Apparel (Legacy)</option>
