@@ -211,7 +211,10 @@ export default function AdminPage() {
 
     const ords = await getOrdersAction();
     if (ords.success && ords.orders) {
-      setOrders(ords.orders);
+      const sortedOrders = [...ords.orders].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      setOrders(sortedOrders);
       
       // Auto-fetch live statuses for active Delhivery shipments
       const activeDelhivery = ords.orders.filter(
@@ -1156,6 +1159,32 @@ export default function AdminPage() {
                 <h3 className="text-[10px] uppercase tracking-widest font-extrabold text-black">
                   Update Order Logistics - {updatingOrder.id}
                 </h3>
+
+                {/* List Items in Updating Order */}
+                <div className="bg-black/5 border border-black/5 p-3 rounded-xl space-y-2">
+                  <p className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Ordered Products</p>
+                  {updatingOrder.items.map((item, idx) => {
+                    const currentStock = products.find(p => p.id === item.productId)?.stockQuantity ?? 0;
+                    return (
+                      <div key={idx} className="flex items-center gap-2.5">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-8 h-10 object-cover rounded-md border border-black/5 flex-shrink-0"
+                        />
+                        <div className="text-[10px] leading-tight space-y-0.5">
+                          <p className="font-extrabold text-black line-clamp-1">{item.name}</p>
+                          <p className="text-black/50 font-bold">
+                            {item.brand} &nbsp;|&nbsp; Size: {item.size} &nbsp;|&nbsp; Qty: {item.quantity}
+                          </p>
+                          <p className="text-black/50 font-bold">
+                            Stock: <span className={`font-extrabold ${currentStock === 0 ? 'text-rose-700' : currentStock <= 5 ? 'text-amber-700' : 'text-black'}`}>{currentStock} available</span>
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
                 
                 <div className="space-y-1.5">
                   <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Fulfillment Status</label>
@@ -1278,7 +1307,7 @@ export default function AdminPage() {
                     <th className="pb-3">Order ID</th>
                     <th className="pb-3">Customer</th>
                     <th className="pb-3 text-center">Date</th>
-                    <th className="pb-3 text-center">Items</th>
+                    <th className="pb-3">Ordered Items Details</th>
                     <th className="pb-3 text-right">Amount</th>
                     <th className="pb-3 text-center">Status</th>
                     <th className="pb-3 text-right font-extrabold">Fulfillment</th>
@@ -1304,7 +1333,34 @@ export default function AdminPage() {
                         <td className="py-3.5 text-center font-medium">
                           {new Date(o.createdAt).toLocaleDateString('en-IN')}
                         </td>
-                        <td className="py-3.5 text-center font-medium">{totalQty} articles</td>
+                         <td className="py-3.5">
+                           <div className="space-y-3 min-w-[240px]">
+                             {o.items.map((item, idx) => {
+                                const currentStock = products.find(p => p.id === item.productId)?.stockQuantity ?? 0;
+                                return (
+                                  <div key={idx} className="flex items-start gap-2.5">
+                                    <img
+                                      src={item.image}
+                                      alt={item.name}
+                                      className="w-10 h-12 object-cover rounded-lg border border-black/5 flex-shrink-0"
+                                    />
+                                    <div className="text-[10px] leading-tight space-y-0.5">
+                                      <p className="font-extrabold text-black line-clamp-1">{item.name}</p>
+                                      <p className="text-black/50 font-bold">
+                                        {item.brand} &nbsp;|&nbsp; Size: {item.size}
+                                      </p>
+                                      <p className="text-black/70 font-extrabold">
+                                        {item.quantity} x ₹{item.price.toLocaleString('en-IN')}
+                                      </p>
+                                      <p className="text-black/50 font-bold">
+                                        Stock: <span className={`font-extrabold ${currentStock === 0 ? 'text-rose-700' : currentStock <= 5 ? 'text-amber-700' : 'text-black'}`}>{currentStock} available</span>
+                                      </p>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                           </div>
+                         </td>
                         <td className="py-3.5 text-right font-extrabold text-black">₹{o.finalAmount.toLocaleString('en-IN')}</td>
                         <td className="py-3.5 text-center">
                           {(() => {
