@@ -11,6 +11,36 @@ import Link from 'next/link';
 import { getHexFromColorName, getColorsArray } from '@/lib/colors';
 import { motion, AnimatePresence } from 'framer-motion';
 
+
+function normalizeBrandName(brand: string): string {
+  if (!brand) return '';
+  const b = brand.trim().toLowerCase();
+  if (b === 'adidas') return 'Adidas';
+  if (b === 'puma') return 'Puma';
+  if (b === 'skechers') return 'Skechers';
+  if (b === 'new balance' || b === 'newbalance') return 'New Balance';
+  if (b === 'sega') return 'Sega';
+  if (b === 'nike') return 'Nike';
+  if (b === 'reebok') return 'Reebok';
+  if (b === 'under armour') return 'Under Armour';
+  if (b === 'jordan') return 'Jordan';
+  if (b === 'fila') return 'Fila';
+  if (b === 'asics') return 'Asics';
+  return brand.trim().charAt(0).toUpperCase() + brand.trim().slice(1);
+}
+
+function normalizeCategoryName(cat: string): string {
+  if (!cat) return '';
+  const c = cat.trim().toLowerCase();
+  if (c === 'footwear') return 'Footwear';
+  if (c === 'slippers') return 'Slippers';
+  if (c === 'apparel') return 'Apparel';
+  if (c === 'accessories') return 'Accessories';
+  if (c === 'sneakers') return 'Sneakers';
+  if (c === 'air saga') return 'Air Saga';
+  return cat.trim().charAt(0).toUpperCase() + cat.trim().slice(1);
+}
+
 export default function ShopClient() {
   const { addToCart } = useCart();
   const { t, tp, tc } = useLanguage();
@@ -65,8 +95,8 @@ export default function ShopClient() {
   }, [searchParams]);
 
   // Extract unique options for filters
-  const categories = ['All', ...new Set(products.map((p) => p.category))];
-  const brands = ['All', ...new Set(products.map((p) => p.brand))];
+  const categories = ['All', ...new Set(products.map((p) => normalizeCategoryName(p.category)))];
+  const brands = ['All', ...new Set(products.map((p) => normalizeBrandName(p.brand)))];
   const clothesOrder = ['S', 'M', 'L', 'XL', 'XXL'];
   const allSizes = [
     'All',
@@ -109,11 +139,11 @@ export default function ShopClient() {
     }
 
     if (selectedCategory !== 'All') {
-      result = result.filter((p) => p.category === selectedCategory);
+      result = result.filter((p) => normalizeCategoryName(p.category) === selectedCategory);
     }
 
     if (selectedBrand !== 'All') {
-      result = result.filter((p) => p.brand === selectedBrand);
+      result = result.filter((p) => normalizeBrandName(p.brand) === selectedBrand);
     }
 
     if (selectedSize !== 'All') {
@@ -344,8 +374,8 @@ export default function ShopClient() {
                   <div className="p-3 sm:p-5 space-y-3 flex-1 flex flex-col justify-between">
                     <div>
                       <div className="flex justify-between items-center text-[9px] uppercase tracking-widest text-black/45 font-bold">
-                        <span>{product.brand}</span>
-                        <span>{tc(product.category)}</span>
+                        <span>{normalizeBrandName(product.brand)}</span>
+                        <span>{tc(normalizeCategoryName(product.category))}</span>
                       </div>
                       <div className="flex items-center justify-between gap-2 mt-1">
                         <Link
