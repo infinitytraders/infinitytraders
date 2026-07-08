@@ -638,6 +638,20 @@ export async function createOrderAction(orderData: {
   paymentMethod: 'COD' | 'RAZORPAY';
 }): Promise<{ success: boolean; order?: Order; error?: string }> {
   try {
+    // Validate stock for all items before accepting order
+    for (const item of orderData.items) {
+      const dbProduct = await db.getProductById(item.productId);
+      if (!dbProduct) {
+        return { success: false, error: `Product not found: ${item.name}` };
+      }
+      if (dbProduct.stockQuantity === 0) {
+        return { success: false, error: `Product "${dbProduct.name}" is out of stock.` };
+      }
+      if (dbProduct.stockQuantity < item.quantity) {
+        return { success: false, error: `Insufficient stock for "${dbProduct.name}". Only ${dbProduct.stockQuantity} items available.` };
+      }
+    }
+
     const cookieStore = await cookies();
     let user = await getSessionUser();
 

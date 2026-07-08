@@ -91,13 +91,27 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addToCart = (product: Product, quantity: number, size: string | number) => {
+    // Check if the product has sufficient stock
+    if (product.stockQuantity === 0) {
+      alert("This product is currently out of stock.");
+      return;
+    }
+
     const existingIndex = cart.findIndex(
       item => item.product.id === product.id && item.size === size
     );
 
     let newCart = [...cart];
+    const currentQtyInCart = existingIndex > -1 ? cart[existingIndex].quantity : 0;
+    const requestedTotal = currentQtyInCart + quantity;
+
+    if (requestedTotal > product.stockQuantity) {
+      alert(`Cannot add more items. Only ${product.stockQuantity} items are available in stock.`);
+      return;
+    }
+
     if (existingIndex > -1) {
-      newCart[existingIndex].quantity += quantity;
+      newCart[existingIndex].quantity = requestedTotal;
     } else {
       newCart.push({ product, quantity, size });
     }
@@ -116,6 +130,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       removeFromCart(productId, size);
       return;
     }
+
+    const item = cart.find(i => i.product.id === productId && i.size === size);
+    if (item && quantity > item.product.stockQuantity) {
+      alert(`Cannot update quantity. Only ${item.product.stockQuantity} items are available in stock.`);
+      return;
+    }
+
     const newCart = cart.map(item =>
       item.product.id === productId && item.size === size ? { ...item, quantity } : item
     );
@@ -130,6 +151,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addCompleteGearCombo = (prod1: Product, prod3: Product, prod4: Product) => {
+    // If any item in the combo is out of stock, reject adding
+    if (prod1.stockQuantity === 0 || prod3.stockQuantity === 0 || prod4.stockQuantity === 0) {
+      alert("One or more items in this combo deal are currently out of stock.");
+      return;
+    }
     // Clear cart first to construct personalized combo cart
     const newCart = [
       { product: prod1, quantity: 1, size: 9 },  // Nike shoe
