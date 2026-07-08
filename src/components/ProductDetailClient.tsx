@@ -195,31 +195,7 @@ export default function ProductDetailClient({ product, recommendations, initialU
             </p>
           </div>
 
-          {/* Color Display Swatch */}
-          {product.color && (
-            <div className="space-y-2 pb-2">
-              <span className="text-[10px] sm:text-xs tracking-wider uppercase font-extrabold text-black/85 block">
-                {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'रंग' : 'Color'}
-              </span>
-              <div className="flex items-center gap-2.5">
-                <div className="flex items-center gap-1.5">
-                  {getColorsArray(product.color).map((col, idx) => (
-                    <span
-                      key={idx}
-                      className="w-5 h-5 rounded-full border border-black/10 inline-block shadow-inner"
-                      style={{
-                        backgroundColor: col.startsWith('#') ? col : getHexFromColorName(col)
-                      }}
-                      title={col}
-                    />
-                  ))}
-                </div>
-                <span className="text-[11px] sm:text-xs font-bold text-black/60 capitalize">
-                  {getColorsArray(product.color).join(' / ')}
-                </span>
-              </div>
-            </div>
-          )}
+
 
           {/* Sizing Grid (Indian sizes) */}
           {['Footwear', 'Slippers', 'Running Shoes', 'Air Sega', 'Air Saga', 'Sneakers'].includes(product.category) ? (
@@ -473,10 +449,7 @@ export default function ProductDetailClient({ product, recommendations, initialU
                   <td className="py-3.5 font-bold text-black/40">{t('prod.specs.material')}</td>
                   <td className="py-3.5 font-medium">{tp(product.id, 'material', product.material)}</td>
                 </tr>
-                <tr className="border-b border-black/5">
-                  <td className="py-3.5 font-bold text-black/40">{t('prod.specs.color')}</td>
-                  <td className="py-3.5 font-medium">{tp(product.id, 'color', product.color)}</td>
-                </tr>
+
                 <tr className="border-b border-black/5">
                   <td className="py-3.5 font-bold text-black/40">{t('prod.specs.width')}</td>
                   <td className="py-3.5 font-medium">

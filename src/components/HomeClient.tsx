@@ -1049,20 +1049,6 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
                     >
                       {product.name}
                     </Link>
-                    {product.color && (
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        {getColorsArray(product.color).map((col, idx) => (
-                          <span
-                            key={idx}
-                            className="w-3 h-3 rounded-full border border-black/10 inline-block shadow-inner"
-                            style={{
-                              backgroundColor: col.startsWith('#') ? col : getHexFromColorName(col)
-                            }}
-                            title={col}
-                          />
-                        ))}
-                      </div>
-                    )}
                   </div>
                   <p className="hidden sm:block text-xs text-black/60 font-light line-clamp-2 mt-1.5 leading-relaxed">
                     {product.description}
