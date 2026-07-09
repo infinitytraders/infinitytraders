@@ -117,9 +117,27 @@ export default function CheckoutPage() {
             const data = res.data;
             setMapAddressText(data.display_name);
             const addr = data.address || {};
-            const road = addr.road || addr.suburb || addr.neighbourhood || addr.city_district || '';
-            const roadDetail = addr.house_number ? `${addr.house_number}, ${road}` : road;
-            const fetchedStreet = roadDetail || data.display_name.split(',')[0] || '';
+            
+            const cityVal = (addr.city || addr.town || addr.village || addr.county || '').toLowerCase();
+            const stateVal = (addr.state || '').toLowerCase();
+            const countryVal = (addr.country || '').toLowerCase();
+            const postcodeVal = (addr.postcode || '').replace(/\D/g, '');
+
+            const parts = data.display_name.split(',');
+            const streetParts = parts.filter((part: string) => {
+              const cleanPart = part.trim().toLowerCase();
+              if (!cleanPart) return false;
+              if (cleanPart === countryVal) return false;
+              if (cleanPart === stateVal) return false;
+              if (cleanPart === cityVal) return false;
+              if (cleanPart.replace(/\D/g, '') === postcodeVal && postcodeVal !== '') return false;
+              return true;
+            });
+
+            const fetchedStreet = streetParts.length > 0 
+              ? streetParts.map((p: string) => p.trim()).join(', ') 
+              : (addr.road || data.display_name.split(',')[0]);
+
             const fetchedCity = addr.city || addr.town || addr.village || addr.county || '';
             const fetchedState = addr.state || '';
             const fetchedPincode = addr.postcode || '';
@@ -193,10 +211,28 @@ export default function CheckoutPage() {
           if (res.success && res.data) {
             const data = res.data;
             const addr = data.address || {};
-            const road = addr.road || addr.suburb || addr.neighbourhood || addr.city_district || '';
-            const roadDetail = addr.house_number ? `${addr.house_number}, ${road}` : road;
             
-            setStreet(roadDetail || data.display_name.split(',')[0] || '');
+            const cityVal = (addr.city || addr.town || addr.village || addr.county || '').toLowerCase();
+            const stateVal = (addr.state || '').toLowerCase();
+            const countryVal = (addr.country || '').toLowerCase();
+            const postcodeVal = (addr.postcode || '').replace(/\D/g, '');
+
+            const parts = data.display_name.split(',');
+            const streetParts = parts.filter((part: string) => {
+              const cleanPart = part.trim().toLowerCase();
+              if (!cleanPart) return false;
+              if (cleanPart === countryVal) return false;
+              if (cleanPart === stateVal) return false;
+              if (cleanPart === cityVal) return false;
+              if (cleanPart.replace(/\D/g, '') === postcodeVal && postcodeVal !== '') return false;
+              return true;
+            });
+
+            const fetchedStreet = streetParts.length > 0 
+              ? streetParts.map((p: string) => p.trim()).join(', ') 
+              : (addr.road || data.display_name.split(',')[0]);
+            
+            setStreet(fetchedStreet);
             setCity(addr.city || addr.town || addr.village || addr.county || '');
             setState(addr.state || '');
             if (addr.postcode) {
@@ -277,10 +313,27 @@ export default function CheckoutPage() {
     setShowSuggestions(false);
 
     const addr = item.address || {};
-    const road = addr.road || addr.suburb || addr.neighbourhood || addr.city_district || '';
-    const roadDetail = addr.house_number ? `${addr.house_number}, ${road}` : road;
+    const cityVal = (addr.city || addr.town || addr.village || addr.county || '').toLowerCase();
+    const stateVal = (addr.state || '').toLowerCase();
+    const countryVal = (addr.country || '').toLowerCase();
+    const postcodeVal = (addr.postcode || '').replace(/\D/g, '');
 
-    setStreet(roadDetail || item.display_name.split(',')[0] || item.display_name);
+    const parts = item.display_name.split(',');
+    const streetParts = parts.filter((part: string) => {
+      const cleanPart = part.trim().toLowerCase();
+      if (!cleanPart) return false;
+      if (cleanPart === countryVal) return false;
+      if (cleanPart === stateVal) return false;
+      if (cleanPart === cityVal) return false;
+      if (cleanPart.replace(/\D/g, '') === postcodeVal && postcodeVal !== '') return false;
+      return true;
+    });
+
+    const fullStreetAddress = streetParts.length > 0 
+      ? streetParts.map((p: string) => p.trim()).join(', ') 
+      : (addr.road || item.display_name.split(',')[0]);
+
+    setStreet(fullStreetAddress);
     setCity(addr.city || addr.town || addr.village || addr.county || '');
     setState(addr.state || '');
     if (addr.postcode) {
@@ -745,6 +798,7 @@ export default function CheckoutPage() {
               <div className="md:col-span-6 space-y-1.5 relative">
                 <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'फ्लैट/इमारत, सड़क का पता' : 'Flat/Building, Street Address'}</label>
                 <input
+                  id="checkoutStreetAddressInput"
                   type="text"
                   required
                   placeholder={t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सड़क का पता दर्ज करें' : 'Enter street address'}
@@ -769,7 +823,7 @@ export default function CheckoutPage() {
 
                 {/* Suggestions Dropdown */}
                 {showSuggestions && (addressSuggestions.length > 0 || isFetchingSuggestions) && (
-                  <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-black/10 rounded-2xl shadow-xl z-55 max-h-60 overflow-y-auto divide-y divide-black/5 animate-fadeIn">
+                  <div style={{ zIndex: 9999 }} className="absolute left-0 right-0 top-full mt-1 bg-white border border-black/10 rounded-2xl shadow-xl max-h-60 overflow-y-auto divide-y divide-black/5 animate-fadeIn">
                     {isFetchingSuggestions && addressSuggestions.length === 0 ? (
                       <div className="p-3 text-[10px] text-black/50 font-bold uppercase tracking-wider text-center flex items-center justify-center gap-2">
                         <div className="w-3.5 h-3.5 border border-black border-t-transparent rounded-full animate-spin" />
