@@ -1943,4 +1943,48 @@ export async function verifyGoogleOnboardingOtpAction(
   }
 }
 
+export async function nominatimSearchAction(query: string) {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+        query
+      )}&addressdetails=1&countrycodes=in&limit=5`,
+      {
+        headers: {
+          'User-Agent': 'InfinityTraders/1.0 (contact@infinitytraders.shop)',
+        },
+      }
+    );
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    const data = await res.json();
+    return { success: true, data };
+  } catch (err: any) {
+    console.error('nominatimSearchAction error:', err);
+    return { success: false, error: err.message || 'Geocoding search failed.' };
+  }
+}
+
+export async function nominatimReverseGeocodeAction(lat: number, lon: number) {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`,
+      {
+        headers: {
+          'User-Agent': 'InfinityTraders/1.0 (contact@infinitytraders.shop)',
+        },
+      }
+    );
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    const data = await res.json();
+    return { success: true, data };
+  } catch (err: any) {
+    console.error('nominatimReverseGeocodeAction error:', err);
+    return { success: false, error: err.message || 'Reverse geocoding failed.' };
+  }
+}
+
 

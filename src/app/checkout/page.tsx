@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
-import { getSessionUser, createOrderAction, sendCheckoutMobileOtpAction, verifyCheckoutMobileOtpAction } from '@/app/actions';
+import { getSessionUser, createOrderAction, sendCheckoutMobileOtpAction, verifyCheckoutMobileOtpAction, nominatimSearchAction, nominatimReverseGeocodeAction } from '@/app/actions';
 import { User, Order } from '@/lib/db';
 import { useLanguage } from '@/context/LanguageContext';
 import { ShoppingBag, CreditCard, CheckCircle2, AlertTriangle, Truck, Sparkles, Printer, MapPin, Navigation } from 'lucide-react';
@@ -112,9 +112,9 @@ export default function CheckoutPage() {
         setMapAddressLoading(true);
         setTempCoords({ lat, lon });
         try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`);
-          const data = await res.json();
-          if (data && data.display_name) {
+          const res = await nominatimReverseGeocodeAction(lat, lon);
+          if (res.success && res.data) {
+            const data = res.data;
             setMapAddressText(data.display_name);
             const addr = data.address || {};
             const road = addr.road || addr.suburb || addr.neighbourhood || addr.city_district || '';
@@ -189,10 +189,10 @@ export default function CheckoutPage() {
       async (position) => {
         const { latitude, longitude } = position.coords;
         try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`);
-          const data = await res.json();
-          if (data && data.address) {
-            const addr = data.address;
+          const res = await nominatimReverseGeocodeAction(latitude, longitude);
+          if (res.success && res.data) {
+            const data = res.data;
+            const addr = data.address || {};
             const road = addr.road || addr.suburb || addr.neighbourhood || addr.city_district || '';
             const roadDetail = addr.house_number ? `${addr.house_number}, ${road}` : road;
             
@@ -240,14 +240,9 @@ export default function CheckoutPage() {
       const fetchSuggestions = async () => {
         setIsFetchingSuggestions(true);
         try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-              street
-            )}&addressdetails=1&countrycodes=in&limit=5`
-          );
-          const data = await res.json();
-          if (data) {
-            setAddressSuggestions(data);
+          const res = await nominatimSearchAction(street);
+          if (res.success && res.data) {
+            setAddressSuggestions(res.data);
           }
         } catch (err) {
           console.error('Error fetching address suggestions', err);
