@@ -873,26 +873,17 @@ export default function AccountClient() {
                   </form>
 
                   {/* OR divider & Google Sign-In */}
-                  {!isRegister && !otpSent && (
+                  {!otpSent && !regOtpSent && (
                     <div className="space-y-4 pt-4 border-t border-black/[0.04] mt-4">
                       <div className="relative flex py-2 items-center">
                         <div className="flex-grow border-t border-black/5"></div>
-                        <span className="flex-grow mx-4 text-[9px] text-black/40 font-bold uppercase tracking-wider text-center">or sign in with</span>
+                        <span className="flex-grow mx-4 text-[9px] text-black/40 font-bold uppercase tracking-wider text-center">
+                          {isRegister ? 'or register with' : 'or sign in with'}
+                        </span>
                         <div className="flex-grow border-t border-black/5"></div>
                       </div>
                       
                       <div id="googleSignInButton" className="w-full min-h-[44px] flex justify-center"></div>
-                      
-                      {/* Demo/Sandbox fallback simulation tool */}
-                      <div className="text-center">
-                        <button
-                          type="button"
-                          onClick={() => handleGoogleCredentialResponse({ credential: 'mock_token_johndoe' })}
-                          className="text-[9px] text-black/35 hover:text-black/60 font-medium uppercase tracking-wider transition-colors hover:underline"
-                        >
-                          💡 Demo: Simulate Google Sign-In
-                        </button>
-                      </div>
                     </div>
                   )}
 
