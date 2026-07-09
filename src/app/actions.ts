@@ -1696,3 +1696,251 @@ export async function deleteUserAction(
 }
 
 
+// --- GOOGLE SIGN-IN & MOBILE ONBOARDING ACTIONS ---
+
+export async function signTempOnboardingToken(data: { name: string; email: string; existingUserId?: string }): Promise<string> {
+  const payload = `${data.name}|${data.email}|${data.existingUserId || ''}`;
+  const hmac = crypto.createHmac('sha256', SESSION_SECRET);
+  hmac.update(payload);
+  const signature = hmac.digest('hex');
+  return JSON.stringify({ data, signature });
+}
+
+export async function verifyTempOnboardingToken(tokenValue: string): Promise<{ name: string; email: string; existingUserId?: string } | null> {
+  try {
+    const parsed = JSON.parse(tokenValue);
+    const { name, email, existingUserId } = parsed.data;
+    const signature = parsed.signature;
+    const payload = `${name}|${email}|${existingUserId || ''}`;
+    const hmac = crypto.createHmac('sha256', SESSION_SECRET);
+    hmac.update(payload);
+    const expectedSignature = hmac.digest('hex');
+    if (signature === expectedSignature) {
+      return parsed.data;
+    }
+  } catch (err) {
+    // Fail silently
+  }
+  return null;
+}
+
+export async function googleLoginAction(idToken: string): Promise<{
+  success: boolean;
+  needsMobile?: boolean;
+  tempUserToken?: string;
+  user?: User;
+  error?: string;
+}> {
+  try {
+    // For mock testing or fallback sandbox mode
+    const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'mock-client-id';
+    
+    // 1. Fetch token validation from Google OAuth endpoint
+    // If it's a mock token for sandbox simulation, parse it without calling API
+    let email = '';
+    let name = '';
+    
+    if (idToken.startsWith('mock_token_')) {
+      email = idToken.replace('mock_token_', '') + '@gmail.com';
+      name = email.split('@')[0];
+    } else {
+      const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`);
+      if (!response.ok) {
+        return { success: false, error: 'Invalid Google Sign-In credentials.' };
+      }
+      const payload = await response.json();
+      email = payload.email?.toLowerCase();
+      name = payload.name || email.split('@')[0];
+    }
+
+    if (!email) {
+      return { success: false, error: 'Google Account email address is required.' };
+    }
+
+    // 2. Check if user already exists
+    let existingUser = await db.getUserByEmail(email);
+
+    if (existingUser) {
+      // Check if user has a mobile number
+      if (existingUser.mobile && existingUser.mobile.trim().length > 0) {
+        // Log them in
+        const cookieStore = await cookies();
+        const sessionData = { id: existingUser.id, email: existingUser.email, name: existingUser.name, role: existingUser.role };
+        cookieStore.set('infinity_session', await signSession(sessionData), {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: 60 * 60 * 24 * 7, // 1 week
+          path: '/'
+        });
+
+        // Audit Log
+        await db.createAuditLog(
+          existingUser.id,
+          existingUser.email,
+          'USER_GOOGLE_LOGIN',
+          `Logged in successfully via Google Sign-In.`
+        );
+
+        return { success: true, user: existingUser };
+      } else {
+        // User exists but has no mobile number yet
+        const tempUserToken = await signTempOnboardingToken({
+          name: existingUser.name,
+          email: existingUser.email,
+          existingUserId: existingUser.id
+        });
+        return { success: true, needsMobile: true, tempUserToken };
+      }
+    } else {
+      // New user registration required
+      const tempUserToken = await signTempOnboardingToken({
+        name,
+        email
+      });
+      return { success: true, needsMobile: true, tempUserToken };
+    }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Google authentication failed.' };
+  }
+}
+
+export async function sendGoogleOnboardingOtpAction(
+  tempToken: string,
+  mobile: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // 1. Verify token
+    const tokenData = await verifyTempOnboardingToken(tempToken);
+    if (!tokenData) {
+      return { success: false, error: 'Onboarding session expired. Please sign in with Google again.' };
+    }
+
+    const sanitizedMobile = mobile.replace(/\D/g, '');
+    if (sanitizedMobile.length !== 10) {
+      return { success: false, error: 'Please enter a valid 10-digit mobile number.' };
+    }
+
+    // 2. Check if mobile already exists in database
+    const existingMobile = await db.getUserByMobile(sanitizedMobile);
+    if (existingMobile) {
+      return { success: false, error: 'This mobile number is already registered to another account.' };
+    }
+
+    // 3. Send SMS OTP
+    const verificationId = await sendSmsOtp(sanitizedMobile);
+    if (!verificationId) {
+      return { success: false, error: 'Failed to send SMS verification code.' };
+    }
+
+    const cookieStore = await cookies();
+    cookieStore.set('infinity_sms_google_verification', JSON.stringify({
+      mobile: sanitizedMobile,
+      verificationId,
+      expires: Date.now() + 5 * 60 * 1000
+    }), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 5,
+      path: '/'
+    });
+
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to send OTP.' };
+  }
+}
+
+export async function verifyGoogleOnboardingOtpAction(
+  tempToken: string,
+  mobile: string,
+  code: string
+): Promise<{ success: boolean; user?: User; error?: string }> {
+  try {
+    // 1. Verify token
+    const tokenData = await verifyTempOnboardingToken(tempToken);
+    if (!tokenData) {
+      return { success: false, error: 'Onboarding session expired. Please sign in with Google again.' };
+    }
+
+    const sanitizedMobile = mobile.replace(/\D/g, '');
+    const cookieStore = await cookies();
+    const storedCookie = cookieStore.get('infinity_sms_google_verification');
+    if (!storedCookie) {
+      return { success: false, error: 'No active verification session. Please request a new OTP.' };
+    }
+
+    const { mobile: savedMobile, verificationId, expires } = JSON.parse(storedCookie.value);
+    if (savedMobile !== sanitizedMobile) {
+      return { success: false, error: 'Mobile number mismatch. Please request a new code.' };
+    }
+
+    if (Date.now() > expires) {
+      cookieStore.delete('infinity_sms_google_verification');
+      return { success: false, error: 'Verification code expired.' };
+    }
+
+    // 2. Verify Code
+    const isVerified = await verifySmsOtp(verificationId, code);
+    if (!isVerified) {
+      return { success: false, error: 'Invalid verification code.' };
+    }
+
+    // Clear verification cookie
+    cookieStore.delete('infinity_sms_google_verification');
+
+    let finalUser: User;
+
+    if (tokenData.existingUserId) {
+      // User already exists, update their mobile number
+      const updated = await db.updateUser(tokenData.existingUserId, { mobile: sanitizedMobile });
+      if (!updated) return { success: false, error: 'User account not found.' };
+      finalUser = updated;
+
+      await db.createAuditLog(
+        finalUser.id,
+        finalUser.email,
+        'USER_GOOGLE_MOBILE_ONBOARD',
+        `Linked mobile number ${sanitizedMobile} to Google account.`
+      );
+    } else {
+      // Auto-create new user
+      const tempPassword = `google_${crypto.randomBytes(4).toString('hex')}`;
+      finalUser = await db.createUser({
+        name: tokenData.name,
+        email: tokenData.email,
+        mobile: sanitizedMobile,
+        passwordHash: tempPassword,
+        role: 'CUSTOMER'
+      });
+
+      await db.createAuditLog(
+        finalUser.id,
+        finalUser.email,
+        'USER_GOOGLE_REGISTER',
+        `Registered successfully via Google Sign-In with verified mobile ${sanitizedMobile}.`
+      );
+
+      // Send Welcome email
+      try {
+        await sendGuestWelcomeEmail(finalUser.email, finalUser.name, tempPassword);
+      } catch (welcomeErr) {
+        console.error('Failed to send guest welcome email:', welcomeErr);
+      }
+    }
+
+    // Log the user in
+    const sessionData = { id: finalUser.id, email: finalUser.email, name: finalUser.name, role: finalUser.role };
+    cookieStore.set('infinity_session', await signSession(sessionData), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 * 7, // 1 week
+      path: '/'
+    });
+
+    return { success: true, user: finalUser };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to verify OTP.' };
+  }
+}
+
+

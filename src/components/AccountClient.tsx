@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getSessionUser, loginAction, registerAction, getOrdersAction, getProductsAction, sendOtpAction, verifyOtpAction, cancelOrderAction, updateProfileAction, sendRegistrationOtpAction, sendProfileEmailUpdateOtpAction, sendRegistrationMobileOtpAction, verifyRegistrationMobileOtpAction, sendProfileMobileUpdateOtpAction } from '@/app/actions';
+import { getSessionUser, loginAction, registerAction, getOrdersAction, getProductsAction, sendOtpAction, verifyOtpAction, cancelOrderAction, updateProfileAction, sendRegistrationOtpAction, sendProfileEmailUpdateOtpAction, sendRegistrationMobileOtpAction, verifyRegistrationMobileOtpAction, sendProfileMobileUpdateOtpAction, googleLoginAction, sendGoogleOnboardingOtpAction, verifyGoogleOnboardingOtpAction } from '@/app/actions';
 import type { User, Order, Product } from '@/lib/db';
 import { Star, User as UserIcon, Package, Heart, Eye, EyeOff, LogOut, Plus, AlertCircle, FileText, CheckCircle2, ChevronRight, Edit2 } from 'lucide-react';
 import Link from 'next/link';
@@ -46,6 +46,120 @@ export default function AccountClient() {
   const [regSmsOtpSent, setRegSmsOtpSent] = useState(false);
   const [regSmsOtpCode, setRegSmsOtpCode] = useState('');
   const [verifyingReg, setVerifyingReg] = useState(false);
+  
+  // Google Auth Onboarding States
+  const [googleOnboardingToken, setGoogleOnboardingToken] = useState<string | null>(null);
+  const [googleMobile, setGoogleMobile] = useState('');
+  const [googleOtpSent, setGoogleOtpSent] = useState(false);
+  const [googleOtpCode, setGoogleOtpCode] = useState('');
+  const [googleError, setGoogleError] = useState('');
+  const [verifyingGoogleOnboard, setVerifyingGoogleOnboard] = useState(false);
+
+  const handleGoogleCredentialResponse = async (response: any) => {
+    setAuthError('');
+    setGoogleError('');
+    try {
+      const res = await googleLoginAction(response.credential);
+      if (res.success) {
+        if (res.needsMobile && res.tempUserToken) {
+          setGoogleOnboardingToken(res.tempUserToken);
+          setGoogleOtpSent(false);
+          setGoogleMobile('');
+          setGoogleOtpCode('');
+        } else {
+          handleAuthSuccess();
+        }
+      } else {
+        setAuthError(res.error || 'Google Sign-In failed.');
+      }
+    } catch (err: any) {
+      setAuthError(err.message || 'Google Sign-In failed.');
+    }
+  };
+
+  const handleGoogleOnboardingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!googleOnboardingToken) return;
+    setGoogleError('');
+
+    try {
+      const mobileClean = googleMobile.replace(/\D/g, '');
+      if (mobileClean.length !== 10) {
+        setGoogleError('Please enter a valid 10-digit mobile number.');
+        return;
+      }
+
+      if (!googleOtpSent) {
+        setVerifyingGoogleOnboard(true);
+        const res = await sendGoogleOnboardingOtpAction(googleOnboardingToken, mobileClean);
+        setVerifyingGoogleOnboard(false);
+        if (res.success) {
+          setGoogleOtpSent(true);
+          setGoogleError('');
+        } else {
+          setGoogleError(res.error || 'Failed to send SMS verification OTP.');
+        }
+        return;
+      }
+
+      if (!googleOtpCode || googleOtpCode.trim().length !== 6) {
+        setGoogleError('Please enter the 6-digit verification code.');
+        return;
+      }
+
+      setVerifyingGoogleOnboard(true);
+      const res = await verifyGoogleOnboardingOtpAction(
+        googleOnboardingToken,
+        mobileClean,
+        googleOtpCode
+      );
+      setVerifyingGoogleOnboard(false);
+
+      if (res.success) {
+        alert('Welcome! Your phone number has been verified.');
+        handleAuthSuccess();
+      } else {
+        setGoogleError(res.error || 'Failed to verify OTP.');
+      }
+    } catch (err: any) {
+      setGoogleError(err.message || 'Verification failed.');
+      setVerifyingGoogleOnboard(false);
+    }
+  };
+
+  useEffect(() => {
+    const initGoogle = () => {
+      if (typeof window !== 'undefined' && (window as any).google) {
+        try {
+          (window as any).google.accounts.id.initialize({
+            client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'mock-client-id',
+            callback: handleGoogleCredentialResponse,
+          });
+          
+          const signInBtnEl = document.getElementById('googleSignInButton');
+          if (signInBtnEl) {
+            (window as any).google.accounts.id.renderButton(
+              signInBtnEl,
+              { theme: 'outline', size: 'large', width: '100%' }
+            );
+          }
+        } catch (err) {
+          console.error('Failed to initialize Google Sign-In:', err);
+        }
+      }
+    };
+
+    if (!user) {
+      initGoogle();
+      const interval = setInterval(() => {
+        if ((window as any).google) {
+          initGoogle();
+          clearInterval(interval);
+        }
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [isRegister, user, googleOnboardingToken]);
   
   // Profile edit states
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -403,56 +517,42 @@ export default function AccountClient() {
           {/* Right Column: Portal Form */}
           <div className="col-span-12 md:col-span-7 p-8 sm:p-12 flex flex-col justify-center bg-[#faf9f5]/20">
             <div className="space-y-6">
-              {/* Header Title */}
-              <div className="space-y-1 text-left">
-                {/* Mobile-only logo */}
-                <div className="md:hidden flex items-center gap-2 mb-4 select-none">
-                  <svg
-                    className="w-8 h-8 text-black"
-                    viewBox="0 0 100 100"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M30 35 C15 35 15 65 30 65 C45 65 55 35 70 35 C85 35 85 65 70 65 C55 65 45 35 30 35 Z"
-                      stroke="currentColor"
-                      strokeWidth="12"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      fill="none"
-                    />
-                  </svg>
-                  <div className="flex flex-col leading-none">
-                    <span className="text-[12px] font-extrabold tracking-[0.2em] uppercase">INFINITY</span>
-                    <span className="text-[8px] font-light tracking-[0.25em] uppercase text-black/60 mt-0.5">TRADERS</span>
+              {googleOnboardingToken ? (
+                <div className="space-y-6 animate-fadeIn">
+                  <div className="space-y-1 text-left">
+                    <span className="text-[9px] uppercase tracking-[0.35em] text-blue-600 font-extrabold block">Verification Required</span>
+                    <h1 className="text-3xl font-black tracking-wider uppercase text-black">
+                      Verify Mobile
+                    </h1>
+                    <p className="text-xs text-black/50 font-normal leading-relaxed">
+                      Just one last step! Please verify your phone number to complete your Google Sign-In setup.
+                    </p>
                   </div>
-                </div>
 
-                <span className="text-[9px] uppercase tracking-[0.35em] text-black/45 font-extrabold block">Member Panel</span>
-                <h1 className="text-3xl font-black tracking-wider uppercase text-black">
-                  {isRegister ? 'Register' : 'Sign In'}
-                </h1>
-                <p className="text-xs text-black/50 font-normal leading-relaxed">
-                  {isRegister ? 'Create an account to track orders and save details.' : 'Access your purchases, billing addresses, and invoices.'}
-                </p>
-              </div>
+                  <form onSubmit={handleGoogleOnboardingSubmit} className="space-y-4">
+                    {googleError && (
+                      <div className="bg-red-500/5 border border-red-500/10 text-red-800 text-xs p-3.5 rounded-xl flex items-center gap-2 font-bold animate-shake">
+                        <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                        <span>{googleError}</span>
+                      </div>
+                    )}
 
-              {/* Form elements */}
-              <form onSubmit={handleAuthSubmit} className="space-y-4">
-                {authError && (
-                  <div className="bg-red-500/5 border border-red-500/10 text-red-800 text-xs p-3.5 rounded-xl flex items-center gap-2 font-bold">
-                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                    <span>{authError}</span>
-                  </div>
-                )}
-
-                {isRegister ? (
-                  regOtpSent ? (
-                    regSmsOtpSent ? (
-                      // REGISTER MOBILE SMS OTP VERIFICATION FIELD
+                    {!googleOtpSent ? (
+                      <div className="space-y-1.5 animate-fadeIn">
+                        <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Mobile Number</label>
+                        <input
+                          type="tel"
+                          required
+                          placeholder="Enter 10-digit phone number"
+                          value={googleMobile}
+                          onChange={(e) => setGoogleMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                          className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-semibold"
+                        />
+                      </div>
+                    ) : (
                       <div className="space-y-4 animate-fadeIn">
                         <p className="text-xs text-[#065f46] bg-emerald-50 border border-emerald-100 rounded-xl p-3.5 font-semibold leading-relaxed">
-                          Email verified! Now we have sent a 6-digit SMS verification code to your mobile <strong className="font-extrabold">+91{regMobile}</strong>. Please enter it below.
+                          OTP Sent! Enter the 6-digit code sent to your phone <strong className="font-extrabold">+91{googleMobile}</strong>.
                         </p>
                         <div className="space-y-1.5">
                           <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">SMS Verification Code (OTP)</label>
@@ -460,241 +560,359 @@ export default function AccountClient() {
                             type="text"
                             required
                             maxLength={6}
-                            placeholder="Enter 6-digit SMS OTP"
-                            value={regSmsOtpCode}
-                            onChange={(e) => setRegSmsOtpCode(e.target.value.replace(/\D/g, ''))}
+                            placeholder="Enter 6-digit OTP"
+                            value={googleOtpCode}
+                            onChange={(e) => setGoogleOtpCode(e.target.value.replace(/\D/g, ''))}
                             className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-semibold text-center tracking-[0.25em]"
                           />
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setRegOtpSent(false);
-                            setRegSmsOtpSent(false);
-                            setRegOtpCode('');
-                            setRegSmsOtpCode('');
-                            setAuthError('');
-                          }}
-                          className="text-[9px] text-black/60 hover:text-black font-bold uppercase tracking-wider underline transition-colors block text-center w-full"
-                        >
-                          Go back and change registration details
-                        </button>
                       </div>
-                    ) : (
-                      // REGISTER EMAIL OTP VERIFICATION FIELD
-                      <div className="space-y-4 animate-fadeIn">
-                        <p className="text-xs text-[#065f46] bg-emerald-50 border border-emerald-100 rounded-xl p-3.5 font-semibold leading-relaxed">
-                          Verification code sent! We emailed a 6-digit OTP code to <strong className="font-extrabold">{regEmail}</strong>. Please enter it below to verify your email.
-                        </p>
-                        <div className="space-y-1.5">
-                          <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Email Verification Code (OTP)</label>
-                          <input
-                            type="text"
-                            required
-                            maxLength={6}
-                            placeholder="Enter 6-digit Email OTP"
-                            value={regOtpCode}
-                            onChange={(e) => setRegOtpCode(e.target.value.replace(/\D/g, ''))}
-                            className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-semibold text-center tracking-[0.25em]"
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setRegOtpSent(false);
-                            setRegOtpCode('');
-                            setAuthError('');
-                          }}
-                          className="text-[9px] text-black/60 hover:text-black font-bold uppercase tracking-wider underline transition-colors block text-center w-full"
-                        >
-                          Wrong email? Go back and change details
-                        </button>
-                      </div>
-                    )
-                  ) : (
-                    // REGISTER FIELDS
-                    <div className="space-y-4">
-                      <div className="space-y-1.5">
-                        <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Full Name</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="Enter your full name"
-                          value={regName}
-                          onChange={(e) => setRegName(e.target.value)}
-                          className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-medium"
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={verifyingGoogleOnboard}
+                      className="w-full bg-black hover:bg-black/90 text-white font-extrabold text-xs uppercase tracking-widest py-3 rounded-xl transition-all shadow-xs hover:shadow-sm active:scale-[0.98] mt-2 disabled:opacity-50"
+                    >
+                      {verifyingGoogleOnboard
+                        ? 'Verifying...'
+                        : googleOtpSent
+                        ? 'Verify OTP & Finish'
+                        : 'Send OTP'}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setGoogleOnboardingToken(null);
+                        setGoogleOtpSent(false);
+                        setGoogleError('');
+                      }}
+                      className="text-[9px] text-black/60 hover:text-black font-bold uppercase tracking-wider underline transition-colors block text-center w-full mt-2"
+                    >
+                      Cancel and Go Back
+                    </button>
+                  </form>
+                </div>
+              ) : (
+                <>
+                  {/* Header Title */}
+                  <div className="space-y-1 text-left">
+                    {/* Mobile-only logo */}
+                    <div className="md:hidden flex items-center gap-2 mb-4 select-none">
+                      <svg
+                        className="w-8 h-8 text-black"
+                        viewBox="0 0 100 100"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M30 35 C15 35 15 65 30 65 C45 65 55 35 70 35 C85 35 85 65 70 65 C55 65 45 35 30 35 Z"
+                          stroke="currentColor"
+                          strokeWidth="12"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          fill="none"
                         />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Email Address</label>
-                        <input
-                          type="email"
-                          required
-                          placeholder="yourname@domain.shop"
-                          value={regEmail}
-                          onChange={(e) => setRegEmail(e.target.value)}
-                          className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-medium"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Mobile Number</label>
-                        <input
-                          type="tel"
-                          required
-                          pattern="[6-9][0-9]{9}"
-                          placeholder="10-digit Indian Mobile"
-                          value={regMobile}
-                          onChange={(e) => setRegMobile(e.target.value.replace(/\D/g, ''))}
-                          className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-medium"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Password</label>
-                        <div className="relative">
-                          <input
-                            type={showRegisterPassword ? "text" : "password"}
-                            required
-                            placeholder="Minimum 6 characters"
-                            value={regPassword}
-                            onChange={(e) => setRegPassword(e.target.value)}
-                            className="w-full bg-white border border-black/10 focus:border-black rounded-xl pl-4 pr-10 py-2.5 text-xs outline-none transition-all text-black font-medium"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowRegisterPassword(!showRegisterPassword)}
-                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-black/40 hover:text-black transition-colors"
-                          >
-                            {showRegisterPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                          </button>
-                        </div>
+                      </svg>
+                      <div className="flex flex-col leading-none">
+                        <span className="text-[12px] font-extrabold tracking-[0.2em] uppercase">INFINITY</span>
+                        <span className="text-[8px] font-light tracking-[0.25em] uppercase text-black/60 mt-0.5">TRADERS</span>
                       </div>
                     </div>
-                  )
-                ) : (
-                  // LOGIN FIELDS
-                  <div className="space-y-4">
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Email Address or Mobile</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="Enter registered email or mobile"
-                        value={identifier}
-                        onChange={(e) => setIdentifier(e.target.value)}
-                        className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-medium"
-                      />
-                    </div>
 
-                    {authMethod === 'password' ? (
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between items-center">
-                          <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Password</label>
-                          <button
-                            type="button"
-                            onClick={() => setAuthMethod('otp')}
-                            className="text-[9px] text-black/60 hover:text-black font-bold uppercase tracking-wider underline transition-colors"
-                          >
-                            OTP Login
-                          </button>
-                        </div>
-                        <div className="relative">
-                          <input
-                            type={showLoginPassword ? "text" : "password"}
-                            required
-                            placeholder="Enter password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full bg-white border border-black/10 focus:border-black rounded-xl pl-4 pr-10 py-2.5 text-xs outline-none transition-all text-black font-medium"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowLoginPassword(!showLoginPassword)}
-                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-black/40 hover:text-black transition-colors"
-                          >
-                            {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                          </button>
-                        </div>
+                    <span className="text-[9px] uppercase tracking-[0.35em] text-black/45 font-extrabold block">Member Panel</span>
+                    <h1 className="text-3xl font-black tracking-wider uppercase text-black">
+                      {isRegister ? 'Register' : 'Sign In'}
+                    </h1>
+                    <p className="text-xs text-black/50 font-normal leading-relaxed">
+                      {isRegister ? 'Create an account to track orders and save details.' : 'Access your purchases, billing addresses, and invoices.'}
+                    </p>
+                  </div>
+
+                  {/* Form elements */}
+                  <form onSubmit={handleAuthSubmit} className="space-y-4">
+                    {authError && (
+                      <div className="bg-red-500/5 border border-red-500/10 text-red-800 text-xs p-3.5 rounded-xl flex items-center gap-2 font-bold">
+                        <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                        <span>{authError}</span>
                       </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                          <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">OTP Verification</label>
-                          <button
-                            type="button"
-                            onClick={() => setAuthMethod('password')}
-                            className="text-[9px] text-black/60 hover:text-black font-bold uppercase tracking-wider underline transition-colors"
-                          >
-                            Password Login
-                          </button>
-                        </div>
+                    )}
 
-                        {otpSent ? (
-                          <div className="space-y-3">
+                    {isRegister ? (
+                      regOtpSent ? (
+                        regSmsOtpSent ? (
+                          // REGISTER MOBILE SMS OTP VERIFICATION FIELD
+                          <div className="space-y-4 animate-fadeIn">
+                            <p className="text-xs text-[#065f46] bg-emerald-50 border border-emerald-100 rounded-xl p-3.5 font-semibold leading-relaxed">
+                              Email verified! Now we have sent a 6-digit SMS verification code to your mobile <strong className="font-extrabold">+91{regMobile}</strong>. Please enter it below.
+                            </p>
+                            <div className="space-y-1.5">
+                              <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">SMS Verification Code (OTP)</label>
+                              <input
+                                type="text"
+                                required
+                                maxLength={6}
+                                placeholder="Enter 6-digit SMS OTP"
+                                value={regSmsOtpCode}
+                                onChange={(e) => setRegSmsOtpCode(e.target.value.replace(/\D/g, ''))}
+                                className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-semibold text-center tracking-[0.25em]"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setRegOtpSent(false);
+                                setRegSmsOtpSent(false);
+                                setRegOtpCode('');
+                                setRegSmsOtpCode('');
+                                setAuthError('');
+                              }}
+                              className="text-[9px] text-black/60 hover:text-black font-bold uppercase tracking-wider underline transition-colors block text-center w-full"
+                            >
+                              Go back and change registration details
+                            </button>
+                          </div>
+                        ) : (
+                          // REGISTER EMAIL OTP VERIFICATION FIELD
+                          <div className="space-y-4 animate-fadeIn">
+                            <p className="text-xs text-[#065f46] bg-emerald-50 border border-emerald-100 rounded-xl p-3.5 font-semibold leading-relaxed">
+                              Verification code sent! We emailed a 6-digit OTP code to <strong className="font-extrabold">{regEmail}</strong>. Please enter it below to verify your email.
+                            </p>
+                            <div className="space-y-1.5">
+                              <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Email Verification Code (OTP)</label>
+                              <input
+                                type="text"
+                                required
+                                maxLength={6}
+                                placeholder="Enter 6-digit Email OTP"
+                                value={regOtpCode}
+                                onChange={(e) => setRegOtpCode(e.target.value.replace(/\D/g, ''))}
+                                className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-semibold text-center tracking-[0.25em]"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setRegOtpSent(false);
+                                setRegOtpCode('');
+                                setAuthError('');
+                              }}
+                              className="text-[9px] text-black/60 hover:text-black font-bold uppercase tracking-wider underline transition-colors block text-center w-full"
+                            >
+                              Wrong email? Go back and change details
+                            </button>
+                          </div>
+                        )
+                      ) : (
+                        // REGISTER FIELDS
+                        <div className="space-y-4">
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Full Name</label>
                             <input
                               type="text"
                               required
-                              maxLength={6}
-                              placeholder="Enter 6-digit OTP"
-                              value={otpCode}
-                              onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                              className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-center text-xs font-black tracking-[0.25em] outline-none transition-all text-black"
+                              placeholder="Enter your full name"
+                              value={regName}
+                              onChange={(e) => setRegName(e.target.value)}
+                              className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-medium"
                             />
-                            <span className="text-[9px] text-emerald-800 bg-emerald-500/5 border border-emerald-500/10 p-2.5 rounded-lg text-center block font-bold">
-                              {identifier.includes('@') ? (
-                                `A 6-digit verification code has been sent to ${identifier}`
-                              ) : (
-                                <>
-                                  Demo OTP Code: <strong className="font-extrabold text-[10px]">123456</strong> sent to {identifier}
-                                </>
-                              )}
-                            </span>
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Email Address</label>
+                            <input
+                              type="email"
+                              required
+                              placeholder="yourname@domain.shop"
+                              value={regEmail}
+                              onChange={(e) => setRegEmail(e.target.value)}
+                              className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-medium"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Mobile Number</label>
+                            <input
+                              type="tel"
+                              required
+                              placeholder="Enter 10-digit number"
+                              value={regMobile}
+                              onChange={(e) => setRegMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                              className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-medium"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Password</label>
+                            <div className="relative">
+                              <input
+                                type={showRegisterPassword ? "text" : "password"}
+                                required
+                                placeholder="Minimum 6 characters"
+                                value={regPassword}
+                                onChange={(e) => setRegPassword(e.target.value)}
+                                className="w-full bg-white border border-black/10 focus:border-black rounded-xl pl-4 pr-10 py-2.5 text-xs outline-none transition-all text-black font-medium"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-black/40 hover:text-black transition-colors"
+                              >
+                                {showRegisterPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    ) : (
+                      // LOGIN FIELDS
+                      <div className="space-y-4">
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Email Address or Mobile</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Enter registered email or mobile"
+                            value={identifier}
+                            onChange={(e) => setIdentifier(e.target.value)}
+                            className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-xs outline-none transition-all text-black font-medium"
+                          />
+                        </div>
+
+                        {authMethod === 'password' ? (
+                          <div className="space-y-1.5">
+                            <div className="flex justify-between items-center">
+                              <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">Password</label>
+                              <button
+                                type="button"
+                                onClick={() => setAuthMethod('otp')}
+                                className="text-[9px] text-black/60 hover:text-black font-bold uppercase tracking-wider underline transition-colors"
+                              >
+                                OTP Login
+                              </button>
+                            </div>
+                            <div className="relative">
+                              <input
+                                type={showLoginPassword ? "text" : "password"}
+                                required
+                                placeholder="Enter password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full bg-white border border-black/10 focus:border-black rounded-xl pl-4 pr-10 py-2.5 text-xs outline-none transition-all text-black font-medium"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowLoginPassword(!showLoginPassword)}
+                                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-black/40 hover:text-black transition-colors"
+                              >
+                                {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                              </button>
+                            </div>
                           </div>
                         ) : (
-                          <span className="text-[9px] text-black/45 block font-medium leading-relaxed bg-black/5 px-3 py-2 rounded-lg">
-                            {identifier.includes('@') ? (
-                              `We will send a secure 6-digit verification code to your email address.`
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold block">OTP Verification</label>
+                              <button
+                                type="button"
+                                onClick={() => setAuthMethod('password')}
+                                className="text-[9px] text-black/60 hover:text-black font-bold uppercase tracking-wider underline transition-colors"
+                              >
+                                Password Login
+                              </button>
+                            </div>
+
+                            {otpSent ? (
+                              <div className="space-y-3">
+                                <input
+                                  type="text"
+                                  required
+                                  maxLength={6}
+                                  placeholder="Enter 6-digit OTP"
+                                  value={otpCode}
+                                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                                  className="w-full bg-white border border-black/10 focus:border-black rounded-xl px-4 py-2.5 text-center text-xs font-black tracking-[0.25em] outline-none transition-all text-black"
+                                />
+                                <span className="text-[9px] text-emerald-800 bg-emerald-500/5 border border-emerald-500/10 p-2.5 rounded-lg text-center block font-bold">
+                                  {identifier.includes('@') ? (
+                                    `A 6-digit verification code has been sent to ${identifier}`
+                                  ) : (
+                                    <>
+                                      Demo OTP Code: <strong className="font-extrabold text-[10px]">123456</strong> sent to {identifier}
+                                    </>
+                                  )}
+                                </span>
+                              </div>
                             ) : (
-                              "We will simulate sending a 6-digit verification code to your mobile."
+                              <span className="text-[9px] text-black/45 block font-medium leading-relaxed bg-black/5 px-3 py-2 rounded-lg">
+                                {identifier.includes('@') ? (
+                                  `We will send a secure 6-digit verification code to your email address.`
+                                ) : (
+                                  "We will simulate sending a 6-digit verification code to your mobile."
+                                )}
+                              </span>
                             )}
-                          </span>
+                          </div>
                         )}
                       </div>
                     )}
+
+                    <button
+                      type="submit"
+                      disabled={verifyingReg}
+                      className="w-full bg-black hover:bg-black/90 text-white font-extrabold text-xs uppercase tracking-widest py-3 rounded-xl transition-all shadow-xs hover:shadow-sm active:scale-[0.98] mt-4 disabled:opacity-50"
+                    >
+                      {verifyingReg 
+                        ? 'Processing...' 
+                        : isRegister 
+                        ? (regOtpSent ? 'Verify & Register' : 'Register') 
+                        : otpSent 
+                        ? 'Verify & Login' 
+                        : authMethod === 'otp' 
+                        ? 'Request OTP' 
+                        : 'Login'}
+                    </button>
+                  </form>
+
+                  {/* OR divider & Google Sign-In */}
+                  {!isRegister && !otpSent && (
+                    <div className="space-y-4 pt-4 border-t border-black/[0.04] mt-4">
+                      <div className="relative flex py-2 items-center">
+                        <div className="flex-grow border-t border-black/5"></div>
+                        <span className="flex-grow mx-4 text-[9px] text-black/40 font-bold uppercase tracking-wider text-center">or sign in with</span>
+                        <div className="flex-grow border-t border-black/5"></div>
+                      </div>
+                      
+                      <div id="googleSignInButton" className="w-full min-h-[44px] flex justify-center"></div>
+                      
+                      {/* Demo/Sandbox fallback simulation tool */}
+                      <div className="text-center">
+                        <button
+                          type="button"
+                          onClick={() => handleGoogleCredentialResponse({ credential: 'mock_token_johndoe' })}
+                          className="text-[9px] text-black/35 hover:text-black/60 font-medium uppercase tracking-wider transition-colors hover:underline"
+                        >
+                          💡 Demo: Simulate Google Sign-In
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Bottom Toggle switch */}
+                  <div className="text-center pt-4 border-t border-black/[0.04]">
+                    <button
+                      onClick={() => {
+                        setIsRegister(!isRegister);
+                        setAuthError('');
+                        setOtpSent(false);
+                        setRegOtpSent(false);
+                        setRegOtpCode('');
+                      }}
+                      className="text-[9px] text-black/55 hover:text-black transition-colors font-bold uppercase tracking-widest"
+                    >
+                      {isRegister ? 'Already have an account? Sign In' : "Don't have an account? Create one"}
+                    </button>
                   </div>
-                )}
-
-                 <button
-                  type="submit"
-                  disabled={verifyingReg}
-                  className="w-full bg-black hover:bg-black/90 text-white font-extrabold text-xs uppercase tracking-widest py-3 rounded-xl transition-all shadow-xs hover:shadow-sm active:scale-[0.98] mt-4 disabled:opacity-50"
-                >
-                  {verifyingReg 
-                    ? 'Processing...' 
-                    : isRegister 
-                    ? (regOtpSent ? 'Verify & Register' : 'Register') 
-                    : otpSent 
-                    ? 'Verify & Login' 
-                    : authMethod === 'otp' 
-                    ? 'Request OTP' 
-                    : 'Login'}
-                </button>
-              </form>
-
-              {/* Bottom Toggle switch */}
-              <div className="text-center pt-4 border-t border-black/[0.04]">
-                <button
-                  onClick={() => {
-                    setIsRegister(!isRegister);
-                    setAuthError('');
-                    setOtpSent(false);
-                    setRegOtpSent(false);
-                    setRegOtpCode('');
-                  }}
-                  className="text-[9px] text-black/55 hover:text-black transition-colors font-bold uppercase tracking-widest"
-                >
-                  {isRegister ? 'Already have an account? Sign In' : "Don't have an account? Create one"}
-                </button>
-              </div>
+                </>
+              )}
 
             </div>
           </div>

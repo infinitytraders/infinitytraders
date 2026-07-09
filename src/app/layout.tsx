@@ -7,6 +7,7 @@ import CartDrawer from "@/components/CartDrawer";
 import CookieConsent from "@/components/CookieConsent";
 import InfinityPreloader from "@/components/InfinityPreloader";
 import Footer from "@/components/Footer";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://infinitytraders.shop'),
@@ -64,6 +65,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full scroll-smooth bg-[#f4f3ef]">
       <body className="min-h-full flex flex-col bg-[#f4f3ef] text-black antialiased">
+        <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
         <LanguageProvider>
           <CartProvider>
             <InfinityPreloader />
