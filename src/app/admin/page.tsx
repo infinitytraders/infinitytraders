@@ -886,7 +886,7 @@ export default function AdminPage() {
                         const newCat = e.target.value;
                         let updatedSizes = productForm.sizes;
                         if (productForm.sizes === '7,8,9,10,11' || productForm.sizes === 'S,M,L,XL,XXL') {
-                          const isApparelCat = ['Apparel', 'Lowers', 'T-shirts', 'Gym Wear', 'Tracksuit'].includes(newCat);
+                          const isApparelCat = ['Apparel', 'Lowers', 'T-shirts', 'Gym Wear', 'Tracksuit', 'Sando'].includes(newCat);
                           updatedSizes = isApparelCat ? 'S,M,L,XL,XXL' : '7,8,9,10,11';
                         }
                         setProductForm({...productForm, category: newCat, sizes: updatedSizes});
@@ -894,12 +894,15 @@ export default function AdminPage() {
                       className="w-full bg-white border border-black/10 rounded-lg p-2 text-xs text-black font-semibold"
                     >
                       <option value="Running Shoes">Running Shoes</option>
-                      <option value="Air Sega">Air Sega</option>
                       <option value="Training Shoes">Training Shoes</option>
-                      <option value="Slippers">Slippers</option>
-                      <option value="Lowers">Lowers</option>
-                      <option value="Tracksuit">Tracksuit</option>
+                      <option value="Daily Wear">Daily Wear</option>
+                      <option value="Sliders">Sliders</option>
                       <option value="Gym Wear">Gym Wear</option>
+                      <option value="Tracksuit">Tracksuit</option>
+                      <option value="Lowers">Lowers</option>
+                      <option value="Sando">Sando</option>
+                      <option value="Air Sega">Air Sega</option>
+                      <option value="Slippers">Slippers</option>
                       <option value="Running Kit">Running Kit</option>
                       <option value="Footwear">Footwear (Legacy)</option>
                       <option value="Apparel">Apparel (Legacy)</option>
@@ -946,91 +949,16 @@ export default function AdminPage() {
                       className="w-full input-premium text-xs"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider block">Product Color (Multi-color supported)</label>
-                    <div className="bg-[#fcfbf9] border border-black/10 p-4 rounded-2xl max-w-[240px] space-y-3 shadow-xs">
-                      {/* Swatches Grid */}
-                      <div className="grid grid-cols-4 gap-3">
-                        {[
-                          { name: 'white', hex: '#ffffff' },
-                          { name: 'green', hex: '#22c55e' },
-                          { name: 'red', hex: '#ef4444' },
-                          { name: 'tan', hex: '#d2b48c' },
-                          { name: 'grey', hex: '#8b8b8b' },
-                          { name: 'cyan', hex: '#06b6d4' },
-                          { name: 'orange', hex: '#f97316' },
-                          { name: 'lavender', hex: '#a855f7' },
-                          { name: 'black', hex: '#000000' },
-                          { name: 'blue', hex: '#3b82f6' },
-                          { name: 'yellow', hex: '#eab308' },
-                          { name: 'pink', hex: '#ec4899' }
-                        ].map((swatch) => {
-                          const selectedColors = getColorsArray(productForm.color).map(c => c.trim().toLowerCase());
-                          const isSelected = selectedColors.includes(swatch.name) || selectedColors.includes(swatch.hex.toLowerCase());
-                          
-                          const handleSwatchClick = () => {
-                            const rawColors = getColorsArray(productForm.color);
-                            const alreadySelectedIdx = rawColors.findIndex(
-                              c => c.trim().toLowerCase() === swatch.name || c.trim().toLowerCase() === swatch.hex.toLowerCase()
-                            );
-                            
-                            let newColors: string[];
-                            if (alreadySelectedIdx !== -1) {
-                              newColors = rawColors.filter((_, i) => i !== alreadySelectedIdx);
-                            } else {
-                              newColors = [...rawColors, swatch.hex];
-                            }
-                            setProductForm({ ...productForm, color: newColors.join(',') });
-                          };
-
-                          return (
-                            <button
-                              key={swatch.name}
-                              type="button"
-                              onClick={handleSwatchClick}
-                              className={`w-7 h-7 rounded-full border transition-transform hover:scale-110 active:scale-95 ${
-                                isSelected ? 'border-black scale-105 shadow-[0_0_8px_rgba(0,0,0,0.25)]' : 'border-black/15'
-                              }`}
-                              style={{ backgroundColor: swatch.hex }}
-                              title={swatch.name}
-                            />
-                          );
-                        })}
-
-                        {/* Custom Color spectrum picker */}
-                        <label
-                          className="w-7 h-7 rounded-full border border-black/15 flex-shrink-0 cursor-pointer overflow-hidden block transition-transform hover:scale-110 active:scale-95 shadow-xs relative"
-                          style={{ background: 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)' }}
-                          title="Custom Color Picker"
-                        >
-                          <input
-                            type="color"
-                            value="#00c543"
-                            onChange={(e) => {
-                              const customHex = e.target.value;
-                              const rawColors = getColorsArray(productForm.color);
-                              if (!rawColors.includes(customHex)) {
-                                setProductForm({ ...productForm, color: [...rawColors, customHex].join(',') });
-                              }
-                            }}
-                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                          />
-                        </label>
-                      </div>
-                      
-                      {/* Hex/Name Custom Input */}
-                      <div className="bg-white rounded-xl px-3 py-2 flex items-center gap-2 border border-black/10 focus-within:border-black/35">
-                        <input
-                          type="text"
-                          placeholder="e.g. Red, Black or #ffffff,#ef4444"
-                          value={productForm.color}
-                          onChange={(e) => {
-                            setProductForm({ ...productForm, color: e.target.value });
-                          }}
-                          className="bg-transparent text-black font-medium text-xs w-full outline-none"
-                        />
-                      </div>
-                    </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Product Color (Multi-color supported)</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. White, Black/Red"
+                      value={productForm.color}
+                      onChange={(e) => setProductForm({...productForm, color: e.target.value})}
+                      className="w-full input-premium text-xs"
+                    />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Material</label>

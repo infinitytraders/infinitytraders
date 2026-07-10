@@ -231,7 +231,6 @@ function getRecommendationsForBrand(
   selectedOption: string,
   initialProducts: Product[]
 ): RecommendationProduct[] {
-  const matchedProducts: Product[] = [];
   const isBrandOption = ALL_BRANDS.includes(selectedOption);
 
   const mapProductToRecommendation = (p: Product): RecommendationProduct => ({
@@ -243,104 +242,79 @@ function getRecommendationsForBrand(
     isReal: true
   });
 
-  // 1. Categorize products by base groups
-  const runningShoes = initialProducts.filter(p => 
-    ['Running Shoes', 'Air Sega', 'Training Shoes', 'Footwear'].includes(p.category)
-  );
-  const slippers = initialProducts.filter(p => 
-    ['Slippers', 'Footwear'].includes(p.category)
-  );
-  const shirts = initialProducts.filter(p => 
-    ['T-shirts', 'Gym Wear', 'Apparel'].includes(p.category)
-  );
-  const lowers = initialProducts.filter(p => 
-    ['Lowers', 'Tracksuit', 'Apparel'].includes(p.category)
-  );
-  const sando = initialProducts.filter(p => 
-    ['Gym Wear', 'Running Kit', 'Apparel'].includes(p.category)
-  );
-
-  // 2. Perform matching based on guide category
+  // Define allowed database categories for each interactive category
+  let allowedCategories: string[] = [];
   if (category === 'running-shoes') {
-    if (selectedOption === '1500m to 3km') {
-      matchedProducts.push(...runningShoes.filter(p => p.sellingPrice <= 10000));
-    } else if (selectedOption === '3km to 5km') {
-      matchedProducts.push(...runningShoes.filter(p => p.sellingPrice >= 8000 && p.sellingPrice <= 15000));
-    } else if (selectedOption === '5km to 10km') {
-      matchedProducts.push(...runningShoes.filter(p => p.sellingPrice >= 9000 && p.sellingPrice <= 16000));
-    } else if (selectedOption === 'Super running shoes') {
-      matchedProducts.push(...runningShoes.filter(p => p.sellingPrice > 10000 || p.category === 'Air Sega'));
-    }
-    // Fallback if price filters returned nothing
-    if (matchedProducts.length === 0) {
-      matchedProducts.push(...runningShoes);
-    }
+    allowedCategories = ['Running Shoes', 'Air Sega', 'Training Shoes', 'Footwear'];
   } else if (category === 'casuals') {
     if (selectedOption === 'Sports Shoes') {
-      matchedProducts.push(...runningShoes);
+      allowedCategories = ['Running Shoes', 'Training Shoes', 'Air Sega', 'Footwear'];
     } else if (selectedOption === 'Sneakers') {
-      const sneakers = initialProducts.filter(p => p.category === 'Sneakers');
-      matchedProducts.push(...sneakers);
-      if (matchedProducts.length === 0) {
-        matchedProducts.push(...runningShoes); // fallback
-      }
+      allowedCategories = ['Sneakers', 'Footwear'];
+    } else {
+      allowedCategories = ['Training Shoes', 'Sneakers', 'Footwear'];
     }
   } else if (category === 'daily-wear') {
-    if (isBrandOption) {
-      matchedProducts.push(...runningShoes.filter(p => p.brand.toLowerCase() === selectedOption.toLowerCase()));
-      matchedProducts.push(...slippers.filter(p => p.brand.toLowerCase() === selectedOption.toLowerCase()));
-    }
-    if (matchedProducts.length === 0) {
-      matchedProducts.push(...runningShoes.slice(0, 2));
-    }
+    allowedCategories = ['Daily Wear', 'Slippers', 'Footwear'];
   } else if (category === 'sliders') {
-    if (isBrandOption) {
-      matchedProducts.push(...slippers.filter(p => p.brand.toLowerCase() === selectedOption.toLowerCase()));
-    }
-    if (matchedProducts.length === 0) {
-      matchedProducts.push(...slippers);
-    }
+    allowedCategories = ['Sliders', 'Slippers'];
   } else if (category === 't-shirts') {
-    if (selectedOption === 'Polo') {
-      matchedProducts.push(...shirts.filter(p => p.name.toLowerCase().includes('polo') || p.description.toLowerCase().includes('polo')));
-    }
-    if (matchedProducts.length === 0) {
-      matchedProducts.push(...shirts);
-    }
+    allowedCategories = ['T-shirts', 'Gym Wear', 'Apparel'];
   } else if (category === 'halfpants') {
-    if (isBrandOption) {
-      matchedProducts.push(...lowers.filter(p => p.brand.toLowerCase() === selectedOption.toLowerCase()));
-    }
-    if (matchedProducts.length === 0) {
-      matchedProducts.push(...lowers);
-    }
+    allowedCategories = ['Tracksuit', 'Lowers', 'Apparel'];
   } else if (category === 'lowers') {
-    if (isBrandOption) {
-      matchedProducts.push(...lowers.filter(p => p.brand.toLowerCase() === selectedOption.toLowerCase()));
-    }
-    if (matchedProducts.length === 0) {
-      matchedProducts.push(...lowers);
-    }
+    allowedCategories = ['Lowers', 'Tracksuit', 'Apparel'];
   } else if (category === 'sando') {
-    if (isBrandOption) {
-      matchedProducts.push(...sando.filter(p => p.brand.toLowerCase() === selectedOption.toLowerCase()));
-    }
-    if (matchedProducts.length === 0) {
-      matchedProducts.push(...sando);
+    allowedCategories = ['Sando', 'Gym Wear', 'Running Kit', 'Apparel'];
+  }
+
+  // Filter products strictly based on allowed categories first
+  let filtered = initialProducts.filter(p => 
+    allowedCategories.some(cat => cat.toLowerCase() === p.category.toLowerCase())
+  );
+
+  // If selectedOption is a brand, filter strictly by that brand
+  if (isBrandOption) {
+    filtered = filtered.filter(p => p.brand.toLowerCase() === selectedOption.toLowerCase());
+  } else {
+    // If selectedOption is NOT a brand (it's a sub-category/goal, e.g. for running-shoes or casuals)
+    if (category === 'running-shoes') {
+      if (selectedOption === '1500m to 3km') {
+        filtered = filtered.filter(p => p.sellingPrice <= 10000);
+      } else if (selectedOption === '3km to 5km') {
+        filtered = filtered.filter(p => p.sellingPrice >= 8000 && p.sellingPrice <= 15000);
+      } else if (selectedOption === '5km to 10km') {
+        filtered = filtered.filter(p => p.sellingPrice >= 9000 && p.sellingPrice <= 16000);
+      } else if (selectedOption === 'Super running shoes') {
+        filtered = filtered.filter(p => p.sellingPrice > 10000 || p.category.toLowerCase() === 'air sega');
+      }
+    } else if (category === 't-shirts') {
+      if (selectedOption === 'Polo') {
+        filtered = filtered.filter(p => 
+          p.name.toLowerCase().includes('polo') || 
+          p.description.toLowerCase().includes('polo')
+        );
+      }
     }
   }
 
-  // 3. Return mapped results, limit to max 2 recommended products
-  const uniqueMap = new Map<string, Product>();
-  matchedProducts.forEach(p => uniqueMap.set(p.id, p));
-  const finalProducts = Array.from(uniqueMap.values()).slice(0, 2);
+  // Limit to maximum 2 recommended products
+  const uniqueProducts = Array.from(new Map(filtered.map(p => [p.id, p])).values()).slice(0, 2);
 
-  // Fallback absolute: if still empty, recommend any 2 products from initialProducts
-  if (finalProducts.length === 0) {
-    finalProducts.push(...initialProducts.slice(0, 2));
+  // Fallback: If strict filters yielded nothing, fallback to category-only matching
+  if (uniqueProducts.length === 0) {
+    const categoryOnlyFiltered = initialProducts.filter(p => 
+      allowedCategories.some(cat => cat.toLowerCase() === p.category.toLowerCase())
+    );
+    const categoryOnlyUnique = Array.from(new Map(categoryOnlyFiltered.map(p => [p.id, p])).values()).slice(0, 2);
+    if (categoryOnlyUnique.length > 0) {
+      return categoryOnlyUnique.map(mapProductToRecommendation);
+    }
+    // Absolute fallback
+    return initialProducts.slice(0, 2).map(mapProductToRecommendation);
   }
 
-  return finalProducts.map(mapProductToRecommendation);
+  return uniqueProducts.map(mapProductToRecommendation);
 }
 
 export default function HomeClient({ initialProducts }: HomeClientProps) {
