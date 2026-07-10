@@ -872,11 +872,22 @@ export default function AdminPage() {
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Brand</label>
-                    <input
-                      type="text" required placeholder="e.g. Nike"
-                      value={productForm.brand} onChange={(e) => setProductForm({...productForm, brand: e.target.value})}
-                      className="w-full input-premium text-xs"
-                    />
+                    <select
+                      value={productForm.brand} 
+                      onChange={(e) => setProductForm({...productForm, brand: e.target.value})}
+                      className="w-full bg-white border border-black/10 rounded-lg p-2.5 text-xs text-black font-semibold"
+                    >
+                      <option value="">Select Brand</option>
+                      <option value="Nike">Nike</option>
+                      <option value="Adidas">Adidas</option>
+                      <option value="Puma">Puma</option>
+                      <option value="Skechers">Skechers</option>
+                      <option value="Reebok">Reebok</option>
+                      <option value="Under Armour">Under Armour</option>
+                      <option value="Jordan">Jordan</option>
+                      <option value="Fila">Fila</option>
+                      <option value="Asics">Asics</option>
+                    </select>
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Category</label>
@@ -895,6 +906,7 @@ export default function AdminPage() {
                     >
                       <option value="Running Shoes">Running Shoes</option>
                       <option value="Training Shoes">Training Shoes</option>
+                      <option value="Sneakers">Sneakers</option>
                       <option value="Daily Wear">Daily Wear</option>
                       <option value="Sliders">Sliders</option>
                       <option value="Gym Wear">Gym Wear</option>
@@ -979,13 +991,50 @@ export default function AdminPage() {
                       <option value="Narrow">Narrow</option>
                     </select>
                   </div>
-                                <div className="md:col-span-2 space-y-1.5">
-                    <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Available Sizes (Comma separated)</label>
-                    <input
-                      type="text" placeholder="e.g. 7,8,9,10"
-                      value={productForm.sizes} onChange={(e) => setProductForm({...productForm, sizes: e.target.value})}
-                      className="w-full input-premium text-xs"
-                    />
+                  <div className="md:col-span-2 space-y-1.5">
+                    <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider block">Available Sizes</label>
+                    <div className="flex flex-wrap gap-4 bg-white border border-black/10 p-2.5 rounded-lg">
+                      {(() => {
+                        const isApparelCat = ['Apparel', 'Lowers', 'T-shirts', 'Gym Wear', 'Tracksuit', 'Sando'].includes(productForm.category);
+                        const availableOptions = isApparelCat 
+                          ? ['S', 'M', 'L', 'XL', 'XXL'] 
+                          : ['7', '8', '9', '10', '11'];
+                        
+                        const currentSizes = productForm.sizes
+                          .split(',')
+                          .map(s => s.trim())
+                          .filter(Boolean);
+
+                        return availableOptions.map(size => {
+                          const isChecked = currentSizes.includes(size);
+                          return (
+                            <label key={size} className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-black select-none">
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={(e) => {
+                                  let newSizes: string[];
+                                  if (e.target.checked) {
+                                    newSizes = [...currentSizes, size];
+                                  } else {
+                                    newSizes = currentSizes.filter(s => s !== size);
+                                  }
+                                  if (isApparelCat) {
+                                    const order = ['S', 'M', 'L', 'XL', 'XXL'];
+                                    newSizes.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+                                  } else {
+                                    newSizes.sort((a, b) => Number(a) - Number(b));
+                                  }
+                                  setProductForm({ ...productForm, sizes: newSizes.join(',') });
+                                }}
+                                className="w-4 h-4 rounded border-black/20 text-black focus:ring-black"
+                              />
+                              {size}
+                            </label>
+                          );
+                        });
+                      })()}
+                    </div>
                   </div>
 
                   <div className="md:col-span-3 border-t border-black/5 pt-4 space-y-2">

@@ -242,30 +242,30 @@ function getRecommendationsForBrand(
     isReal: true
   });
 
-  // Define allowed database categories for each interactive category
+  // Define allowed database categories strictly selected by the admin while uploading
   let allowedCategories: string[] = [];
   if (category === 'running-shoes') {
-    allowedCategories = ['Running Shoes', 'Air Sega', 'Training Shoes', 'Footwear'];
+    allowedCategories = ['Running Shoes'];
   } else if (category === 'casuals') {
     if (selectedOption === 'Sports Shoes') {
-      allowedCategories = ['Running Shoes', 'Training Shoes', 'Air Sega', 'Footwear'];
+      allowedCategories = ['Training Shoes'];
     } else if (selectedOption === 'Sneakers') {
-      allowedCategories = ['Sneakers', 'Footwear'];
+      allowedCategories = ['Sneakers'];
     } else {
-      allowedCategories = ['Training Shoes', 'Sneakers', 'Footwear'];
+      allowedCategories = ['Training Shoes', 'Sneakers'];
     }
   } else if (category === 'daily-wear') {
-    allowedCategories = ['Daily Wear', 'Slippers', 'Footwear'];
+    allowedCategories = ['Daily Wear'];
   } else if (category === 'sliders') {
-    allowedCategories = ['Sliders', 'Slippers'];
+    allowedCategories = ['Sliders'];
   } else if (category === 't-shirts') {
-    allowedCategories = ['T-shirts', 'Gym Wear', 'Apparel'];
+    allowedCategories = ['Gym Wear'];
   } else if (category === 'halfpants') {
-    allowedCategories = ['Tracksuit', 'Lowers', 'Apparel'];
+    allowedCategories = ['Tracksuit'];
   } else if (category === 'lowers') {
-    allowedCategories = ['Lowers', 'Tracksuit', 'Apparel'];
+    allowedCategories = ['Lowers'];
   } else if (category === 'sando') {
-    allowedCategories = ['Sando', 'Gym Wear', 'Running Kit', 'Apparel'];
+    allowedCategories = ['Sando'];
   }
 
   // Filter products strictly based on allowed categories first
@@ -301,18 +301,99 @@ function getRecommendationsForBrand(
   // Limit to maximum 2 recommended products
   const uniqueProducts = Array.from(new Map(filtered.map(p => [p.id, p])).values()).slice(0, 2);
 
-  // Fallback: If strict filters yielded nothing, fallback to category-only matching
-  if (uniqueProducts.length === 0) {
-    const categoryOnlyFiltered = initialProducts.filter(p => 
-      allowedCategories.some(cat => cat.toLowerCase() === p.category.toLowerCase())
-    );
-    const categoryOnlyUnique = Array.from(new Map(categoryOnlyFiltered.map(p => [p.id, p])).values()).slice(0, 2);
-    if (categoryOnlyUnique.length > 0) {
-      return categoryOnlyUnique.map(mapProductToRecommendation);
-    }
-    // Absolute fallback
-    return initialProducts.slice(0, 2).map(mapProductToRecommendation);
+  if (uniqueProducts.length > 0) {
+    return uniqueProducts.map(mapProductToRecommendation);
   }
+
+  // LEVEL 2 FALLBACK: Category-only (without brand/price filters)
+  const categoryOnlyFiltered = initialProducts.filter(p => 
+    allowedCategories.some(cat => cat.toLowerCase() === p.category.toLowerCase())
+  );
+  const categoryOnlyUnique = Array.from(new Map(categoryOnlyFiltered.map(p => [p.id, p])).values()).slice(0, 2);
+  if (categoryOnlyUnique.length > 0) {
+    return categoryOnlyUnique.map(mapProductToRecommendation);
+  }
+
+  // LEVEL 3 FALLBACK: Closely related categories (synonyms)
+  let relatedCategories: string[] = [];
+  if (category === 'running-shoes') {
+    relatedCategories = ['Training Shoes', 'Sneakers', 'Air Sega', 'Footwear'];
+  } else if (category === 'casuals') {
+    relatedCategories = ['Running Shoes', 'Sneakers', 'Air Sega', 'Footwear'];
+  } else if (category === 'daily-wear') {
+    relatedCategories = ['Sliders', 'Slippers', 'Footwear'];
+  } else if (category === 'sliders') {
+    relatedCategories = ['Daily Wear', 'Slippers', 'Footwear'];
+  } else if (category === 't-shirts') {
+    relatedCategories = ['T-shirts', 'Gym Wear', 'Apparel'];
+  } else if (category === 'halfpants') {
+    relatedCategories = ['Lowers', 'Tracksuit', 'Apparel'];
+  } else if (category === 'lowers') {
+    relatedCategories = ['Tracksuit', 'Halfpants', 'Apparel'];
+  } else if (category === 'sando') {
+    relatedCategories = ['Gym Wear', 'T-shirts', 'Apparel'];
+  }
+
+  let relatedFiltered = initialProducts.filter(p => 
+    relatedCategories.some(cat => cat.toLowerCase() === p.category.toLowerCase())
+  );
+
+  if (isBrandOption) {
+    const brandRelated = relatedFiltered.filter(p => p.brand.toLowerCase() === selectedOption.toLowerCase());
+    if (brandRelated.length > 0) {
+      relatedFiltered = brandRelated;
+    }
+  }
+
+  const relatedUnique = Array.from(new Map(relatedFiltered.map(p => [p.id, p])).values()).slice(0, 2);
+  if (relatedUnique.length > 0) {
+    return relatedUnique.map(mapProductToRecommendation);
+  }
+
+  // LEVEL 4 FALLBACK: Search by Keywords in name or description
+  let keywords: string[] = [];
+  if (category === 'running-shoes') {
+    keywords = ['run', 'pegasus', 'kayano', 'shoe'];
+  } else if (category === 'casuals') {
+    keywords = ['train', 'sneaker', 'casual', 'dunk', 'retro', 'shoe'];
+  } else if (category === 'daily-wear') {
+    keywords = ['slide', 'slipper', 'flip', 'flop'];
+  } else if (category === 'sliders') {
+    keywords = ['slide', 'slipper', 'flip', 'flop'];
+  } else if (category === 't-shirts') {
+    keywords = ['tee', 'shirt', 'jersey', 'sando', 'tank', 'polo'];
+  } else if (category === 'halfpants') {
+    keywords = ['trouser', 'pant', 'lower', 'track', 'fleece', 'short'];
+  } else if (category === 'lowers') {
+    keywords = ['trouser', 'pant', 'lower', 'track', 'fleece', 'short'];
+  } else if (category === 'sando') {
+    keywords = ['sando', 'tank', 'sleeveless', 'tee', 'shirt'];
+  }
+
+  let keywordFiltered = initialProducts.filter(p => 
+    keywords.some(kw => p.name.toLowerCase().includes(kw) || p.description.toLowerCase().includes(kw))
+  );
+
+  const keywordUnique = Array.from(new Map(keywordFiltered.map(p => [p.id, p])).values()).slice(0, 2);
+  if (keywordUnique.length > 0) {
+    return keywordUnique.map(mapProductToRecommendation);
+  }
+
+  // LEVEL 5 FALLBACK: Family-constrained fallback (Footwear vs Apparel)
+  const footwearCategories = ['running shoes', 'training shoes', 'sneakers', 'daily wear', 'sliders', 'slippers', 'air sega', 'footwear', 'running kit'];
+  const isFootwearMatcher = ['running-shoes', 'casuals', 'daily-wear', 'sliders'].includes(category);
+  
+  const familyFiltered = initialProducts.filter(p => {
+    const isFootwearProd = footwearCategories.includes(p.category.toLowerCase()) || 
+      ['shoe', 'slipper', 'slide'].some(kw => p.name.toLowerCase().includes(kw) || p.category.toLowerCase().includes(kw));
+    return isFootwearMatcher ? isFootwearProd : !isFootwearProd;
+  });
+
+  const familyUnique = Array.from(new Map(familyFiltered.map(p => [p.id, p])).values()).slice(0, 2);
+  if (familyUnique.length > 0) {
+    return familyUnique.map(mapProductToRecommendation);
+  }
+  return [];
 
   return uniqueProducts.map(mapProductToRecommendation);
 }
@@ -860,7 +941,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
               {/* Interactive Hotspot Links */}
               {/* 1. T-shirts */}
               <Link 
-                href="/shop?category=Apparel" 
+                href="/shop?category=Gym Wear,Sando" 
                 className="absolute top-[13.5%] left-[4.5%] text-[9px] sm:text-xs font-bold text-black uppercase tracking-wider hover:opacity-60 transition-opacity"
                 title="Shop T-shirt or Sando"
               >
@@ -869,7 +950,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
 
               {/* 2. Lowers */}
               <Link 
-                href="/shop?category=Apparel" 
+                href="/shop?category=Lowers" 
                 className="absolute top-[48.5%] left-[2.5%] text-[9px] sm:text-xs font-bold text-black uppercase tracking-wider hover:opacity-60 transition-opacity"
                 title="Shop Lowers"
               >
@@ -878,7 +959,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
 
               {/* 3. Running Shoes */}
               <Link 
-                href="/shop?category=Footwear" 
+                href="/shop?category=Running Shoes" 
                 className="absolute top-[63.5%] left-[84%] text-[9px] sm:text-xs font-bold text-black uppercase tracking-wider hover:opacity-60 transition-opacity"
                 title="Shop Running Shoes"
               >

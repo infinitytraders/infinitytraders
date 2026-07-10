@@ -31,21 +31,7 @@ function normalizeBrandName(brand: string): string {
 
 function normalizeCategoryName(cat: string): string {
   if (!cat) return '';
-  const c = cat.trim().toLowerCase();
-  if (c === 'footwear') return 'Footwear';
-  if (c === 'slippers') return 'Slippers';
-  if (c === 'apparel') return 'Apparel';
-  if (c === 'accessories') return 'Accessories';
-  if (c === 'sneakers') return 'Sneakers';
-  if (c === 'training shoes' || c === 'training-shoes' || c === 'casuals') return 'Training Shoes';
-  if (c === 'air saga' || c === 'air sega') return 'Air Sega';
-  if (c === 't-shirts' || c === 'gym wear' || c === 'gymwear') return 'Gym Wear';
-  if (c === 'halfpants' || c === 'tracksuit') return 'Tracksuit';
-  if (c === 'running shoes' || c === 'running-shoes') return 'Running Shoes';
-  if (c === 'daily wear' || c === 'daily-wear') return 'Daily Wear';
-  if (c === 'sliders') return 'Sliders';
-  if (c === 'sando') return 'Sando';
-  return cat.trim().charAt(0).toUpperCase() + cat.trim().slice(1);
+  return cat.trim();
 }
 
 export default function ShopClient() {
@@ -146,31 +132,10 @@ export default function ShopClient() {
     }
 
     if (selectedCategory !== 'All') {
+      const selectedCategories = selectedCategory.split(',').map(c => c.trim().toLowerCase());
       result = result.filter((p) => {
         const normProductCat = normalizeCategoryName(p.category).toLowerCase();
-        const normSelectedCat = normalizeCategoryName(selectedCategory).toLowerCase();
-
-        // 1. Direct match
-        if (normProductCat === normSelectedCat) return true;
-
-        // 2. Sneakers / Training Shoes alignment
-        if (normSelectedCat === 'sneakers' && normProductCat === 'training shoes') return true;
-        if (normSelectedCat === 'training shoes' && normProductCat === 'sneakers') return true;
-
-        // 3. Daily Wear / Sliders / Slippers alignment
-        const isSelectedDailyOrSliders = ['daily wear', 'sliders', 'slippers'].includes(normSelectedCat);
-        const isProductDailyOrSliders = ['daily wear', 'sliders', 'slippers'].includes(normProductCat);
-        if (isSelectedDailyOrSliders && isProductDailyOrSliders) return true;
-
-        // 4. Tracksuit / Lowers / Halfpants alignment
-        if (normSelectedCat === 'tracksuit' && normProductCat === 'lowers') return true;
-        if (normSelectedCat === 'lowers' && normProductCat === 'tracksuit') return true;
-
-        // 5. Gym Wear / T-shirts / Sando alignment
-        if (normSelectedCat === 'gym wear' && normProductCat === 'sando') return true;
-        if (normSelectedCat === 'sando' && normProductCat === 'gym wear') return true;
-
-        return false;
+        return selectedCategories.includes(normProductCat);
       });
     }
 
