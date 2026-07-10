@@ -66,6 +66,12 @@ export default function RootLayout({
     <html lang="en" className="h-full scroll-smooth bg-[#f4f3ef]">
       <body className="min-h-full flex flex-col bg-[#f4f3ef] text-black antialiased">
         <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
+        {process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY && (
+          <Script
+            src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`}
+            strategy="afterInteractive"
+          />
+        )}
         <LanguageProvider>
           <CartProvider>
             <InfinityPreloader />
