@@ -226,144 +226,121 @@ const RECOMMENDATION_CONFIGS: Record<string, QuestionConfig> = {
   }
 };
 
-function getRecommendationsForBrand(category: string, brand: string): RecommendationProduct[] {
+function getRecommendationsForBrand(
+  category: string,
+  selectedOption: string,
+  initialProducts: Product[]
+): RecommendationProduct[] {
+  const matchedProducts: Product[] = [];
+  const isBrandOption = ALL_BRANDS.includes(selectedOption);
+
+  const mapProductToRecommendation = (p: Product): RecommendationProduct => ({
+    name: p.name,
+    brand: p.brand,
+    price: `₹${p.sellingPrice.toLocaleString('en-IN')}`,
+    image: p.images[0] || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80',
+    link: `/product/${p.id}`,
+    isReal: true
+  });
+
+  // 1. Categorize products by base groups
+  const runningShoes = initialProducts.filter(p => 
+    ['Running Shoes', 'Air Sega', 'Training Shoes', 'Footwear'].includes(p.category)
+  );
+  const slippers = initialProducts.filter(p => 
+    ['Slippers', 'Footwear'].includes(p.category)
+  );
+  const shirts = initialProducts.filter(p => 
+    ['T-shirts', 'Gym Wear', 'Apparel'].includes(p.category)
+  );
+  const lowers = initialProducts.filter(p => 
+    ['Lowers', 'Tracksuit', 'Apparel'].includes(p.category)
+  );
+  const sando = initialProducts.filter(p => 
+    ['Gym Wear', 'Running Kit', 'Apparel'].includes(p.category)
+  );
+
+  // 2. Perform matching based on guide category
   if (category === 'running-shoes') {
-    return RECOMMENDATION_CONFIGS['running-shoes'].recommendations[brand] || [];
-  }
-  if (category === 't-shirts') {
-    return RECOMMENDATION_CONFIGS['t-shirts'].recommendations[brand] || [];
-  }
-  if (category === 'casuals') {
-    return RECOMMENDATION_CONFIGS['casuals'].recommendations[brand] || [];
-  }
-
-  // Footwear categories: daily-wear, sliders
-  if (category === 'daily-wear' || category === 'sliders') {
-    if (brand === 'Adidas') {
-      return [{
-        name: 'Adilette Comfort Slides',
-        brand: 'Adidas',
-        price: '₹1,999',
-        image: 'https://images.unsplash.com/photo-1603808033192-082d6919d3e1?auto=format&fit=crop&w=600&q=80',
-        link: '/product/prod_2',
-        isReal: true
-      }];
+    if (selectedOption === '1500m to 3km') {
+      matchedProducts.push(...runningShoes.filter(p => p.sellingPrice <= 10000));
+    } else if (selectedOption === '3km to 5km') {
+      matchedProducts.push(...runningShoes.filter(p => p.sellingPrice >= 8000 && p.sellingPrice <= 15000));
+    } else if (selectedOption === '5km to 10km') {
+      matchedProducts.push(...runningShoes.filter(p => p.sellingPrice >= 9000 && p.sellingPrice <= 16000));
+    } else if (selectedOption === 'Super running shoes') {
+      matchedProducts.push(...runningShoes.filter(p => p.sellingPrice > 10000 || p.category === 'Air Sega'));
     }
-    if (brand === 'Nike') {
-      return [{
-        name: 'Nike Air Zoom Pegasus Running Shoe',
-        brand: 'Nike',
-        price: '₹9,999',
-        image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80',
-        link: '/product/prod_1',
-        isReal: true
-      }];
+    // Fallback if price filters returned nothing
+    if (matchedProducts.length === 0) {
+      matchedProducts.push(...runningShoes);
     }
-    if (brand === 'Puma') {
-      return [{
-        name: 'Puma Leadcat Slides',
-        brand: 'Puma',
-        price: '₹1,799',
-        image: 'https://images.unsplash.com/photo-1603808033192-082d6919d3e1?auto=format&fit=crop&w=600&q=80',
-        link: '/shop?category=Footwear&brand=Puma',
-        isReal: false
-      }];
+  } else if (category === 'casuals') {
+    if (selectedOption === 'Sports Shoes') {
+      matchedProducts.push(...runningShoes);
+    } else if (selectedOption === 'Sneakers') {
+      const sneakers = initialProducts.filter(p => p.category === 'Sneakers');
+      matchedProducts.push(...sneakers);
+      if (matchedProducts.length === 0) {
+        matchedProducts.push(...runningShoes); // fallback
+      }
     }
-    if (brand === 'Skechers') {
-      return [{
-        name: 'Skechers Uno Stand On Air',
-        brand: 'Skechers',
-        price: '₹6,499',
-        image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80',
-        link: '/shop?category=Footwear&brand=Skechers',
-        isReal: false
-      }];
+  } else if (category === 'daily-wear') {
+    if (isBrandOption) {
+      matchedProducts.push(...runningShoes.filter(p => p.brand.toLowerCase() === selectedOption.toLowerCase()));
+      matchedProducts.push(...slippers.filter(p => p.brand.toLowerCase() === selectedOption.toLowerCase()));
     }
-    if (brand === 'Reebok') {
-      return [{
-        name: 'Reebok Floatride Energy Trainer',
-        brand: 'Reebok',
-        price: '₹7,999',
-        image: 'https://images.unsplash.com/photo-1582966772680-860e372bb558?auto=format&fit=crop&w=600&q=80',
-        link: '/shop?category=Footwear&brand=Reebok',
-        isReal: false
-      }];
+    if (matchedProducts.length === 0) {
+      matchedProducts.push(...runningShoes.slice(0, 2));
     }
-    return [{
-      name: `${brand} Premium Athletics Footwear`,
-      brand: brand,
-      price: '₹8,999',
-      image: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=600&q=80',
-      link: `/shop?category=Footwear&brand=${encodeURIComponent(brand)}`,
-      isReal: false
-    }];
+  } else if (category === 'sliders') {
+    if (isBrandOption) {
+      matchedProducts.push(...slippers.filter(p => p.brand.toLowerCase() === selectedOption.toLowerCase()));
+    }
+    if (matchedProducts.length === 0) {
+      matchedProducts.push(...slippers);
+    }
+  } else if (category === 't-shirts') {
+    if (selectedOption === 'Polo') {
+      matchedProducts.push(...shirts.filter(p => p.name.toLowerCase().includes('polo') || p.description.toLowerCase().includes('polo')));
+    }
+    if (matchedProducts.length === 0) {
+      matchedProducts.push(...shirts);
+    }
+  } else if (category === 'halfpants') {
+    if (isBrandOption) {
+      matchedProducts.push(...lowers.filter(p => p.brand.toLowerCase() === selectedOption.toLowerCase()));
+    }
+    if (matchedProducts.length === 0) {
+      matchedProducts.push(...lowers);
+    }
+  } else if (category === 'lowers') {
+    if (isBrandOption) {
+      matchedProducts.push(...lowers.filter(p => p.brand.toLowerCase() === selectedOption.toLowerCase()));
+    }
+    if (matchedProducts.length === 0) {
+      matchedProducts.push(...lowers);
+    }
+  } else if (category === 'sando') {
+    if (isBrandOption) {
+      matchedProducts.push(...sando.filter(p => p.brand.toLowerCase() === selectedOption.toLowerCase()));
+    }
+    if (matchedProducts.length === 0) {
+      matchedProducts.push(...sando);
+    }
   }
 
-  // Apparel categories: halfpants, lowers, sando
-  if (category === 'halfpants') {
-    if (brand === 'Nike') {
-      return [{
-        name: 'Nike Dri-FIT Flex Training Shorts',
-        brand: 'Nike',
-        price: '₹1,499',
-        image: 'https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=600&q=80',
-        link: '/product/prod_6',
-        isReal: true
-      }];
-    }
-    return [{
-      name: `${brand} Active Training Shorts`,
-      brand: brand,
-      price: '₹1,899',
-      image: 'https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=600&q=80',
-      link: `/shop?category=Apparel&brand=${encodeURIComponent(brand)}`,
-      isReal: false
-    }];
+  // 3. Return mapped results, limit to max 2 recommended products
+  const uniqueMap = new Map<string, Product>();
+  matchedProducts.forEach(p => uniqueMap.set(p.id, p));
+  const finalProducts = Array.from(uniqueMap.values()).slice(0, 2);
+
+  // Fallback absolute: if still empty, recommend any 2 products from initialProducts
+  if (finalProducts.length === 0) {
+    finalProducts.push(...initialProducts.slice(0, 2));
   }
 
-  if (category === 'lowers') {
-    if (brand === 'Puma') {
-      return [{
-        name: 'Puma Active Tech Fleece Trousers',
-        brand: 'Puma',
-        price: '₹2,799',
-        image: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=600&q=80',
-        link: '/product/prod_3',
-        isReal: true
-      }];
-    }
-    return [{
-      name: `${brand} Warm Tech Training Pants`,
-      brand: brand,
-      price: '₹2,999',
-      image: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=600&q=80',
-      link: `/shop?category=Apparel&brand=${encodeURIComponent(brand)}`,
-      isReal: false
-    }];
-  }
-
-  if (category === 'sando') {
-    if (brand === 'Adidas') {
-      return [{
-        name: 'Adidas Primeknit Sando Vest',
-        brand: 'Adidas',
-        price: '₹4,499',
-        image: 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?auto=format&fit=crop&w=600&q=80',
-        link: '/product/prod_7',
-        isReal: true
-      }];
-    }
-    return [{
-      name: `${brand} Breathable Active Tank`,
-      brand: brand,
-      price: '₹1,599',
-      image: 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?auto=format&fit=crop&w=600&q=80',
-      link: `/shop?category=Apparel&brand=${encodeURIComponent(brand)}`,
-      isReal: false
-    }];
-  }
-
-  return [];
+  return finalProducts.map(mapProductToRecommendation);
 }
 
 export default function HomeClient({ initialProducts }: HomeClientProps) {
@@ -1419,7 +1396,7 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
                 }
 
                 if (recommendationModal.step === 'results') {
-                  const products = getRecommendationsForBrand(recommendationModal.category, recommendationModal.selectedOption || '');
+                  const products = getRecommendationsForBrand(recommendationModal.category, recommendationModal.selectedOption || '', initialProducts);
                   return (
                     <div className="space-y-6 pt-2">
                       <div className="space-y-1">

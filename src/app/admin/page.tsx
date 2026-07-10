@@ -92,7 +92,9 @@ export default function AdminPage() {
   const [productForm, setProductForm] = useState({
     sku: '', brand: '', category: 'Footwear', name: '', description: '',
     mrp: '', sellingPrice: '', stockQuantity: '', color: '', material: '',
-    width: 'Standard', sizes: '7,8,9,10,11', images: ''
+    width: 'Standard', sizes: '7,8,9,10,11', images: '',
+    seoTitle: '', seoDescription: '', videos: '',
+    isNewArrival: true, isBestSeller: false, isTrending: false
   });
 
   // Order status update states
@@ -283,9 +285,12 @@ export default function AdminPage() {
       width: productForm.width,
       sizes: sizesArray,
       images: imagesArray.length > 0 ? imagesArray : ['https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80'],
-      isNewArrival: true,
-      isBestSeller: false,
-      isTrending: false
+      seoTitle: productForm.seoTitle || undefined,
+      seoDescription: productForm.seoDescription || undefined,
+      videos: productForm.videos ? productForm.videos.split(',').map(v => v.trim()).filter(v => v.length > 0) : [],
+      isNewArrival: !!productForm.isNewArrival,
+      isBestSeller: !!productForm.isBestSeller,
+      isTrending: !!productForm.isTrending
     };
 
     let res;
@@ -320,7 +325,13 @@ export default function AdminPage() {
       material: p.material,
       width: p.width,
       sizes: p.sizes.join(','),
-      images: p.images.join(',')
+      images: p.images.join(','),
+      seoTitle: p.seoTitle || '',
+      seoDescription: p.seoDescription || '',
+      videos: p.videos ? p.videos.join(',') : '',
+      isNewArrival: p.isNewArrival,
+      isBestSeller: p.isBestSeller,
+      isTrending: p.isTrending
     });
     setShowProductForm(true);
   };
@@ -339,7 +350,9 @@ export default function AdminPage() {
     setProductForm({
       sku: '', brand: '', category: 'Footwear', name: '', description: '',
       mrp: '', sellingPrice: '', stockQuantity: '', color: '', material: '',
-      width: 'Standard', sizes: '7,8,9,10,11', images: ''
+      width: 'Standard', sizes: '7,8,9,10,11', images: '',
+      seoTitle: '', seoDescription: '', videos: '',
+      isNewArrival: true, isBestSeller: false, isTrending: false
     });
   };
 
@@ -1038,7 +1051,7 @@ export default function AdminPage() {
                       <option value="Narrow">Narrow</option>
                     </select>
                   </div>
-                  <div className="md:col-span-2 space-y-1.5">
+                                <div className="md:col-span-2 space-y-1.5">
                     <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Available Sizes (Comma separated)</label>
                     <input
                       type="text" placeholder="e.g. 7,8,9,10"
@@ -1046,7 +1059,68 @@ export default function AdminPage() {
                       className="w-full input-premium text-xs"
                     />
                   </div>
-                  <div className="md:col-span-3 space-y-2">
+
+                  <div className="md:col-span-3 border-t border-black/5 pt-4 space-y-2">
+                    <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider block">Product Badges & Visibility</label>
+                    <div className="flex flex-wrap gap-6 bg-[#fcfbf9] border border-black/10 p-4 rounded-2xl shadow-xs">
+                      <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-black select-none">
+                        <input
+                          type="checkbox"
+                          checked={productForm.isNewArrival}
+                          onChange={(e) => setProductForm({...productForm, isNewArrival: e.target.checked})}
+                          className="w-4 h-4 rounded border-black/20 text-black focus:ring-black"
+                        />
+                        New Arrival
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-black select-none">
+                        <input
+                          type="checkbox"
+                          checked={productForm.isBestSeller}
+                          onChange={(e) => setProductForm({...productForm, isBestSeller: e.target.checked})}
+                          className="w-4 h-4 rounded border-black/20 text-black focus:ring-black"
+                        />
+                        Best Seller
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-black select-none">
+                        <input
+                          type="checkbox"
+                          checked={productForm.isTrending}
+                          onChange={(e) => setProductForm({...productForm, isTrending: e.target.checked})}
+                          className="w-4 h-4 rounded border-black/20 text-black focus:ring-black"
+                        />
+                        Trending
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-3 border-t border-black/5 pt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">SEO Page Title (Optional)</label>
+                      <input
+                        type="text" placeholder="e.g. Nike Pegasus 40 - Running Shoes"
+                        value={productForm.seoTitle} onChange={(e) => setProductForm({...productForm, seoTitle: e.target.value})}
+                        className="w-full input-premium text-xs"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">SEO Meta Description (Optional)</label>
+                      <input
+                        type="text" placeholder="Search engine details description"
+                        value={productForm.seoDescription} onChange={(e) => setProductForm({...productForm, seoDescription: e.target.value})}
+                        className="w-full input-premium text-xs"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Product Videos (Comma separated URLs)</label>
+                      <input
+                        type="text" placeholder="e.g. https://domain.com/video.mp4"
+                        value={productForm.videos} onChange={(e) => setProductForm({...productForm, videos: e.target.value})}
+                        className="w-full input-premium text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-3 border-t border-black/5 pt-4 space-y-2">
                     <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider block">Product Images</label>
                     
                     {/* Cloudinary Warning if not configured */}
