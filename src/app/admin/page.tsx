@@ -1213,12 +1213,13 @@ export default function AdminPage() {
               </form>
             )}
 
-{/* Products Table list */}
+            {/* Products Table list */}
             {/* Desktop View: Table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="border-b border-black/10 pb-2 text-black/45 font-bold uppercase tracking-widest text-[9px]">
+                    <th className="pb-3 w-12">Image</th>
                     <th className="pb-3">SKU</th>
                     <th className="pb-3">Name</th>
                     <th className="pb-3">Brand</th>
@@ -1230,18 +1231,27 @@ export default function AdminPage() {
                 </thead>
                 <tbody className="divide-y divide-black/5 text-black/70 font-bold">
                   {products.map((p) => (
-                    <tr key={p.id}>
-                      <td className="py-3.5 font-mono text-[10px] text-black/50">{p.sku}</td>
-                      <td className="py-3.5 font-extrabold text-black line-clamp-1 max-w-xs">{p.name}</td>
-                      <td className="py-3.5 font-medium">{p.brand}</td>
-                      <td className="py-3.5 font-medium">{p.category}</td>
-                      <td className="py-3.5 text-right font-extrabold">₹{p.sellingPrice.toLocaleString('en-IN')}</td>
-                      <td className="py-3.5 text-center font-extrabold">
+                    <tr key={p.id} className="align-middle">
+                      <td className="py-2.5">
+                        <div className="w-10 h-12 bg-black/5 rounded-lg border border-black/5 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                          {p.images && p.images[0] ? (
+                            <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-[8px] text-black/35 font-bold">No Img</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-2.5 font-mono text-[10px] text-black/50">{p.sku}</td>
+                      <td className="py-2.5 font-extrabold text-black line-clamp-1 max-w-xs">{p.name}</td>
+                      <td className="py-2.5 font-medium">{p.brand}</td>
+                      <td className="py-2.5 font-medium">{p.category}</td>
+                      <td className="py-2.5 text-right font-extrabold">₹{p.sellingPrice.toLocaleString('en-IN')}</td>
+                      <td className="py-2.5 text-center font-extrabold">
                         <span className={p.stockQuantity <= 5 ? 'text-amber-800 font-extrabold' : 'text-black'}>
                           {p.stockQuantity}
                         </span>
                       </td>
-                      <td className="py-3.5 text-right space-x-1.5">
+                      <td className="py-2.5 text-right space-x-1.5">
                         <button
                           onClick={() => handleEditClick(p)}
                           className="p-1.5 border border-black/10 hover:border-black rounded-lg transition-all inline-block bg-white text-black/60 hover:text-black shadow-xs"
@@ -1251,7 +1261,7 @@ export default function AdminPage() {
                         </button>
                         <button
                           onClick={() => handleDeleteProductClick(p.id)}
-                          className="p-1.5 border border-black/10 hover:border-red-700 rounded-lg transition-all inline-block bg-white text-red-600 hover:text-red-700 hover:bg-red-50 shadow-xs"
+                          className="p-1.5 border border-black/10 hover:border-red-700 rounded-lg transition-all inline-block bg-white text-red-650 hover:text-red-750 hover:bg-red-50 shadow-xs"
                           aria-label="Delete"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -1268,10 +1278,19 @@ export default function AdminPage() {
               {products.map((p) => (
                 <div key={p.id} className="bg-[#fcfbf9] border border-black/5 p-4 rounded-2xl space-y-3 shadow-xs">
                   <div className="flex justify-between items-start gap-4">
-                    <div className="space-y-1">
-                      <span className="text-[9px] font-mono text-black/45 bg-black/5 px-2 py-0.5 rounded font-bold">{p.sku}</span>
-                      <h4 className="text-xs font-extrabold text-black pt-1">{p.name}</h4>
-                      <p className="text-[10px] text-black/50 font-bold">{p.brand} &bull; {p.category}</p>
+                    <div className="flex gap-3 items-start">
+                      <div className="w-12 h-14 bg-black/5 rounded-lg border border-black/5 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                        {p.images && p.images[0] ? (
+                          <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-[8px] text-black/35 font-bold">No Img</span>
+                        )}
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[9px] font-mono text-black/45 bg-black/5 px-2 py-0.5 rounded font-bold">{p.sku}</span>
+                        <h4 className="text-xs font-extrabold text-black pt-1">{p.name}</h4>
+                        <p className="text-[10px] text-black/50 font-bold">{p.brand} &bull; {p.category}</p>
+                      </div>
                     </div>
                     <div className="text-right shrink-0">
                       <span className="text-xs font-extrabold text-black block">₹{p.sellingPrice.toLocaleString('en-IN')}</span>
@@ -1285,7 +1304,7 @@ export default function AdminPage() {
                       onClick={() => handleEditClick(p)}
                       className="px-3 py-1.5 border border-black/10 hover:border-black rounded-lg transition-all text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 bg-white text-black/60 hover:text-black shadow-xs"
                     >
-                      <Edit2 className="w-3 h-3" /> Edit
+                      <Edit2 className="w-3.5 h-3.5" /> Edit
                     </button>
                     <button
                       onClick={() => handleDeleteProductClick(p.id)}
