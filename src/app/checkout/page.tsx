@@ -37,9 +37,24 @@ export default function CheckoutPage() {
   const [email, setEmail] = useState('');
   const [mobile, setMobile] = useState('');
   const [street, setStreet] = useState('');
+  const [flatBuilding, setFlatBuilding] = useState('');
+  const [roadLandmark, setRoadLandmark] = useState('');
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'COD' | 'RAZORPAY'>('RAZORPAY');
+
+  // Synchronize flatBuilding and roadLandmark into street Address
+  useEffect(() => {
+    const cleanFlat = flatBuilding.trim();
+    const cleanRoad = roadLandmark.trim();
+    if (cleanFlat && cleanRoad) {
+      setStreet(`${cleanFlat}, ${cleanRoad}`);
+    } else if (cleanFlat) {
+      setStreet(cleanFlat);
+    } else {
+      setStreet(cleanRoad);
+    }
+  }, [flatBuilding, roadLandmark]);
 
   // Checkout Status States
   const [validationError, setValidationError] = useState('');
@@ -184,7 +199,16 @@ export default function CheckoutPage() {
   const handleConfirmMapAddress = () => {
     const selected = (window as any).selectedMapAddress;
     if (selected) {
-      if (selected.street) setStreet(selected.street);
+      if (selected.street) {
+        const parts = selected.street.split(',');
+        if (parts.length > 1) {
+          setFlatBuilding(parts[0].trim());
+          setRoadLandmark(parts.slice(1).map((p: any) => p.trim()).join(', '));
+        } else {
+          setFlatBuilding('');
+          setRoadLandmark(selected.street);
+        }
+      }
       if (selected.city) setCity(selected.city);
       if (selected.state) setState(selected.state);
       if (selected.pincode) setPincode(selected.pincode);
@@ -232,7 +256,15 @@ export default function CheckoutPage() {
               ? streetParts.map((p: string) => p.trim()).join(', ') 
               : (addr.road || data.display_name.split(',')[0]);
             
-            setStreet(fetchedStreet);
+            const partsList = fetchedStreet.split(',');
+            if (partsList.length > 1) {
+              setFlatBuilding(partsList[0].trim());
+              setRoadLandmark(partsList.slice(1).map((p: string) => p.trim()).join(', '));
+            } else {
+              setFlatBuilding('');
+              setRoadLandmark(fetchedStreet);
+            }
+
             setCity(addr.city || addr.town || addr.village || addr.county || '');
             setState(addr.state || '');
             if (addr.postcode) {
@@ -267,7 +299,7 @@ export default function CheckoutPage() {
 
   // Debounced address search
   useEffect(() => {
-    if (!street || street.trim().length < 3) {
+    if (!roadLandmark || roadLandmark.trim().length < 3) {
       setAddressSuggestions([]);
       return;
     }
@@ -276,7 +308,7 @@ export default function CheckoutPage() {
       const fetchSuggestions = async () => {
         setIsFetchingSuggestions(true);
         try {
-          const res = await nominatimSearchAction(street);
+          const res = await nominatimSearchAction(roadLandmark);
           if (res.success && res.data) {
             setAddressSuggestions(res.data);
           }
@@ -291,7 +323,7 @@ export default function CheckoutPage() {
     }, 450);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [street]);
+  }, [roadLandmark]);
 
   // Click outside to dismiss suggestions dropdown
   useEffect(() => {
@@ -333,7 +365,15 @@ export default function CheckoutPage() {
       ? streetParts.map((p: string) => p.trim()).join(', ') 
       : (addr.road || item.display_name.split(',')[0]);
 
-    setStreet(fullStreetAddress);
+    const partsList = fullStreetAddress.split(',');
+    if (partsList.length > 1) {
+      setFlatBuilding(partsList[0].trim());
+      setRoadLandmark(partsList.slice(1).map((p: string) => p.trim()).join(', '));
+    } else {
+      setFlatBuilding('');
+      setRoadLandmark(fullStreetAddress);
+    }
+
     setCity(addr.city || addr.town || addr.village || addr.county || '');
     setState(addr.state || '');
     if (addr.postcode) {
@@ -415,19 +455,46 @@ export default function CheckoutPage() {
 
   const validateForm = (): boolean => {
     setValidationError('');
-    if (!name.trim()) return setError('Full Name is required.');
-    if (!email.trim() || !email.includes('@')) return setError('Valid Email is required.');
-    if (!mobile.trim() || mobile.length !== 10) return setError('10-digit mobile number is required.');
+    const isHindi = t('home.newArrivals') === 'नए जूते (New Arrivals)';
+
+    if (!name.trim()) {
+      return setError(isHindi ? 'पूरा नाम दर्ज करना आवश्यक है।' : 'Full Name is required.');
+    }
+    if (!email.trim() || !email.includes('@')) {
+      return setError(isHindi ? 'वैध ईमेल आईडी दर्ज करना आवश्यक है।' : 'Valid Email is required.');
+    }
+    if (!mobile.trim() || mobile.length !== 10) {
+      return setError(isHindi ? '१० अंकों का मोबाइल नंबर आवश्यक है।' : '10-digit mobile number is required.');
+    }
     
     // Guest must verify phone via OTP
     if (!user && !isMobileVerified) {
-      return setError('Please verify your mobile number with OTP first.');
+      return setError(isHindi ? 'कृपया पहले ओटीपी से अपना मोबाइल नंबर सत्यापित करें।' : 'Please verify your mobile number with OTP first.');
     }
 
-    if (!street.trim()) return setError('Street Address is required.');
-    if (!city.trim()) return setError('City is required.');
-    if (!state.trim()) return setError('State is required.');
-    if (!pincode.trim() || pincode.length !== 6) return setError('6-digit pincode is required.');
+    if (!flatBuilding.trim()) {
+      return setError(isHindi ? 'फ्लैट संख्या/इमारत का नाम दर्ज करना आवश्यक है।' : 'Flat/House No. & Building Name is required.');
+    }
+    if (flatBuilding.trim().length < 5) {
+      return setError(isHindi ? 'कृपया अधिक सटीक फ्लैट/इमारत का नाम दर्ज करें (कम से कम ५ अक्षर)।' : 'Please enter a more precise Flat/Building name (min 5 characters).');
+    }
+
+    if (!roadLandmark.trim()) {
+      return setError(isHindi ? 'सड़क का नाम/मील का पत्थर दर्ज करना आवश्यक है।' : 'Road Name, Colony & Landmark is required.');
+    }
+    if (roadLandmark.trim().length < 8) {
+      return setError(isHindi ? 'कृपया अधिक सटीक सड़क, क्षेत्र या मील का पत्थर दर्ज करें (कम से कम ८ अक्षर)।' : 'Please enter a more precise Road, Colony, or Landmark (min 8 characters).');
+    }
+
+    if (!city.trim()) {
+      return setError(isHindi ? 'शहर दर्ज करना आवश्यक है।' : 'City is required.');
+    }
+    if (!state.trim()) {
+      return setError(isHindi ? 'राज्य दर्ज करना आवश्यक है।' : 'State is required.');
+    }
+    if (!pincode.trim() || pincode.length !== 6) {
+      return setError(isHindi ? '६ अंकों का पिनकोड आवश्यक है।' : '6-digit pincode is required.');
+    }
     return true;
   };
 
@@ -769,7 +836,14 @@ export default function CheckoutPage() {
                       key={addr.id}
                       type="button"
                       onClick={() => {
-                        setStreet(addr.street);
+                        const parts = addr.street.split(',');
+                        if (parts.length > 1) {
+                          setFlatBuilding(parts[0].trim());
+                          setRoadLandmark(parts.slice(1).map(p => p.trim()).join(', '));
+                        } else {
+                          setFlatBuilding('');
+                          setRoadLandmark(addr.street);
+                        }
                         setCity(addr.city);
                         setState(addr.state);
                         setPincode(addr.pincode);
@@ -795,16 +869,35 @@ export default function CheckoutPage() {
               </div>
             )}
             <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-              <div className="md:col-span-6 space-y-1.5 relative">
-                <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'फ्लैट/इमारत, सड़क का पता' : 'Flat/Building, Street Address'}</label>
+              <div className="md:col-span-3 space-y-1.5">
+                <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold">
+                  {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'फ्लैट/मकान संख्या, मंजिल, इमारत का नाम' : 'Flat/House No., Floor, Building Name'}
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder={t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'उदा. फ्लैट ३०२, अपैक्स रेजीडेंसी' : 'e.g. Flat 302, Apex Residency'}
+                  value={flatBuilding}
+                  onChange={(e) => setFlatBuilding(e.target.value)}
+                  className="w-full border border-black/10 focus:border-black rounded-full px-4 py-2.5 text-xs outline-none bg-[#fdfdfd] transition-all text-black"
+                />
+                <span className="text-[8px] text-black/40 font-medium block pl-2">
+                  {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'विवरण भरना आवश्यक है (कम से कम ५ अक्षर)' : 'Required: Specific building or flat details (min 5 chars)'}
+                </span>
+              </div>
+
+              <div className="md:col-span-3 space-y-1.5 relative">
+                <label className="text-[9px] uppercase tracking-wider text-black/50 font-bold">
+                  {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सड़क का नाम, क्षेत्र, निकटतम मील का पत्थर' : 'Road Name, Area, Colony, Landmark'}
+                </label>
                 <input
                   id="checkoutStreetAddressInput"
                   type="text"
                   required
-                  placeholder={t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सड़क का पता दर्ज करें' : 'Enter street address'}
-                  value={street}
+                  placeholder={t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'उदा. क्लब रोड, धनबाद क्लब के पास' : 'e.g. Club Road, Near Dhanbad Club'}
+                  value={roadLandmark}
                   onChange={(e) => {
-                    setStreet(e.target.value);
+                    setRoadLandmark(e.target.value);
                     if (e.target.value.trim().length >= 3) {
                       setShowSuggestions(true);
                     } else {
@@ -813,13 +906,16 @@ export default function CheckoutPage() {
                     }
                   }}
                   onFocus={() => {
-                    if (street.trim().length >= 3) {
+                    if (roadLandmark.trim().length >= 3) {
                       setShowSuggestions(true);
                     }
                   }}
                   className="w-full border border-black/10 focus:border-black rounded-full px-4 py-2.5 text-xs outline-none bg-[#fdfdfd] transition-all text-black"
                   autoComplete="off"
                 />
+                <span className="text-[8px] text-black/40 font-medium block pl-2">
+                  {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'उदा. गली का नाम, प्रमुख मील का पत्थर (कम से कम ८ अक्षर)' : 'e.g. Street name, prominent landmark (min 8 chars)'}
+                </span>
 
                 {/* Suggestions Dropdown */}
                 {showSuggestions && (addressSuggestions.length > 0 || isFetchingSuggestions) && (
