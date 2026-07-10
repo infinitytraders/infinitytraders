@@ -182,7 +182,7 @@ export default function Footer() {
         {/* Bottom Copyright Row */}
         <div className="flex flex-col sm:flex-row justify-between items-center pt-8 text-[10px] text-black/45 font-medium tracking-wide">
           <div></div>
-          <div>&copy; {new Date().getFullYear()} infinity traders | All rights reserved. Made by Zawr Industries</div>
+          <div>&copy; {new Date().getFullYear()} infinity traders | All rights reserved. <a href="https://www.zawrindustries.com" target="_blank" rel="noopener noreferrer" className="hover:text-black transition-colors">Designed and developed by Zawr Industries</a></div>
         </div>
       </div>
     </footer>
