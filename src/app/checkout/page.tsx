@@ -267,17 +267,6 @@ export default function CheckoutPage() {
 
   // Debounced address search
   useEffect(() => {
-    // If Google Places Autocomplete is loaded and has NOT failed, bypass OpenStreetMap search suggestions
-    if (
-      typeof window !== 'undefined' && 
-      (window as any).google && 
-      (window as any).google.maps && 
-      (window as any).google.maps.places &&
-      !(window as any).googleMapsFailed
-    ) {
-      return;
-    }
-
     if (!street || street.trim().length < 3) {
       setAddressSuggestions([]);
       return;
@@ -303,100 +292,6 @@ export default function CheckoutPage() {
 
     return () => clearTimeout(delayDebounceFn);
   }, [street]);
-
-  // Google Places Autocomplete Initializer
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    // Define global Google Maps Auth Failure Handler
-    (window as any).gm_authFailure = () => {
-      console.warn('Google Maps authentication/billing failure. Falling back to OpenStreetMap.');
-      (window as any).googleMapsFailed = true;
-      // Reset suggestions to trigger re-renders
-      setAddressSuggestions([]);
-    };
-
-    let autocompleteInstance: any = null;
-
-    const initAutocomplete = () => {
-      const inputEl = document.getElementById('checkoutStreetAddressInput') as HTMLInputElement;
-      if (inputEl && (window as any).google && (window as any).google.maps && (window as any).google.maps.places && !(window as any).googleMapsFailed) {
-        try {
-          // Prevent multiple initializations on the same input
-          if ((inputEl as any)._googleAutocompleteInitialized) return;
-          (inputEl as any)._googleAutocompleteInitialized = true;
-
-          autocompleteInstance = new (window as any).google.maps.places.Autocomplete(inputEl, {
-            componentRestrictions: { country: 'in' },
-            fields: ['address_components', 'formatted_address', 'geometry', 'name'],
-          });
-
-          autocompleteInstance.addListener('place_changed', () => {
-            const place = autocompleteInstance.getPlace();
-            if (!place || !place.address_components) return;
-
-            const components = place.address_components;
-            let streetName = place.name || '';
-            let route = '';
-            let sublocality = '';
-            let locality = '';
-            let stateVal = '';
-            let postalCodeVal = '';
-
-            for (const c of components) {
-              const types = c.types;
-              if (types.includes('route')) {
-                route = c.long_name;
-              } else if (types.includes('sublocality') || types.includes('sublocality_level_1')) {
-                sublocality = c.long_name;
-              } else if (types.includes('locality')) {
-                locality = c.long_name;
-              } else if (types.includes('administrative_area_level_1')) {
-                stateVal = c.long_name;
-              } else if (types.includes('postal_code')) {
-                postalCodeVal = c.long_name;
-              }
-            }
-
-            // Build descriptive street address including the selected building/place name
-            let builtStreet = streetName;
-            if (route && builtStreet !== route) {
-              builtStreet = builtStreet ? `${builtStreet}, ${route}` : route;
-            }
-            if (sublocality && !builtStreet.includes(sublocality)) {
-              builtStreet = builtStreet ? `${builtStreet}, ${sublocality}` : sublocality;
-            }
-
-            setStreet(builtStreet);
-            if (locality) setCity(locality);
-            if (stateVal) setState(stateVal);
-            if (postalCodeVal) setPincode(postalCodeVal.replace(/\D/g, '').slice(0, 6));
-
-            // Clear any OpenStreetMap fallbacks
-            setShowSuggestions(false);
-            setAddressSuggestions([]);
-          });
-        } catch (err) {
-          console.error('Error initializing Google Places Autocomplete:', err);
-        }
-      }
-    };
-
-    // Try initializing
-    initAutocomplete();
-
-    // Check periodically for late loading script
-    const interval = setInterval(() => {
-      if ((window as any).google && (window as any).google.maps && (window as any).google.maps.places) {
-        initAutocomplete();
-        clearInterval(interval);
-      }
-    }, 1000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
 
   // Click outside to dismiss suggestions dropdown
   useEffect(() => {
