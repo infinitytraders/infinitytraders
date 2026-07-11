@@ -41,7 +41,7 @@ export default function AdminPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [loginEmail, setLoginEmail] = useState('admin@infinitytraders.shop');
-  const [loginPassword, setLoginPassword] = useState('admin123');
+  const [loginPassword, setLoginPassword] = useState('!NfIniTy2k26');
   const [loginError, setLoginError] = useState('');
 
   // Active board tab
@@ -647,7 +647,7 @@ export default function AdminPage() {
             <div className="bg-black/5 border border-black/5 p-4 rounded-2xl text-[10px] text-black/70 leading-relaxed font-bold">
               <span>Demo Staff Logins:</span>
               <ul className="list-disc pl-4 mt-1.5 font-extrabold space-y-0.5">
-                <li>Super Admin: admin@infinitytraders.shop / admin123</li>
+                <li>Super Admin: admin@infinitytraders.shop / !NfIniTy2k26</li>
                 <li>Store Manager: manager@infinitytraders.shop / manager123</li>
               </ul>
             </div>
