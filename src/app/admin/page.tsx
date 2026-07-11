@@ -998,7 +998,7 @@ export default function AdminPage() {
                         const isApparelCat = ['Apparel', 'Lowers', 'T-shirts', 'Gym Wear', 'Tracksuit', 'Sando'].includes(productForm.category);
                         const availableOptions = isApparelCat 
                           ? ['S', 'M', 'L', 'XL', 'XXL'] 
-                          : ['7', '8', '9', '10', '11'];
+                          : ['4', '5', '6', '7', '8', '9', '10', '11'];
                         
                         const currentSizes = productForm.sizes
                           .split(',')
