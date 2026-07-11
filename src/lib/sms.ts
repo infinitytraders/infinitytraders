@@ -1,10 +1,10 @@
-const CUSTOMER_ID = process.env.MESSAGECENTRAL_CUSTOMER_ID;
-const AUTH_TOKEN = process.env.MESSAGECENTRAL_AUTH_TOKEN;
-
 /**
  * Sends a 6-digit OTP code to the recipient's mobile number via Message Central
  */
 export async function sendSmsOtp(mobile: string): Promise<string | null> {
+  const CUSTOMER_ID = process.env.MESSAGECENTRAL_CUSTOMER_ID;
+  const AUTH_TOKEN = process.env.MESSAGECENTRAL_AUTH_TOKEN;
+
   try {
     if (!CUSTOMER_ID || !AUTH_TOKEN) {
       console.error('Message Central credentials are not configured in .env');
@@ -54,6 +54,9 @@ export async function sendSmsOtp(mobile: string): Promise<string | null> {
  * Validates a user-supplied OTP code using Message Central's validateOtp endpoint
  */
 export async function verifySmsOtp(verificationId: string, code: string): Promise<boolean> {
+  const CUSTOMER_ID = process.env.MESSAGECENTRAL_CUSTOMER_ID;
+  const AUTH_TOKEN = process.env.MESSAGECENTRAL_AUTH_TOKEN;
+
   try {
     if (!CUSTOMER_ID || !AUTH_TOKEN) {
       console.error('Message Central credentials are not configured in .env');
