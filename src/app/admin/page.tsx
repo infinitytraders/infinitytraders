@@ -1472,7 +1472,7 @@ export default function AdminPage() {
                         <td className="py-3.5 font-mono text-[10px] text-black/50">{o.id}</td>
                         <td className="py-3.5">
                           <p className="font-extrabold text-black">{o.customerName}</p>
-                          <p className="text-[10px] text-black/50 font-bold">{o.customerEmail} | Pincode: {o.shippingAddress.pincode}</p>
+                          <p className="text-[10px] text-black/50 font-bold">{o.customerEmail} | {o.customerMobile} | Pincode: {o.shippingAddress.pincode}</p>
                           <p className="text-[9px] text-black/60 font-bold mt-1 uppercase tracking-wider">
                             Method: <span className="text-black font-extrabold">{o.paymentMethod}</span> &nbsp;|&nbsp; 
                             Payment: <span className={`font-extrabold ${
@@ -1579,7 +1579,7 @@ export default function AdminPage() {
                         <span className="text-[9px] font-mono text-black/45 bg-black/5 px-2 py-0.5 rounded font-bold">{o.id}</span>
                         <span className="text-[9px] text-black/40 block mt-1.5">{new Date(o.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</span>
                         <h4 className="text-xs font-extrabold text-black mt-2">{o.customerName}</h4>
-                        <p className="text-[10px] text-black/50 font-bold">{o.customerEmail} | Pincode: {o.shippingAddress.pincode}</p>
+                        <p className="text-[10px] text-black/50 font-bold">{o.customerEmail} | {o.customerMobile} | Pincode: {o.shippingAddress.pincode}</p>
                         <p className="text-[9px] text-black/60 font-bold mt-1 uppercase tracking-wider">
                           Method: <span className="text-black font-extrabold">{o.paymentMethod}</span> &nbsp;|&nbsp; 
                           Payment: <span className={`font-extrabold ${
