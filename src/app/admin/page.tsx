@@ -1472,7 +1472,24 @@ export default function AdminPage() {
                         <td className="py-3.5 font-mono text-[10px] text-black/50">{o.id}</td>
                         <td className="py-3.5">
                           <p className="font-extrabold text-black">{o.customerName}</p>
-                          <p className="text-[10px] text-black/50 font-bold">{o.customerEmail} | {o.customerMobile} | Pincode: {o.shippingAddress.pincode}</p>
+                          <div className="text-[10px] text-black/50 font-bold flex flex-wrap items-center gap-1 mt-0.5">
+                            <span>{o.customerEmail}</span>
+                            <span className="text-black/20">&nbsp;|&nbsp;</span>
+                            <a href={`tel:${o.customerMobile}`} className="hover:underline text-black font-extrabold bg-black/5 px-1.5 py-0.5 rounded transition-all">
+                              📞 {o.customerMobile}
+                            </a>
+                            {['9999999999', '8888888888', '7777777777', '9876543210'].includes(o.customerMobile) ? (
+                              <span className="bg-amber-600/10 text-amber-800 text-[8px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                                ⚠ Demo/Unverified
+                              </span>
+                            ) : (
+                              <span className="bg-emerald-700/10 text-emerald-800 text-[8px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                                ✓ OTP Verified
+                              </span>
+                            )}
+                            <span className="text-black/20">&nbsp;|&nbsp;</span>
+                            <span>Pincode: {o.shippingAddress.pincode}</span>
+                          </div>
                           <p className="text-[9px] text-black/60 font-bold mt-1 uppercase tracking-wider">
                             Method: <span className="text-black font-extrabold">{o.paymentMethod}</span> &nbsp;|&nbsp; 
                             Payment: <span className={`font-extrabold ${
@@ -1579,7 +1596,24 @@ export default function AdminPage() {
                         <span className="text-[9px] font-mono text-black/45 bg-black/5 px-2 py-0.5 rounded font-bold">{o.id}</span>
                         <span className="text-[9px] text-black/40 block mt-1.5">{new Date(o.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</span>
                         <h4 className="text-xs font-extrabold text-black mt-2">{o.customerName}</h4>
-                        <p className="text-[10px] text-black/50 font-bold">{o.customerEmail} | {o.customerMobile} | Pincode: {o.shippingAddress.pincode}</p>
+                        <div className="text-[10px] text-black/50 font-bold flex flex-wrap items-center gap-1 mt-0.5">
+                          <span>{o.customerEmail}</span>
+                          <span className="text-black/20">&nbsp;|&nbsp;</span>
+                          <a href={`tel:${o.customerMobile}`} className="hover:underline text-black font-extrabold bg-black/5 px-1.5 py-0.5 rounded transition-all">
+                            📞 {o.customerMobile}
+                          </a>
+                          {['9999999999', '8888888888', '7777777777', '9876543210'].includes(o.customerMobile) ? (
+                            <span className="bg-amber-600/10 text-amber-800 text-[8px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                              ⚠ Demo/Unverified
+                            </span>
+                          ) : (
+                            <span className="bg-emerald-700/10 text-emerald-800 text-[8px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                              ✓ OTP Verified
+                            </span>
+                          )}
+                          <span className="text-black/20">&nbsp;|&nbsp;</span>
+                          <span>Pincode: {o.shippingAddress.pincode}</span>
+                        </div>
                         <p className="text-[9px] text-black/60 font-bold mt-1 uppercase tracking-wider">
                           Method: <span className="text-black font-extrabold">{o.paymentMethod}</span> &nbsp;|&nbsp; 
                           Payment: <span className={`font-extrabold ${
