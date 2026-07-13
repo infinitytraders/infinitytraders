@@ -773,9 +773,9 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
               desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'सक्रिय ट्रैकवियर' : 'Active trackwear'
             },
             {
-              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'जिम वियर (Gym Wear)' : 'Gym Wear',
+              name: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'टी-शर्ट (T-Shirts)' : 'T-Shirts',
               img: '/categories/T-shirts.png',
-              link: '/shop?category=Gym Wear',
+              link: '/shop?category=T-shirts',
               desc: t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'एथलेटिक एक्टिववियर' : 'Athletic activewear'
             },
             {
