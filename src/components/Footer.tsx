@@ -50,10 +50,13 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-10 sm:gap-12 text-left pb-16 border-b border-black/[0.06]">
           
           {/* Logo Column */}
-          <div className="md:col-span-2">
+          <div className="md:col-span-2 space-y-4">
             <div className="text-4xl font-light text-black tracking-tight leading-none uppercase select-none">
               INFINITY<br /><span className="font-extrabold">TRADERS</span>
             </div>
+            <p className="text-[10px] text-black/50 font-normal leading-relaxed">
+              Infinity Traders is an e-commerce platform. We use Google Sign-In to allow customers to securely access their accounts, track orders, and manage shipping addresses.
+            </p>
           </div>
 
           {/* Column 1: Links */}
