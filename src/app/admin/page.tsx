@@ -1201,6 +1201,7 @@ export default function AdminPage() {
                     <th className="pb-3">Name</th>
                     <th className="pb-3">Brand</th>
                     <th className="pb-3">Category</th>
+                    <th className="pb-3">Sizes</th>
                     <th className="pb-3 text-right">Price</th>
                     <th className="pb-3 text-center">Stock</th>
                     <th className="pb-3 text-right">Actions</th>
@@ -1222,6 +1223,7 @@ export default function AdminPage() {
                       <td className="py-2.5 font-extrabold text-black line-clamp-1 max-w-xs">{p.name}</td>
                       <td className="py-2.5 font-medium">{p.brand}</td>
                       <td className="py-2.5 font-medium">{p.category}</td>
+                      <td className="py-2.5 font-mono text-[10px] text-black/60 font-extrabold">{p.sizes.join(', ')}</td>
                       <td className="py-2.5 text-right font-extrabold">₹{p.sellingPrice.toLocaleString('en-IN')}</td>
                       <td className="py-2.5 text-center font-extrabold">
                         <span className={p.stockQuantity <= 5 ? 'text-amber-800 font-extrabold' : 'text-black'}>
@@ -1267,6 +1269,7 @@ export default function AdminPage() {
                         <span className="text-[9px] font-mono text-black/45 bg-black/5 px-2 py-0.5 rounded font-bold">{p.sku}</span>
                         <h4 className="text-xs font-extrabold text-black pt-1">{p.name}</h4>
                         <p className="text-[10px] text-black/50 font-bold">{p.brand} &bull; {p.category}</p>
+                        <p className="text-[9px] text-black/45 bg-black/5 px-2 py-0.5 rounded font-extrabold inline-block">Sizes: {p.sizes.join(', ')}</p>
                       </div>
                     </div>
                     <div className="text-right shrink-0">
