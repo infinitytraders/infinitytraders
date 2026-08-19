@@ -104,7 +104,14 @@ export default function ProductDetailClient({ product, recommendations, initialU
                   selectedImage === img ? 'border-black ring-1 ring-black' : 'border-black/5 hover:border-black/20'
                 }`}
               >
-                <img src={img} alt={`${tp(product.id, 'name', product.name)} thumb ${idx}`} className="w-full h-full object-cover" />
+                <img
+                  src={img}
+                  alt={`${tp(product.id, 'name', product.name)} thumb ${idx}`}
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = '/categories/sneakers.jpg';
+                  }}
+                  className="w-full h-full object-cover"
+                />
               </button>
             ))}
           </div>
@@ -112,8 +119,11 @@ export default function ProductDetailClient({ product, recommendations, initialU
           {/* Main Selected Image */}
           <div className="md:col-span-10 aspect-[4/5] bg-white border border-black/5 rounded-2xl overflow-hidden relative shadow-xs">
             <img
-              src={selectedImage}
+              src={selectedImage || '/categories/sneakers.jpg'}
               alt={tp(product.id, 'name', product.name)}
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = '/categories/sneakers.jpg';
+              }}
               className="w-full h-full object-cover"
             />
             {product.discountPercentage > 0 && (
@@ -133,7 +143,14 @@ export default function ProductDetailClient({ product, recommendations, initialU
                   selectedImage === img ? 'border-black ring-1 ring-black' : 'border-black/5'
                 }`}
               >
-                <img src={img} alt={`${tp(product.id, 'name', product.name)} thumb ${idx}`} className="w-full h-full object-cover" />
+                <img
+                  src={img}
+                  alt={`${tp(product.id, 'name', product.name)} thumb ${idx}`}
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = '/categories/sneakers.jpg';
+                  }}
+                  className="w-full h-full object-cover"
+                />
               </button>
             ))}
           </div>
