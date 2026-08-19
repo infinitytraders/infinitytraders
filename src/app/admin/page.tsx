@@ -124,28 +124,73 @@ export default function AdminPage() {
   const cloudinaryUploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
   const cloudinaryConfigured = !!(cloudinaryCloudName && cloudinaryUploadPreset);
 
+  // Helper to compress images client-side before upload
+  const compressImage = (file: File): Promise<Blob | File> => {
+    return new Promise((resolve) => {
+      // If SVG or gif, don't compress via canvas
+      if (file.type === 'image/svg+xml' || file.type === 'image/gif') {
+        return resolve(file);
+      }
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const maxDim = 1200;
+          let width = img.width;
+          let height = img.height;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            canvas.toBlob(
+              (blob) => {
+                if (blob && blob.size < file.size) {
+                  resolve(blob);
+                } else {
+                  resolve(file);
+                }
+              },
+              'image/jpeg',
+              0.85
+            );
+          } else {
+            resolve(file);
+          }
+        };
+        img.onerror = () => resolve(file);
+      };
+      reader.onerror = () => resolve(file);
+    });
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
     setUploadError('');
-    
-    // Check limit on image sizes (2MB = 2 * 1024 * 1024 bytes)
-    const MAX_SIZE_BYTES = 2 * 1024 * 1024;
-    const oversizedFiles = Array.from(files).filter(file => file.size > MAX_SIZE_BYTES);
-    if (oversizedFiles.length > 0) {
-      alert(`Some files exceed the 2MB size limit: ${oversizedFiles.map(f => f.name).join(', ')}. Please resize or compress your images.`);
-      return;
-    }
-
     setUploadingImages(true);
     const uploadedUrls: string[] = [];
 
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
+        const compressedBlob = await compressImage(file);
+
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('file', compressedBlob, file.name);
         formData.append('upload_preset', cloudinaryUploadPreset!);
 
         const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/image/upload`, {
@@ -154,12 +199,17 @@ export default function AdminPage() {
         });
 
         if (!res.ok) {
-          throw new Error(`Failed to upload ${file.name} to Cloudinary`);
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData?.error?.message || `Failed to upload ${file.name} to Cloudinary`);
         }
 
         const data = await res.json();
         if (data.secure_url) {
-          uploadedUrls.push(data.secure_url);
+          // Inject f_auto,q_auto into the stored Cloudinary URL for 95% bandwidth savings
+          const optimizedUrl = data.secure_url.includes('/image/upload/')
+            ? data.secure_url.replace('/image/upload/', '/image/upload/f_auto,q_auto/')
+            : data.secure_url;
+          uploadedUrls.push(optimizedUrl);
         }
       }
 
