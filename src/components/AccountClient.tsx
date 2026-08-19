@@ -6,6 +6,7 @@ import { getSessionUser, loginAction, registerAction, getOrdersAction, getProduc
 import type { User, Order, Product } from '@/lib/db';
 import { Star, User as UserIcon, Package, Heart, Eye, EyeOff, LogOut, Plus, AlertCircle, FileText, CheckCircle2, ChevronRight, Edit2 } from 'lucide-react';
 import Link from 'next/link';
+import { getOptimizedImageUrl } from '@/lib/imageHelper';
 
 export default function AccountClient() {
   const router = useRouter();
@@ -1330,7 +1331,16 @@ export default function AccountClient() {
                       className="bg-white border border-black/5 rounded-2xl overflow-hidden flex flex-col justify-between hover:shadow-sm transition-all shadow-xs"
                     >
                       <Link href={`/product/${p.id}`} className="aspect-[4/5] bg-[#fcfbf9] overflow-hidden block relative border-b border-black/5">
-                        <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
+                        <img
+                          src={getOptimizedImageUrl(p.images[0], 400)}
+                          alt={p.name}
+                          loading="lazy"
+                          decoding="async"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = '/categories/sneakers.jpg';
+                          }}
+                          className="w-full h-full object-cover"
+                        />
                       </Link>
                       <div className="p-4 space-y-1">
                         <span className="text-[9px] uppercase tracking-widest text-black/45 font-bold block">{p.brand}</span>
@@ -1363,7 +1373,16 @@ export default function AccountClient() {
                       className="bg-white border border-black/5 rounded-2xl overflow-hidden flex flex-col justify-between hover:shadow-sm transition-all shadow-xs"
                     >
                       <Link href={`/product/${p.id}`} className="aspect-[4/5] bg-[#fcfbf9] overflow-hidden block relative border-b border-black/5">
-                        <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
+                        <img
+                          src={getOptimizedImageUrl(p.images[0], 400)}
+                          alt={p.name}
+                          loading="lazy"
+                          decoding="async"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = '/categories/sneakers.jpg';
+                          }}
+                          className="w-full h-full object-cover"
+                        />
                       </Link>
                       <div className="p-4 space-y-1">
                         <span className="text-[9px] uppercase tracking-widest text-black/45 font-bold block">{p.brand}</span>

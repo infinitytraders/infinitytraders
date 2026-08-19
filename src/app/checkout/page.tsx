@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import confetti from 'canvas-confetti';
 import Script from 'next/script';
+import { getOptimizedImageUrl } from '@/lib/imageHelper';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -1049,7 +1050,16 @@ export default function CheckoutPage() {
             {cart.map((item, idx) => (
               <div key={idx} className="py-3 flex gap-3 text-xs">
                 <div className="w-10 h-12 bg-[#fcfbf9] border border-black/5 rounded-xl overflow-hidden flex-shrink-0">
-                  <img src={item.product.images[0]} alt={item.product.name} className="w-full h-full object-cover" />
+                  <img
+                    src={getOptimizedImageUrl(item.product.images[0], 120)}
+                    alt={item.product.name}
+                    loading="lazy"
+                    decoding="async"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = '/categories/sneakers.jpg';
+                    }}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div className="flex-1 flex justify-between">
                   <div>

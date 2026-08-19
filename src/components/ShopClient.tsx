@@ -10,6 +10,7 @@ import { Star, Search, SlidersHorizontal, Grid, X, ShoppingCart } from 'lucide-r
 import Link from 'next/link';
 import { getHexFromColorName, getColorsArray } from '@/lib/colors';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getOptimizedImageUrl } from '@/lib/imageHelper';
 
 
 function normalizeBrandName(brand: string): string {
@@ -361,8 +362,10 @@ export default function ShopClient() {
                       </span>
                     )}
                     <img
-                      src={product.images[0] || '/categories/sneakers.jpg'}
+                      src={getOptimizedImageUrl(product.images[0], 500)}
                       alt={product.name}
+                      loading="lazy"
+                      decoding="async"
                       onError={(e) => {
                         (e.currentTarget as HTMLImageElement).src = '/categories/sneakers.jpg';
                       }}

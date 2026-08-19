@@ -9,6 +9,7 @@ import { Star, Truck, Heart, Share2, Plus, Minus, ShieldAlert } from 'lucide-rea
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getHexFromColorName, getColorsArray } from '@/lib/colors';
+import { getOptimizedImageUrl } from '@/lib/imageHelper';
 
 interface ProductDetailClientProps {
   product: Product;
@@ -105,8 +106,10 @@ export default function ProductDetailClient({ product, recommendations, initialU
                 }`}
               >
                 <img
-                  src={img}
+                  src={getOptimizedImageUrl(img, 160)}
                   alt={`${tp(product.id, 'name', product.name)} thumb ${idx}`}
+                  loading="lazy"
+                  decoding="async"
                   onError={(e) => {
                     (e.currentTarget as HTMLImageElement).src = '/categories/sneakers.jpg';
                   }}
@@ -119,8 +122,9 @@ export default function ProductDetailClient({ product, recommendations, initialU
           {/* Main Selected Image */}
           <div className="md:col-span-10 aspect-[4/5] bg-white border border-black/5 rounded-2xl overflow-hidden relative shadow-xs">
             <img
-              src={selectedImage || '/categories/sneakers.jpg'}
+              src={getOptimizedImageUrl(selectedImage, 900)}
               alt={tp(product.id, 'name', product.name)}
+              decoding="async"
               onError={(e) => {
                 (e.currentTarget as HTMLImageElement).src = '/categories/sneakers.jpg';
               }}
@@ -144,8 +148,10 @@ export default function ProductDetailClient({ product, recommendations, initialU
                 }`}
               >
                 <img
-                  src={img}
+                  src={getOptimizedImageUrl(img, 160)}
                   alt={`${tp(product.id, 'name', product.name)} thumb ${idx}`}
+                  loading="lazy"
+                  decoding="async"
                   onError={(e) => {
                     (e.currentTarget as HTMLImageElement).src = '/categories/sneakers.jpg';
                   }}
@@ -516,8 +522,13 @@ export default function ProductDetailClient({ product, recommendations, initialU
               >
                 <Link href={`/product/${rec.id}`} className="block relative aspect-[4/5] bg-white overflow-hidden border-b border-black/5">
                   <img
-                    src={rec.images[0]}
+                    src={getOptimizedImageUrl(rec.images[0], 500)}
                     alt={tp(rec.id, 'name', rec.name)}
+                    loading="lazy"
+                    decoding="async"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = '/categories/sneakers.jpg';
+                    }}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-103"
                   />
                   <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity" />

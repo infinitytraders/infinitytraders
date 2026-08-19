@@ -30,6 +30,7 @@ import {
   deleteUserAction
 } from '@/app/actions';
 import { getHexFromColorName, getColorsArray } from '@/lib/colors';
+import { getOptimizedImageUrl } from '@/lib/imageHelper';
 import type { User, Product, Order, Coupon, PincodeServiceability, AuditLog, NewsletterSubscriber } from '@/lib/db';
 import { BarChart3, ShoppingCart, Users, BadgeAlert, Plus, Edit2, Trash2, Check, X, FileSpreadsheet, Package, AlertTriangle, ShieldCheck, Tag, History, MapPin, Truck } from 'lucide-react';
 import Link from 'next/link';
@@ -1263,7 +1264,13 @@ export default function AdminPage() {
                       <td className="py-2.5">
                         <div className="w-10 h-12 bg-black/5 rounded-lg border border-black/5 overflow-hidden flex-shrink-0 flex items-center justify-center">
                           {p.images && p.images[0] ? (
-                            <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
+                            <img
+                              src={getOptimizedImageUrl(p.images[0], 120)}
+                              alt={p.name}
+                              loading="lazy"
+                              decoding="async"
+                              className="w-full h-full object-cover"
+                            />
                           ) : (
                             <span className="text-[8px] text-black/35 font-bold">No Img</span>
                           )}
@@ -1310,7 +1317,13 @@ export default function AdminPage() {
                     <div className="flex gap-3 items-start">
                       <div className="w-12 h-14 bg-black/5 rounded-lg border border-black/5 overflow-hidden flex-shrink-0 flex items-center justify-center">
                         {p.images && p.images[0] ? (
-                          <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
+                          <img
+                            src={getOptimizedImageUrl(p.images[0], 120)}
+                            alt={p.name}
+                            loading="lazy"
+                            decoding="async"
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
                           <span className="text-[8px] text-black/35 font-bold">No Img</span>
                         )}

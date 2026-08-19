@@ -9,6 +9,7 @@ import { getHexFromColorName, getColorsArray } from '@/lib/colors';
 import { ArrowRight, ShoppingCart, Star, CheckCircle, ShieldAlert, Send, ChevronLeft, ChevronRight, MapPin, ExternalLink, X } from 'lucide-react';
 import { motion, AnimatePresence, useInView, animate } from 'framer-motion';
 import { subscribeNewsletterAction } from '@/app/actions';
+import { getOptimizedImageUrl } from '@/lib/imageHelper';
 
 interface HomeClientProps {
   initialProducts: Product[];
@@ -237,7 +238,7 @@ function getRecommendationsForBrand(
     name: p.name,
     brand: p.brand,
     price: `₹${p.sellingPrice.toLocaleString('en-IN')}`,
-    image: p.images[0] || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80',
+    image: getOptimizedImageUrl(p.images[0], 400),
     link: `/product/${p.id}`,
     isReal: true
   });
@@ -1060,8 +1061,10 @@ export default function HomeClient({ initialProducts }: HomeClientProps) {
                   </span>
                 )}
                 <img
-                  src={product.images[0] || '/categories/sneakers.jpg'}
+                  src={getOptimizedImageUrl(product.images[0], 500)}
                   alt={product.name}
+                  loading="lazy"
+                  decoding="async"
                   onError={(e) => {
                     (e.currentTarget as HTMLImageElement).src = '/categories/sneakers.jpg';
                   }}

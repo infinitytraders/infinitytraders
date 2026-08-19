@@ -6,6 +6,7 @@ import { useCart } from '@/context/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { X, Plus, Minus, Trash2, Tag, Truck, CheckCircle2, AlertTriangle, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getOptimizedImageUrl } from '@/lib/imageHelper';
 
 export default function CartDrawer() {
   const {
@@ -140,8 +141,13 @@ export default function CartDrawer() {
                       {/* Product Image */}
                       <div className="w-20 h-24 bg-[#fcfbf9] rounded-xl overflow-hidden flex-shrink-0 relative border border-black/5">
                         <img
-                          src={item.product.images[0]}
+                          src={getOptimizedImageUrl(item.product.images[0], 160)}
                           alt={item.product.name}
+                          loading="lazy"
+                          decoding="async"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = '/categories/sneakers.jpg';
+                          }}
                           className="w-full h-full object-cover"
                         />
                       </div>
