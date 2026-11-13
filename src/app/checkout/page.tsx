@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
-import { getSessionUser, createOrderAction, sendCheckoutMobileOtpAction, verifyCheckoutMobileOtpAction, nominatimSearchAction, nominatimReverseGeocodeAction } from '@/app/actions';
+import { getSessionUser, createOrderAction, sendCheckoutMobileOtpAction, verifyCheckoutMobileOtpAction, nominatimSearchAction, nominatimReverseGeocodeAction, getCodStatusAction } from '@/app/actions';
 import { User, Order } from '@/lib/db';
 import { useLanguage } from '@/context/LanguageContext';
 import { ShoppingBag, CreditCard, CheckCircle2, AlertTriangle, Truck, Sparkles, Printer, MapPin, Navigation } from 'lucide-react';
@@ -43,6 +43,7 @@ export default function CheckoutPage() {
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'COD' | 'RAZORPAY'>('RAZORPAY');
+  const [isCodEnabled, setIsCodEnabled] = useState<boolean>(true);
 
   // Synchronize flatBuilding and roadLandmark into street Address
   useEffect(() => {
@@ -56,6 +57,70 @@ export default function CheckoutPage() {
       setStreet(cleanRoad);
     }
   }, [flatBuilding, roadLandmark]);
+
+  // Real-time COD availability sync
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkCodAvailability = async () => {
+      try {
+        const res = await fetch('/api/cod-status', { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted) {
+            const enabled = Boolean(data.codEnabled);
+            setIsCodEnabled(enabled);
+            if (!enabled && paymentMethod === 'COD') {
+              setPaymentMethod('RAZORPAY');
+              setValidationError(
+                t('home.newArrivals') === 'नए जूते (New Arrivals)'
+                  ? 'कैश ऑन डिलीवरी (COD) इस समय अक्षम है। ऑनलाइन भुगतान पर स्विच कर दिया गया है।'
+                  : 'Cash on Delivery (COD) is currently disabled. Switched to online payment.'
+              );
+            }
+          }
+          return;
+        }
+      } catch (e) {
+        // Fallback to server action below
+      }
+
+      try {
+        const enabled = await getCodStatusAction();
+        if (isMounted) {
+          setIsCodEnabled(enabled);
+          if (!enabled && paymentMethod === 'COD') {
+            setPaymentMethod('RAZORPAY');
+            setValidationError(
+              t('home.newArrivals') === 'नए जूते (New Arrivals)'
+                ? 'कैश ऑन डिलीवरी (COD) इस समय अक्षम है। ऑनलाइन भुगतान पर स्विच कर दिया गया है।'
+                : 'Cash on Delivery (COD) is currently disabled. Switched to online payment.'
+            );
+          }
+        }
+      } catch (err) {
+        // Silent fallback
+      }
+    };
+
+    checkCodAvailability();
+    const pollInterval = setInterval(checkCodAvailability, 3000);
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        checkCodAvailability();
+      }
+    };
+    window.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('focus', checkCodAvailability);
+
+    return () => {
+      isMounted = false;
+      clearInterval(pollInterval);
+      window.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('focus', checkCodAvailability);
+    };
+  }, [paymentMethod, t]);
 
   // Checkout Status States
   const [validationError, setValidationError] = useState('');
@@ -508,6 +573,15 @@ export default function CheckoutPage() {
     e.preventDefault();
     if (!validateForm()) return;
 
+    if (paymentMethod === 'COD' && !isCodEnabled) {
+      setValidationError(
+        t('home.newArrivals') === 'नए जूते (New Arrivals)'
+          ? 'कैश ऑन डिलीवरी (COD) इस समय अक्षम है। कृपया रेज़रपे ऑनलाइन भुगतान चुनें।'
+          : 'Cash on Delivery (COD) is currently disabled. Please choose Razorpay Online Payment.'
+      );
+      return;
+    }
+
     if (paymentMethod === 'RAZORPAY') {
       const rzpKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_live_T7TLW2HhvqGGyq';
       
@@ -549,6 +623,15 @@ export default function CheckoutPage() {
   };
 
   const processOrderPlacement = async (paymentId?: string) => {
+    if (paymentMethod === 'COD' && !isCodEnabled) {
+      setValidationError(
+        t('home.newArrivals') === 'नए जूते (New Arrivals)'
+          ? 'कैश ऑन डिलीवरी (COD) इस समय अक्षम है। कृपया रेज़रपे ऑनलाइन भुगतान चुनें।'
+          : 'Cash on Delivery (COD) is currently disabled. Please choose Razorpay Online Payment.'
+      );
+      return;
+    }
+
     setIsSubmitting(true);
     setValidationError('');
 
@@ -1015,17 +1098,37 @@ export default function CheckoutPage() {
 
               <button
                 type="button"
-                onClick={() => setPaymentMethod('COD')}
-                className={`p-4 border rounded-2xl text-left flex flex-col justify-between h-24 transition-all ${
-                  paymentMethod === 'COD'
+                disabled={!isCodEnabled}
+                onClick={() => {
+                  if (isCodEnabled) {
+                    setPaymentMethod('COD');
+                  }
+                }}
+                className={`p-4 border rounded-2xl text-left flex flex-col justify-between h-24 transition-all relative ${
+                  !isCodEnabled
+                    ? 'border-black/10 bg-black/[0.03] text-black/40 cursor-not-allowed opacity-60'
+                    : paymentMethod === 'COD'
                     ? 'border-black bg-black text-white'
                     : 'border-black/10 bg-white text-black hover:border-black/25'
                 }`}
               >
-                <Truck className="w-5 h-5" />
+                <div className="flex items-center justify-between w-full">
+                  <Truck className={`w-5 h-5 ${!isCodEnabled ? 'text-black/30' : ''}`} />
+                  {!isCodEnabled && (
+                    <span className="text-[8px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">
+                      {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'अक्षम (Disabled)' : 'Unavailable'}
+                    </span>
+                  )}
+                </div>
                 <div>
-                  <p className="text-[10px] font-extrabold uppercase tracking-wider">{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'कैश ऑन डिलीवरी (COD)' : 'Cash on Delivery (COD)'}</p>
-                  <p className={`text-[9px] font-medium ${paymentMethod === 'COD' ? 'text-white/70' : 'text-black/50'}`}>{t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'डिलिवरी पर नकद भुगतान करें' : 'Settle with cash upon delivery'}</p>
+                  <p className="text-[10px] font-extrabold uppercase tracking-wider">
+                    {t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'कैश ऑन डिलीवरी (COD)' : 'Cash on Delivery (COD)'}
+                  </p>
+                  <p className={`text-[9px] font-medium ${!isCodEnabled ? 'text-black/40' : paymentMethod === 'COD' ? 'text-white/70' : 'text-black/50'}`}>
+                    {!isCodEnabled
+                      ? (t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'वर्तमान में अनुपलब्ध है' : 'Temporarily unavailable')
+                      : (t('home.newArrivals') === 'नए जूते (New Arrivals)' ? 'डिलिवरी पर नकद भुगतान करें' : 'Settle with cash upon delivery')}
+                  </p>
                 </div>
               </button>
             </div>

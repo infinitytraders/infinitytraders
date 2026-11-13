@@ -137,6 +137,7 @@ export interface DatabaseSchema {
   settings: {
     standardShippingFee: number;
     freeShippingThreshold: number;
+    codEnabled?: boolean;
   };
 }
 
@@ -655,18 +656,31 @@ export const db = {
   },
 
   // SETTINGS
-  async getSettings(): Promise<{ standardShippingFee: number; freeShippingThreshold: number }> {
+  async getSettings(): Promise<{ standardShippingFee: number; freeShippingThreshold: number; codEnabled: boolean }> {
     const res = await pool.query('SELECT * FROM settings');
     const feeRow = res.rows.find(r => r.key === 'shipping_fee');
     const thresholdRow = res.rows.find(r => r.key === 'free_shipping_threshold');
+    const codRow = res.rows.find(r => r.key === 'cod_enabled');
     
+    let codEnabled = true;
+    if (codRow && codRow.value !== undefined && codRow.value !== null) {
+      if (typeof codRow.value === 'boolean') {
+        codEnabled = codRow.value;
+      } else if (typeof codRow.value === 'string') {
+        codEnabled = codRow.value.toLowerCase() === 'true';
+      } else {
+        codEnabled = Boolean(codRow.value);
+      }
+    }
+
     return {
       standardShippingFee: feeRow ? Number(feeRow.value) : 99,
-      freeShippingThreshold: thresholdRow ? Number(thresholdRow.value) : 999
+      freeShippingThreshold: thresholdRow ? Number(thresholdRow.value) : 999,
+      codEnabled
     };
   },
 
-  async updateSettings(updates: Partial<{ standardShippingFee: number; freeShippingThreshold: number }>): Promise<any> {
+  async updateSettings(updates: Partial<{ standardShippingFee: number; freeShippingThreshold: number; codEnabled: boolean }>): Promise<any> {
     if (updates.standardShippingFee !== undefined) {
       await pool.query(
         'INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value',
@@ -677,6 +691,12 @@ export const db = {
       await pool.query(
         'INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value',
         ['free_shipping_threshold', JSON.stringify(updates.freeShippingThreshold)]
+      );
+    }
+    if (updates.codEnabled !== undefined) {
+      await pool.query(
+        'INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value',
+        ['cod_enabled', JSON.stringify(Boolean(updates.codEnabled))]
       );
     }
     return this.getSettings();

@@ -652,6 +652,17 @@ export async function createOrderAction(orderData: {
       }
     }
 
+    // Validate Cash on Delivery (COD) availability
+    if (orderData.paymentMethod === 'COD') {
+      const currentSettings = await db.getSettings();
+      if (!currentSettings.codEnabled) {
+        return {
+          success: false,
+          error: 'Cash on Delivery (COD) is currently disabled by store management. Please select online payment via Razorpay.'
+        };
+      }
+    }
+
     const cookieStore = await cookies();
     let user = await getSessionUser();
 
@@ -1069,19 +1080,45 @@ export async function getSettingsAction() {
   return await db.getSettings();
 }
 
-export async function updateSettingsAction(updates: { standardShippingFee: number; freeShippingThreshold: number }) {
+export async function getCodStatusAction(): Promise<boolean> {
+  const settings = await db.getSettings();
+  return Boolean(settings.codEnabled);
+}
+
+export async function updateSettingsAction(updates: {
+  standardShippingFee?: number;
+  freeShippingThreshold?: number;
+  codEnabled?: boolean;
+}) {
   const currentUser = await getSessionUser();
-  if (!currentUser || currentUser.role !== 'SUPER_ADMIN') {
+  if (!currentUser || !['SUPER_ADMIN', 'STORE_MANAGER'].includes(currentUser.role)) {
     return { success: false, error: 'Unauthorized.' };
   }
 
   try {
     const settings = await db.updateSettings(updates);
-    await db.createAuditLog(currentUser.id, currentUser.email, 'SETTINGS_UPDATE', `Updated shipping settings: standard=${updates.standardShippingFee}, freeThreshold=${updates.freeShippingThreshold}`);
+    const detailParts: string[] = [];
+    if (updates.standardShippingFee !== undefined) detailParts.push(`standardShippingFee=${updates.standardShippingFee}`);
+    if (updates.freeShippingThreshold !== undefined) detailParts.push(`freeShippingThreshold=${updates.freeShippingThreshold}`);
+    if (updates.codEnabled !== undefined) detailParts.push(`codEnabled=${updates.codEnabled ? 'ENABLED' : 'DISABLED'}`);
+    await db.createAuditLog(
+      currentUser.id,
+      currentUser.email,
+      'SETTINGS_UPDATE',
+      `Updated store settings: ${detailParts.join(', ')}`
+    );
     return { success: true, settings };
   } catch (error: any) {
     return { success: false, error: error.message };
   }
+}
+
+export async function toggleCodAction(enabled: boolean): Promise<{ success: boolean; codEnabled?: boolean; error?: string }> {
+  const res = await updateSettingsAction({ codEnabled: enabled });
+  if (res.success && res.settings) {
+    return { success: true, codEnabled: res.settings.codEnabled };
+  }
+  return { success: false, error: res.error || 'Failed to update COD setting.' };
 }
 
 // --- AUDIT LOG ACTIONS ---

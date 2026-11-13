@@ -32,7 +32,7 @@ interface CartContextType {
   shippingCharges: number;
   finalAmount: number;
   freeShippingProgress: number;
-  shippingSettings: { standardShippingFee: number; freeShippingThreshold: number };
+  shippingSettings: { standardShippingFee: number; freeShippingThreshold: number; codEnabled?: boolean };
   
   // Combo Deal
   isComboApplied: boolean;
@@ -54,7 +54,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [coupon, setCoupon] = useState<Coupon | null>(null);
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [couponError, setCouponError] = useState<string | null>(null);
-  const [shippingSettings, setShippingSettings] = useState({ standardShippingFee: 99, freeShippingThreshold: 999 });
+  const [shippingSettings, setShippingSettings] = useState<{ standardShippingFee: number; freeShippingThreshold: number; codEnabled?: boolean }>({ standardShippingFee: 99, freeShippingThreshold: 999, codEnabled: true });
 
   const [pincode, setPincode] = useState('');
   const [pincodeStatus, setPincodeStatus] = useState<{
