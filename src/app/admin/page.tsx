@@ -56,12 +56,12 @@ export default function AdminPage() {
   const [delhiveryPincodeResult, setDelhiveryPincodeResult] = useState<any>(null);
   const [delhiveryPincodeError, setDelhiveryPincodeError] = useState('');
   const [isCheckingPincode, setIsCheckingPincode] = useState(false);
-
+  
   const [externalAwb, setExternalAwb] = useState('');
   const [externalTrackingResult, setExternalTrackingResult] = useState<any>(null);
   const [externalTrackingError, setExternalTrackingError] = useState('');
   const [isTrackingAwb, setIsTrackingAwb] = useState(false);
-
+  
   const [orderLiveStatuses, setOrderLiveStatuses] = useState<Record<string, any>>({});
   const [isFetchingLiveStatuses, setIsFetchingLiveStatuses] = useState(false);
 
@@ -276,7 +276,7 @@ export default function AdminPage() {
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
       setOrders(sortedOrders);
-
+      
       // Auto-fetch live statuses for active Delhivery shipments
       const activeDelhivery = ords.orders.filter(
         o => o.courierName === 'Delhivery' && o.trackingNumber && o.orderStatus !== 'CANCELLED'
@@ -338,7 +338,7 @@ export default function AdminPage() {
             setCodEnabled(data.codEnabled);
           }
         }
-      } catch { }
+      } catch {}
     };
     const timer = setInterval(syncCod, 5000);
     return () => clearInterval(timer);
@@ -484,7 +484,7 @@ export default function AdminPage() {
     e.preventDefault();
     if (!updatingOrder) return;
 
-    const payload: any = {
+    const payload: any = { 
       orderStatus: selectedStatus,
       paymentStatus: selectedPaymentStatus
     };
@@ -661,7 +661,7 @@ export default function AdminPage() {
   const handleFetchOrderLiveStatuses = async () => {
     const delhiveryOrders = orders.filter(o => o.courierName === 'Delhivery' && o.trackingNumber && o.orderStatus !== 'CANCELLED');
     if (delhiveryOrders.length === 0) return;
-
+    
     setIsFetchingLiveStatuses(true);
     const statuses: Record<string, any> = {};
     for (const o of delhiveryOrders) {
@@ -747,7 +747,7 @@ export default function AdminPage() {
             )}
 
             <div className="space-y-1.5">
-              <label className="text-[9px] uppercase tracking-wider text-black/50 font-extrabold">Staff Email</label>
+               <label className="text-[9px] uppercase tracking-wider text-black/50 font-extrabold">Staff Email</label>
               <input
                 type="email"
                 required
@@ -757,7 +757,7 @@ export default function AdminPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[9px] uppercase tracking-wider text-black/50 font-extrabold">Staff Password</label>
+               <label className="text-[9px] uppercase tracking-wider text-black/50 font-extrabold">Staff Password</label>
               <input
                 type="password"
                 required
@@ -856,10 +856,11 @@ export default function AdminPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`shrink-0 px-4 py-2.5 text-[10px] uppercase tracking-widest font-bold flex items-center gap-2 rounded-full transition-all border ${activeTab === tab.id
+              className={`shrink-0 px-4 py-2.5 text-[10px] uppercase tracking-widest font-bold flex items-center gap-2 rounded-full transition-all border ${
+                activeTab === tab.id
                   ? 'bg-black border-black text-white shadow-xs'
                   : 'border-black/10 text-black/60 hover:border-black hover:text-black bg-white/50'
-                }`}
+              }`}
             >
               <Icon className="w-3.5 h-3.5" /> {tab.label}
             </button>
@@ -869,7 +870,7 @@ export default function AdminPage() {
 
       {/* Tab Boards Content */}
       <div className="bg-white border border-black/5 rounded-3xl p-6 sm:p-8 min-h-[50vh] shadow-xs max-w-full overflow-hidden">
-
+        
         {/* TAB 1: METRICS OVERVIEW */}
         {activeTab === 'metrics' && metrics && (
           <div className="space-y-8">
@@ -988,15 +989,15 @@ export default function AdminPage() {
                     <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">SKU Code</label>
                     <input
                       type="text" required placeholder="e.g. NK-AZM-01"
-                      value={productForm.sku} onChange={(e) => setProductForm({ ...productForm, sku: e.target.value })}
+                      value={productForm.sku} onChange={(e) => setProductForm({...productForm, sku: e.target.value})}
                       className="w-full input-premium text-xs"
                     />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Brand</label>
                     <select
-                      value={productForm.brand}
-                      onChange={(e) => setProductForm({ ...productForm, brand: e.target.value })}
+                      value={productForm.brand} 
+                      onChange={(e) => setProductForm({...productForm, brand: e.target.value})}
                       className="w-full bg-white border border-black/10 rounded-lg p-2.5 text-xs text-black font-semibold"
                     >
                       <option value="">Select Brand</option>
@@ -1014,7 +1015,7 @@ export default function AdminPage() {
                   <div className="space-y-1.5">
                     <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Category</label>
                     <select
-                      value={productForm.category}
+                      value={productForm.category} 
                       onChange={(e) => {
                         const newCat = e.target.value;
                         let updatedSizes = productForm.sizes;
@@ -1022,7 +1023,7 @@ export default function AdminPage() {
                           const isApparelCat = ['Apparel', 'Lowers', 'T-shirts', 'Tracksuit', 'Sando'].includes(newCat);
                           updatedSizes = isApparelCat ? 'S,M,L,XL,XXL' : '7,8,9,10,11';
                         }
-                        setProductForm({ ...productForm, category: newCat, sizes: updatedSizes });
+                        setProductForm({...productForm, category: newCat, sizes: updatedSizes});
                       }}
                       className="w-full bg-white border border-black/10 rounded-lg p-2 text-xs text-black font-semibold"
                     >
@@ -1047,7 +1048,7 @@ export default function AdminPage() {
                     <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Product Display Name</label>
                     <input
                       type="text" required placeholder="Product Name"
-                      value={productForm.name} onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
+                      value={productForm.name} onChange={(e) => setProductForm({...productForm, name: e.target.value})}
                       className="w-full input-premium text-xs"
                     />
                   </div>
@@ -1055,7 +1056,7 @@ export default function AdminPage() {
                     <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Product Description</label>
                     <textarea
                       required placeholder="Product description"
-                      value={productForm.description} onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
+                      value={productForm.description} onChange={(e) => setProductForm({...productForm, description: e.target.value})}
                       className="w-full input-premium text-xs h-16"
                     />
                   </div>
@@ -1063,7 +1064,7 @@ export default function AdminPage() {
                     <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">MRP (₹)</label>
                     <input
                       type="number" required placeholder="Original MRP"
-                      value={productForm.mrp} onChange={(e) => setProductForm({ ...productForm, mrp: e.target.value })}
+                      value={productForm.mrp} onChange={(e) => setProductForm({...productForm, mrp: e.target.value})}
                       className="w-full input-premium text-xs"
                     />
                   </div>
@@ -1071,7 +1072,7 @@ export default function AdminPage() {
                     <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Selling Price (₹)</label>
                     <input
                       type="number" required placeholder="Store Selling Price"
-                      value={productForm.sellingPrice} onChange={(e) => setProductForm({ ...productForm, sellingPrice: e.target.value })}
+                      value={productForm.sellingPrice} onChange={(e) => setProductForm({...productForm, sellingPrice: e.target.value})}
                       className="w-full input-premium text-xs"
                     />
                   </div>
@@ -1079,7 +1080,7 @@ export default function AdminPage() {
                     <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Stock Quantity</label>
                     <input
                       type="number" required placeholder="Stock Count"
-                      value={productForm.stockQuantity} onChange={(e) => setProductForm({ ...productForm, stockQuantity: e.target.value })}
+                      value={productForm.stockQuantity} onChange={(e) => setProductForm({...productForm, stockQuantity: e.target.value})}
                       className="w-full input-premium text-xs"
                     />
                   </div>
@@ -1090,7 +1091,7 @@ export default function AdminPage() {
                       required
                       placeholder="e.g. White, Black/Red"
                       value={productForm.color}
-                      onChange={(e) => setProductForm({ ...productForm, color: e.target.value })}
+                      onChange={(e) => setProductForm({...productForm, color: e.target.value})}
                       className="w-full input-premium text-xs"
                     />
                   </div>
@@ -1098,14 +1099,14 @@ export default function AdminPage() {
                     <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Material</label>
                     <input
                       type="text" placeholder="Material type"
-                      value={productForm.material} onChange={(e) => setProductForm({ ...productForm, material: e.target.value })}
+                      value={productForm.material} onChange={(e) => setProductForm({...productForm, material: e.target.value})}
                       className="w-full input-premium text-xs"
                     />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Width</label>
                     <select
-                      value={productForm.width} onChange={(e) => setProductForm({ ...productForm, width: e.target.value })}
+                      value={productForm.width} onChange={(e) => setProductForm({...productForm, width: e.target.value})}
                       className="w-full bg-white border border-black/10 rounded-lg p-2 text-xs text-black font-semibold"
                     >
                       <option value="Standard">Standard</option>
@@ -1118,10 +1119,10 @@ export default function AdminPage() {
                     <div className="flex flex-wrap gap-4 bg-white border border-black/10 p-2.5 rounded-lg">
                       {(() => {
                         const isApparelCat = ['Apparel', 'Lowers', 'T-shirts', 'Gym Wear', 'Tracksuit', 'Sando'].includes(productForm.category);
-                        const availableOptions = isApparelCat
-                          ? ['S', 'M', 'L', 'XL', 'XXL']
+                        const availableOptions = isApparelCat 
+                          ? ['S', 'M', 'L', 'XL', 'XXL'] 
                           : ['4', '5', '6', '7', '8', '9', '10', '11'];
-
+                        
                         const currentSizes = productForm.sizes
                           .split(',')
                           .map(s => s.trim())
@@ -1166,7 +1167,7 @@ export default function AdminPage() {
                         <input
                           type="checkbox"
                           checked={productForm.isNewArrival}
-                          onChange={(e) => setProductForm({ ...productForm, isNewArrival: e.target.checked })}
+                          onChange={(e) => setProductForm({...productForm, isNewArrival: e.target.checked})}
                           className="w-4 h-4 rounded border-black/20 text-black focus:ring-black"
                         />
                         New Arrival
@@ -1175,7 +1176,7 @@ export default function AdminPage() {
                         <input
                           type="checkbox"
                           checked={productForm.isBestSeller}
-                          onChange={(e) => setProductForm({ ...productForm, isBestSeller: e.target.checked })}
+                          onChange={(e) => setProductForm({...productForm, isBestSeller: e.target.checked})}
                           className="w-4 h-4 rounded border-black/20 text-black focus:ring-black"
                         />
                         Best Seller
@@ -1184,7 +1185,7 @@ export default function AdminPage() {
                         <input
                           type="checkbox"
                           checked={productForm.isTrending}
-                          onChange={(e) => setProductForm({ ...productForm, isTrending: e.target.checked })}
+                          onChange={(e) => setProductForm({...productForm, isTrending: e.target.checked})}
                           className="w-4 h-4 rounded border-black/20 text-black focus:ring-black"
                         />
                         Trending
@@ -1197,7 +1198,7 @@ export default function AdminPage() {
                       <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">SEO Page Title (Optional)</label>
                       <input
                         type="text" placeholder="e.g. Nike Pegasus 40 - Running Shoes"
-                        value={productForm.seoTitle} onChange={(e) => setProductForm({ ...productForm, seoTitle: e.target.value })}
+                        value={productForm.seoTitle} onChange={(e) => setProductForm({...productForm, seoTitle: e.target.value})}
                         className="w-full input-premium text-xs"
                       />
                     </div>
@@ -1205,7 +1206,7 @@ export default function AdminPage() {
                       <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">SEO Meta Description (Optional)</label>
                       <input
                         type="text" placeholder="Search engine details description"
-                        value={productForm.seoDescription} onChange={(e) => setProductForm({ ...productForm, seoDescription: e.target.value })}
+                        value={productForm.seoDescription} onChange={(e) => setProductForm({...productForm, seoDescription: e.target.value})}
                         className="w-full input-premium text-xs"
                       />
                     </div>
@@ -1213,7 +1214,7 @@ export default function AdminPage() {
                       <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Product Videos (Comma separated URLs)</label>
                       <input
                         type="text" placeholder="e.g. https://domain.com/video.mp4"
-                        value={productForm.videos} onChange={(e) => setProductForm({ ...productForm, videos: e.target.value })}
+                        value={productForm.videos} onChange={(e) => setProductForm({...productForm, videos: e.target.value})}
                         className="w-full input-premium text-xs"
                       />
                     </div>
@@ -1221,7 +1222,7 @@ export default function AdminPage() {
 
                   <div className="md:col-span-3 border-t border-black/5 pt-4 space-y-2">
                     <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider block">Product Images</label>
-
+                    
                     {/* Cloudinary Warning if not configured */}
                     {!cloudinaryConfigured && (
                       <div className="bg-amber-500/10 border border-amber-500/25 text-amber-800 rounded-xl p-3 text-[11px] font-medium flex items-center gap-2">
@@ -1260,7 +1261,7 @@ export default function AdminPage() {
                         <textarea
                           placeholder="Paste image addresses manually (comma-separated URLs)"
                           value={productForm.images}
-                          onChange={(e) => setProductForm({ ...productForm, images: e.target.value })}
+                          onChange={(e) => setProductForm({...productForm, images: e.target.value})}
                           className="w-full input-premium text-xs h-full min-h-[90px]"
                         />
                       </div>
@@ -1282,7 +1283,7 @@ export default function AdminPage() {
                                     .map(u => u.trim())
                                     .filter((_, i) => i !== index)
                                     .join(',');
-                                  setProductForm({ ...productForm, images: updated });
+                                  setProductForm({...productForm, images: updated});
                                 }}
                                 className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity duration-200"
                               >
@@ -1453,10 +1454,11 @@ export default function AdminPage() {
                   type="button"
                   onClick={handleToggleCod}
                   disabled={isTogglingCod}
-                  className={`px-3 py-1 rounded-full text-[9px] font-extrabold uppercase tracking-wider transition-all border ${codEnabled
+                  className={`px-3 py-1 rounded-full text-[9px] font-extrabold uppercase tracking-wider transition-all border ${
+                    codEnabled
                       ? 'border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100'
                       : 'border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
-                    }`}
+                  }`}
                 >
                   {isTogglingCod ? '...' : codEnabled ? 'Turn Off COD' : 'Turn On COD'}
                 </button>
@@ -1495,7 +1497,7 @@ export default function AdminPage() {
                     );
                   })}
                 </div>
-
+                
                 <div className="space-y-1.5">
                   <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Fulfillment Status</label>
                   <select
@@ -1651,49 +1653,50 @@ export default function AdminPage() {
                             <span>Pincode: {o.shippingAddress.pincode}</span>
                           </div>
                           <p className="text-[9px] text-black/60 font-bold mt-1 uppercase tracking-wider">
-                            Method: <span className="text-black font-extrabold">{o.paymentMethod}</span> &nbsp;|&nbsp;
-                            Payment: <span className={`font-extrabold ${o.paymentStatus === 'PAID' ? 'text-emerald-700' :
-                                o.paymentStatus === 'FAILED' ? 'text-rose-700' : 'text-amber-700'
-                              }`}>{o.paymentStatus}</span>
+                            Method: <span className="text-black font-extrabold">{o.paymentMethod}</span> &nbsp;|&nbsp; 
+                            Payment: <span className={`font-extrabold ${
+                              o.paymentStatus === 'PAID' ? 'text-emerald-700' : 
+                              o.paymentStatus === 'FAILED' ? 'text-rose-700' : 'text-amber-700'
+                            }`}>{o.paymentStatus}</span>
                           </p>
                         </td>
                         <td className="py-3.5 text-center font-medium">
                           {new Date(o.createdAt).toLocaleDateString('en-IN')}
                         </td>
-                        <td className="py-3.5">
-                          <div className="space-y-3 min-w-[240px]">
-                            {o.items.map((item, idx) => {
-                              const currentStock = products.find(p => p.id === item.productId)?.stockQuantity ?? 0;
-                              return (
-                                <div key={idx} className="flex items-start gap-2.5">
-                                  <img
-                                    src={item.image}
-                                    alt={item.name}
-                                    className="w-10 h-12 object-cover rounded-lg border border-black/5 flex-shrink-0"
-                                  />
-                                  <div className="text-[10px] leading-tight space-y-0.5">
-                                    <p className="font-extrabold text-black line-clamp-1">{item.name}</p>
-                                    <p className="text-black/50 font-bold">
-                                      {item.brand} &nbsp;|&nbsp; Size: {item.size}
-                                    </p>
-                                    <p className="text-black/70 font-extrabold">
-                                      {item.quantity} x ₹{item.price.toLocaleString('en-IN')}
-                                    </p>
-                                    <p className="text-black/50 font-bold">
-                                      Stock: <span className={`font-extrabold ${currentStock === 0 ? 'text-rose-700' : currentStock <= 5 ? 'text-amber-700' : 'text-black'}`}>{currentStock} available</span>
-                                    </p>
+                         <td className="py-3.5">
+                           <div className="space-y-3 min-w-[240px]">
+                             {o.items.map((item, idx) => {
+                                const currentStock = products.find(p => p.id === item.productId)?.stockQuantity ?? 0;
+                                return (
+                                  <div key={idx} className="flex items-start gap-2.5">
+                                    <img
+                                      src={item.image}
+                                      alt={item.name}
+                                      className="w-10 h-12 object-cover rounded-lg border border-black/5 flex-shrink-0"
+                                    />
+                                    <div className="text-[10px] leading-tight space-y-0.5">
+                                      <p className="font-extrabold text-black line-clamp-1">{item.name}</p>
+                                      <p className="text-black/50 font-bold">
+                                        {item.brand} &nbsp;|&nbsp; Size: {item.size}
+                                      </p>
+                                      <p className="text-black/70 font-extrabold">
+                                        {item.quantity} x ₹{item.price.toLocaleString('en-IN')}
+                                      </p>
+                                      <p className="text-black/50 font-bold">
+                                        Stock: <span className={`font-extrabold ${currentStock === 0 ? 'text-rose-700' : currentStock <= 5 ? 'text-amber-700' : 'text-black'}`}>{currentStock} available</span>
+                                      </p>
+                                    </div>
                                   </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </td>
+                                );
+                              })}
+                           </div>
+                         </td>
                         <td className="py-3.5 text-right font-extrabold text-black">₹{o.finalAmount.toLocaleString('en-IN')}</td>
                         <td className="py-3.5 text-center">
                           {(() => {
                             let displayStatus = o.orderStatus as string;
                             let badgeClass = 'bg-amber-600/10 text-amber-800';
-
+                            
                             if (o.orderStatus === 'DELIVERED') {
                               badgeClass = 'bg-emerald-700/10 text-emerald-800';
                             } else if (o.orderStatus === 'RETURNED') {
@@ -1708,7 +1711,7 @@ export default function AdminPage() {
                                 const activity = (scan.ScanDetail?.Scan || '').toUpperCase();
                                 return activity !== 'MANIFESTED' && activity !== 'SOFT DATA UPLOADED';
                               });
-
+                              
                               if (o.courierName === 'Delhivery' && o.trackingNumber && !hasTransitScans) {
                                 displayStatus = 'AWAITING PICKUP';
                                 badgeClass = 'bg-orange-500/15 text-orange-800 font-bold';
@@ -1717,7 +1720,7 @@ export default function AdminPage() {
                                 badgeClass = 'bg-blue-700/10 text-blue-800';
                               }
                             }
-
+                            
                             return (
                               <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold tracking-wider ${badgeClass}`}>
                                 {displayStatus}
@@ -1774,10 +1777,11 @@ export default function AdminPage() {
                           <span>Pincode: {o.shippingAddress.pincode}</span>
                         </div>
                         <p className="text-[9px] text-black/60 font-bold mt-1 uppercase tracking-wider">
-                          Method: <span className="text-black font-extrabold">{o.paymentMethod}</span> &nbsp;|&nbsp;
-                          Payment: <span className={`font-extrabold ${o.paymentStatus === 'PAID' ? 'text-emerald-700' :
-                              o.paymentStatus === 'FAILED' ? 'text-rose-700' : 'text-amber-700'
-                            }`}>{o.paymentStatus}</span>
+                          Method: <span className="text-black font-extrabold">{o.paymentMethod}</span> &nbsp;|&nbsp; 
+                          Payment: <span className={`font-extrabold ${
+                            o.paymentStatus === 'PAID' ? 'text-emerald-700' : 
+                            o.paymentStatus === 'FAILED' ? 'text-rose-700' : 'text-amber-700'
+                          }`}>{o.paymentStatus}</span>
                         </p>
                       </div>
                       <div className="text-right shrink-0">
@@ -1811,7 +1815,7 @@ export default function AdminPage() {
                         {(() => {
                           let displayStatus = o.orderStatus as string;
                           let badgeClass = 'bg-amber-600/10 text-amber-800';
-
+                          
                           if (o.orderStatus === 'DELIVERED') {
                             badgeClass = 'bg-emerald-700/10 text-emerald-800';
                           } else if (o.orderStatus === 'RETURNED') {
@@ -1825,7 +1829,7 @@ export default function AdminPage() {
                               const activity = (scan.ScanDetail?.Scan || '').toUpperCase();
                               return activity !== 'MANIFESTED' && activity !== 'SOFT DATA UPLOADED';
                             });
-
+                            
                             if (o.courierName === 'Delhivery' && o.trackingNumber && !hasTransitScans) {
                               displayStatus = 'AWAITING PICKUP';
                               badgeClass = 'bg-orange-500/15 text-orange-800 font-bold';
@@ -1834,7 +1838,7 @@ export default function AdminPage() {
                               badgeClass = 'bg-blue-700/10 text-blue-800';
                             }
                           }
-
+                          
                           return (
                             <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold tracking-wider ${badgeClass}`}>
                               {displayStatus}
@@ -1889,14 +1893,14 @@ export default function AdminPage() {
                       <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Coupon Code</label>
                       <input
                         type="text" required placeholder="e.g. FESTIVE20"
-                        value={couponForm.code} onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value })}
+                        value={couponForm.code} onChange={(e) => setCouponForm({...couponForm, code: e.target.value})}
                         className="w-full input-premium text-xs"
                       />
                     </div>
                     <div className="space-y-1">
                       <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Discount Type</label>
                       <select
-                        value={couponForm.discountType} onChange={(e) => setCouponForm({ ...couponForm, discountType: e.target.value as any })}
+                        value={couponForm.discountType} onChange={(e) => setCouponForm({...couponForm, discountType: e.target.value as any})}
                         className="w-full bg-white border border-black/10 rounded-lg p-2 text-xs text-black font-semibold"
                       >
                         <option value="PERCENTAGE">PERCENTAGE Off</option>
@@ -1910,7 +1914,7 @@ export default function AdminPage() {
                       <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Discount Value</label>
                       <input
                         type="number" required placeholder="e.g. 10 or 500"
-                        value={couponForm.discountValue} onChange={(e) => setCouponForm({ ...couponForm, discountValue: e.target.value })}
+                        value={couponForm.discountValue} onChange={(e) => setCouponForm({...couponForm, discountValue: e.target.value})}
                         className="w-full input-premium text-xs"
                       />
                     </div>
@@ -1918,7 +1922,7 @@ export default function AdminPage() {
                       <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Min Order value (₹)</label>
                       <input
                         type="number" required placeholder="e.g. 999"
-                        value={couponForm.minOrderValue} onChange={(e) => setCouponForm({ ...couponForm, minOrderValue: e.target.value })}
+                        value={couponForm.minOrderValue} onChange={(e) => setCouponForm({...couponForm, minOrderValue: e.target.value})}
                         className="w-full input-premium text-xs"
                       />
                     </div>
@@ -1928,7 +1932,7 @@ export default function AdminPage() {
                     <label className="text-[9px] font-bold text-black/50 uppercase tracking-wider">Category Restriction (Optional)</label>
                     <input
                       type="text" placeholder="e.g. Footwear"
-                      value={couponForm.categoryRestriction} onChange={(e) => setCouponForm({ ...couponForm, categoryRestriction: e.target.value })}
+                      value={couponForm.categoryRestriction} onChange={(e) => setCouponForm({...couponForm, categoryRestriction: e.target.value})}
                       className="w-full input-premium text-xs"
                     />
                   </div>
@@ -2075,7 +2079,7 @@ export default function AdminPage() {
                       required
                       placeholder="e.g. 826001"
                       value={pincodeForm.pincode}
-                      onChange={(e) => setPincodeForm({ ...pincodeForm, pincode: e.target.value.replace(/\D/g, '') })}
+                      onChange={(e) => setPincodeForm({...pincodeForm, pincode: e.target.value.replace(/\D/g, '')})}
                       className="w-full input-premium text-xs rounded-full px-4 py-2 border border-black/10 outline-none focus:border-black"
                     />
                   </div>
@@ -2088,7 +2092,7 @@ export default function AdminPage() {
                       required
                       placeholder="e.g. 4"
                       value={pincodeForm.estimatedDays}
-                      onChange={(e) => setPincodeForm({ ...pincodeForm, estimatedDays: e.target.value })}
+                      onChange={(e) => setPincodeForm({...pincodeForm, estimatedDays: e.target.value})}
                       className="w-full input-premium text-xs rounded-full px-4 py-2 border border-black/10 outline-none focus:border-black"
                     />
                   </div>
@@ -2099,7 +2103,7 @@ export default function AdminPage() {
                       required
                       placeholder="e.g. Jharkhand"
                       value={pincodeForm.state}
-                      onChange={(e) => setPincodeForm({ ...pincodeForm, state: e.target.value })}
+                      onChange={(e) => setPincodeForm({...pincodeForm, state: e.target.value})}
                       className="w-full input-premium text-xs rounded-full px-4 py-2 border border-black/10 outline-none focus:border-black"
                     />
                   </div>
@@ -2107,7 +2111,7 @@ export default function AdminPage() {
                     <label className="text-[9px] uppercase tracking-widest text-black/50 font-bold block">Serviceability Status</label>
                     <select
                       value={pincodeForm.serviceable ? 'true' : 'false'}
-                      onChange={(e) => setPincodeForm({ ...pincodeForm, serviceable: e.target.value === 'true' })}
+                      onChange={(e) => setPincodeForm({...pincodeForm, serviceable: e.target.value === 'true'})}
                       className="w-full input-premium text-xs rounded-full px-4 py-2 border border-black/10 outline-none focus:border-black bg-white"
                     >
                       <option value="true">Serviceable (Delivery Active)</option>
@@ -2371,14 +2375,14 @@ export default function AdminPage() {
 
             {/* Main content split */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
+              
               {/* Column 1 & 2: Live Shipment Tracking Dashboard */}
               <div className="lg:col-span-2 space-y-6">
                 <div className="flex justify-between items-center">
                   <h3 className="text-[10px] uppercase tracking-wider font-extrabold text-black flex items-center gap-1.5">
                     <Truck className="w-4 h-4 text-black/60" /> Active Shipments Tracking Dashboard
                   </h3>
-
+                  
                   {orders.filter(o => o.courierName === 'Delhivery' && o.trackingNumber && o.orderStatus !== 'CANCELLED').length > 0 && (
                     <button
                       onClick={handleFetchOrderLiveStatuses}
@@ -2426,10 +2430,11 @@ export default function AdminPage() {
                                 <td className="p-3">
                                   {liveData ? (
                                     <div className="space-y-1">
-                                      <span className={`text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded ${(liveData.Status?.Status || '').toUpperCase() === 'DELIVERED'
-                                          ? 'bg-emerald-500/10 text-emerald-800'
+                                      <span className={`text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded ${
+                                        (liveData.Status?.Status || '').toUpperCase() === 'DELIVERED' 
+                                          ? 'bg-emerald-500/10 text-emerald-800' 
                                           : 'bg-blue-500/10 text-blue-800'
-                                        }`}>
+                                      }`}>
                                         {liveData.Status?.Status || 'Unknown'}
                                       </span>
                                       <div className="text-[8px] text-black/50 font-normal">
@@ -2494,10 +2499,11 @@ export default function AdminPage() {
                               <div>
                                 {liveData ? (
                                   <div className="space-y-0.5">
-                                    <span className={`text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded ${(liveData.Status?.Status || '').toUpperCase() === 'DELIVERED'
-                                        ? 'bg-emerald-500/10 text-emerald-800'
+                                    <span className={`text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded ${
+                                      (liveData.Status?.Status || '').toUpperCase() === 'DELIVERED' 
+                                        ? 'bg-emerald-500/10 text-emerald-800' 
                                         : 'bg-blue-500/10 text-blue-800'
-                                      }`}>
+                                    }`}>
                                       {liveData.Status?.Status || 'Unknown'}
                                     </span>
                                     <p className="text-[8px] text-black/50 mt-1 font-normal">
@@ -2533,20 +2539,20 @@ export default function AdminPage() {
 
               {/* Column 3: Real API Tools Sidebar */}
               <div className="space-y-8">
-
+                
                 {/* A. Live Pincode Serviceability Lookup */}
                 <div className="bg-[#fcfbf9] border border-black/5 p-6 rounded-2xl space-y-4 shadow-xs">
                   <h3 className="text-[10px] uppercase tracking-widest font-extrabold text-black border-b border-black/5 pb-2">
                     Delhivery Pincode Checker
                   </h3>
-
+                  
                   <form onSubmit={handleCheckDelhiveryPincode} className="space-y-3.5">
                     {delhiveryPincodeError && (
                       <div className="text-red-700 text-[10px] bg-red-50 border border-red-200 p-2.5 rounded-lg font-bold">
                         {delhiveryPincodeError}
                       </div>
                     )}
-
+                    
                     <div className="space-y-1">
                       <label className="text-[8px] uppercase tracking-widest text-black/50 font-extrabold block">Check Pincode Serviceability</label>
                       <input
@@ -2596,14 +2602,14 @@ export default function AdminPage() {
                   <h3 className="text-[10px] uppercase tracking-widest font-extrabold text-black border-b border-black/5 pb-2">
                     Delhivery Quick Waybill Tracker
                   </h3>
-
+                  
                   <form onSubmit={handleTrackExternalAwb} className="space-y-3.5">
                     {externalTrackingError && (
                       <div className="text-red-700 text-[10px] bg-red-50 border border-red-200 p-2.5 rounded-lg font-bold">
                         {externalTrackingError}
                       </div>
                     )}
-
+                    
                     <div className="space-y-1">
                       <label className="text-[8px] uppercase tracking-widest text-black/50 font-extrabold block">Enter Waybill / AWB</label>
                       <input
@@ -2639,7 +2645,7 @@ export default function AdminPage() {
                         <span className="text-black/50">Instructions:</span>
                         <span className="text-black/80 text-right">{externalTrackingResult.Instructions || 'None'}</span>
                       </div>
-
+                      
                       {externalTrackingResult.Scans && externalTrackingResult.Scans.length > 0 && (
                         <div className="border-t border-black/5 pt-2 space-y-2">
                           <span className="text-[8px] uppercase tracking-widest text-black/50 block">Scan timeline log:</span>
@@ -2721,95 +2727,96 @@ export default function AdminPage() {
                   {usersList
                     .filter(u => {
                       const query = searchQueryUsers.toLowerCase().trim();
-                      const matchesSearch = !query ||
+                      const matchesSearch = !query || 
                         u.name.toLowerCase().includes(query) ||
                         u.email.toLowerCase().includes(query) ||
                         (u.mobile && u.mobile.includes(query));
-
+                      
                       const matchesRole = roleFilterUsers === 'ALL' || u.role === roleFilterUsers;
                       return matchesSearch && matchesRole;
                     })
                     .length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="p-8 text-center text-black/45 font-normal">
-                        No registered users found matching the search filters.
-                      </td>
-                    </tr>
-                  ) : (
-                    usersList
-                      .filter(u => {
-                        const query = searchQueryUsers.toLowerCase().trim();
-                        const matchesSearch = !query ||
-                          u.name.toLowerCase().includes(query) ||
-                          u.email.toLowerCase().includes(query) ||
-                          (u.mobile && u.mobile.includes(query));
-
-                        const matchesRole = roleFilterUsers === 'ALL' || u.role === roleFilterUsers;
-                        return matchesSearch && matchesRole;
-                      })
-                      .map(item => (
-                        <tr key={item.id} className="hover:bg-black/[0.01]">
-                          <td className="p-3">
-                            <div className="text-[10px] font-extrabold text-black">{item.name || 'Unnamed Guest'}</div>
-                            <div className="text-[8px] text-black/40 font-mono mt-0.5">{item.id}</div>
-                          </td>
-                          <td className="p-3">
-                            <div className="text-[10px] text-black font-semibold">{item.email}</div>
-                            <div className="text-[9px] text-black/50 mt-0.5">{item.mobile || 'No Mobile'}</div>
-                          </td>
-                          <td className="p-3">
-                            <span className={`text-[9px] uppercase tracking-wider font-extrabold px-2.5 py-0.5 rounded ${item.role === 'SUPER_ADMIN' ? 'bg-red-500/10 text-red-800' :
+                      <tr>
+                        <td colSpan={6} className="p-8 text-center text-black/45 font-normal">
+                          No registered users found matching the search filters.
+                        </td>
+                      </tr>
+                    ) : (
+                      usersList
+                        .filter(u => {
+                          const query = searchQueryUsers.toLowerCase().trim();
+                          const matchesSearch = !query || 
+                            u.name.toLowerCase().includes(query) ||
+                            u.email.toLowerCase().includes(query) ||
+                            (u.mobile && u.mobile.includes(query));
+                          
+                          const matchesRole = roleFilterUsers === 'ALL' || u.role === roleFilterUsers;
+                          return matchesSearch && matchesRole;
+                        })
+                        .map(item => (
+                          <tr key={item.id} className="hover:bg-black/[0.01]">
+                            <td className="p-3">
+                              <div className="text-[10px] font-extrabold text-black">{item.name || 'Unnamed Guest'}</div>
+                              <div className="text-[8px] text-black/40 font-mono mt-0.5">{item.id}</div>
+                            </td>
+                            <td className="p-3">
+                              <div className="text-[10px] text-black font-semibold">{item.email}</div>
+                              <div className="text-[9px] text-black/50 mt-0.5">{item.mobile || 'No Mobile'}</div>
+                            </td>
+                            <td className="p-3">
+                              <span className={`text-[9px] uppercase tracking-wider font-extrabold px-2.5 py-0.5 rounded ${
+                                item.role === 'SUPER_ADMIN' ? 'bg-red-500/10 text-red-800' :
                                 item.role === 'STORE_MANAGER' ? 'bg-amber-500/10 text-amber-800' :
-                                  item.role === 'CUSTOMER' ? 'bg-black/5 text-black/70' : 'bg-blue-500/10 text-blue-800'
+                                item.role === 'CUSTOMER' ? 'bg-black/5 text-black/70' : 'bg-blue-500/10 text-blue-800'
                               }`}>
-                              {item.role}
-                            </span>
-                          </td>
-                          <td className="p-3 text-black/60 font-medium">
-                            {item.addresses && item.addresses.length > 0 ? (
-                              <div className="space-y-1.5 max-w-xs text-[10px]">
-                                {item.addresses.map((addr) => (
-                                  <div key={addr.id} className="border-l border-black/10 pl-2 leading-tight py-0.5">
-                                    <span className="font-semibold block text-black">{addr.street}</span>
-                                    <span className="text-[9px] text-black/50">{addr.city}, {addr.state} - {addr.pincode}</span>
-                                    {addr.isDefault && (
-                                      <span className="inline-block text-[7px] bg-black/5 text-black px-1.5 py-0.2 rounded font-extrabold ml-1 uppercase">Default</span>
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <span className="text-black/40 font-normal">No addresses registered</span>
-                            )}
-                          </td>
-                          <td className="p-3 text-black/50 text-[10px]">
-                            {item.createdAt ? new Date(item.createdAt).toLocaleDateString('en-IN', {
-                              day: 'numeric', month: 'short', year: 'numeric'
-                            }) : 'N/A'}
-                          </td>
-                          <td className="p-3 text-right">
-                            <div className="flex gap-2 justify-end">
-                              <button
-                                onClick={() => handleEditUserClick(item)}
-                                className="text-black/60 hover:text-black p-1.5 border border-black/10 hover:border-black bg-white rounded-lg transition-all shadow-xs"
-                                title="Edit User Details"
-                              >
-                                <Edit2 className="w-3 h-3" />
-                              </button>
-                              {user?.role === 'SUPER_ADMIN' && user?.id !== item.id && (
-                                <button
-                                  onClick={() => handleDeleteUserClick(item.id)}
-                                  className="text-red-700 hover:text-red-800 p-1.5 border border-black/10 hover:border-red-700 hover:bg-red-50 rounded-lg transition-all shadow-xs"
-                                  title="Delete User"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </button>
+                                {item.role}
+                              </span>
+                            </td>
+                            <td className="p-3 text-black/60 font-medium">
+                              {item.addresses && item.addresses.length > 0 ? (
+                                <div className="space-y-1.5 max-w-xs text-[10px]">
+                                  {item.addresses.map((addr) => (
+                                    <div key={addr.id} className="border-l border-black/10 pl-2 leading-tight py-0.5">
+                                      <span className="font-semibold block text-black">{addr.street}</span>
+                                      <span className="text-[9px] text-black/50">{addr.city}, {addr.state} - {addr.pincode}</span>
+                                      {addr.isDefault && (
+                                        <span className="inline-block text-[7px] bg-black/5 text-black px-1.5 py-0.2 rounded font-extrabold ml-1 uppercase">Default</span>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <span className="text-black/40 font-normal">No addresses registered</span>
                               )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                  )}
+                            </td>
+                            <td className="p-3 text-black/50 text-[10px]">
+                              {item.createdAt ? new Date(item.createdAt).toLocaleDateString('en-IN', {
+                                day: 'numeric', month: 'short', year: 'numeric'
+                              }) : 'N/A'}
+                            </td>
+                            <td className="p-3 text-right">
+                              <div className="flex gap-2 justify-end">
+                                <button
+                                  onClick={() => handleEditUserClick(item)}
+                                  className="text-black/60 hover:text-black p-1.5 border border-black/10 hover:border-black bg-white rounded-lg transition-all shadow-xs"
+                                  title="Edit User Details"
+                                >
+                                  <Edit2 className="w-3 h-3" />
+                                </button>
+                                {user?.role === 'SUPER_ADMIN' && user?.id !== item.id && (
+                                  <button
+                                    onClick={() => handleDeleteUserClick(item.id)}
+                                    className="text-red-700 hover:text-red-800 p-1.5 border border-black/10 hover:border-red-700 hover:bg-red-50 rounded-lg transition-all shadow-xs"
+                                    title="Delete User"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                    )}
                 </tbody>
               </table>
             </div>
@@ -2819,84 +2826,85 @@ export default function AdminPage() {
               {usersList
                 .filter(u => {
                   const query = searchQueryUsers.toLowerCase().trim();
-                  const matchesSearch = !query ||
+                  const matchesSearch = !query || 
                     u.name.toLowerCase().includes(query) ||
                     u.email.toLowerCase().includes(query) ||
                     (u.mobile && u.mobile.includes(query));
-
+                  
                   const matchesRole = roleFilterUsers === 'ALL' || u.role === roleFilterUsers;
                   return matchesSearch && matchesRole;
                 })
                 .length === 0 ? (
-                <div className="p-8 text-center text-black/45 text-xs font-normal">
-                  No registered users found matching the search filters.
-                </div>
-              ) : (
-                usersList
-                  .filter(u => {
-                    const query = searchQueryUsers.toLowerCase().trim();
-                    const matchesSearch = !query ||
-                      u.name.toLowerCase().includes(query) ||
-                      u.email.toLowerCase().includes(query) ||
-                      (u.mobile && u.mobile.includes(query));
-
-                    const matchesRole = roleFilterUsers === 'ALL' || u.role === roleFilterUsers;
-                    return matchesSearch && matchesRole;
-                  })
-                  .map(item => (
-                    <div key={item.id} className="bg-[#fcfbf9] border border-black/5 p-4 rounded-xl space-y-3.5 shadow-xs text-xs font-bold">
-                      <div className="flex justify-between items-start gap-4">
-                        <div>
-                          <h4 className="font-extrabold text-black">{item.name || 'Unnamed Guest'}</h4>
-                          <p className="text-[9px] text-black/40 font-mono mt-0.5">{item.id}</p>
-                          <p className="text-[10px] text-black/60 font-semibold mt-1">{item.email}</p>
-                          <p className="text-[10px] text-black/60 font-semibold">{item.mobile || 'No Mobile'}</p>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <span className={`text-[9px] uppercase tracking-wider font-extrabold px-2.5 py-0.5 rounded ${item.role === 'SUPER_ADMIN' ? 'bg-red-500/10 text-red-800' :
+                  <div className="p-8 text-center text-black/45 text-xs font-normal">
+                    No registered users found matching the search filters.
+                  </div>
+                ) : (
+                  usersList
+                    .filter(u => {
+                      const query = searchQueryUsers.toLowerCase().trim();
+                      const matchesSearch = !query || 
+                        u.name.toLowerCase().includes(query) ||
+                        u.email.toLowerCase().includes(query) ||
+                        (u.mobile && u.mobile.includes(query));
+                      
+                      const matchesRole = roleFilterUsers === 'ALL' || u.role === roleFilterUsers;
+                      return matchesSearch && matchesRole;
+                    })
+                    .map(item => (
+                      <div key={item.id} className="bg-[#fcfbf9] border border-black/5 p-4 rounded-xl space-y-3.5 shadow-xs text-xs font-bold">
+                        <div className="flex justify-between items-start gap-4">
+                          <div>
+                            <h4 className="font-extrabold text-black">{item.name || 'Unnamed Guest'}</h4>
+                            <p className="text-[9px] text-black/40 font-mono mt-0.5">{item.id}</p>
+                            <p className="text-[10px] text-black/60 font-semibold mt-1">{item.email}</p>
+                            <p className="text-[10px] text-black/60 font-semibold">{item.mobile || 'No Mobile'}</p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span className={`text-[9px] uppercase tracking-wider font-extrabold px-2.5 py-0.5 rounded ${
+                              item.role === 'SUPER_ADMIN' ? 'bg-red-500/10 text-red-800' :
                               item.role === 'STORE_MANAGER' ? 'bg-amber-500/10 text-amber-800' :
-                                item.role === 'CUSTOMER' ? 'bg-black/5 text-black/70' : 'bg-blue-500/10 text-blue-800'
+                              item.role === 'CUSTOMER' ? 'bg-black/5 text-black/70' : 'bg-blue-500/10 text-blue-800'
                             }`}>
-                            {item.role}
-                          </span>
-                          <span className="text-[9px] text-black/40 block mt-1.5">
-                            {item.createdAt ? new Date(item.createdAt).toLocaleDateString('en-IN', {
-                              day: 'numeric', month: 'short', year: 'numeric'
-                            }) : 'N/A'}
-                          </span>
+                              {item.role}
+                            </span>
+                            <span className="text-[9px] text-black/40 block mt-1.5">
+                              {item.createdAt ? new Date(item.createdAt).toLocaleDateString('en-IN', {
+                                day: 'numeric', month: 'short', year: 'numeric'
+                              }) : 'N/A'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="bg-white border border-black/5 p-3 rounded-xl text-[10px] leading-relaxed">
+                          <span className="text-[8px] uppercase tracking-wider text-black/50 font-extrabold block">Saved Addresses ({item.addresses?.length || 0})</span>
+                          {item.addresses && item.addresses.length > 0 ? (
+                            item.addresses.map((addr: any, idx: number) => (
+                              <div key={idx} className="mt-1 pb-1 border-b border-black/5 last:border-b-0 font-medium">
+                                {addr.street}, {addr.city}, {addr.state} - {addr.pincode} {addr.isDefault && <span className="text-emerald-800 font-extrabold text-[8px]">(Default)</span>}
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-black/40 font-normal">No addresses saved.</p>
+                          )}
+                        </div>
+                        <div className="flex gap-2 justify-end pt-2 border-t border-black/5">
+                          <button
+                            onClick={() => handleEditUserClick(item)}
+                            className="px-2.5 py-1.5 border border-black/10 hover:border-black bg-white rounded-lg transition-all text-[10px] font-bold"
+                          >
+                            Edit
+                          </button>
+                          {user?.role === 'SUPER_ADMIN' && user?.id !== item.id && (
+                            <button
+                              onClick={() => handleDeleteUserClick(item.id)}
+                              className="px-2.5 py-1.5 border border-black/10 hover:border-red-700 bg-white text-red-650 hover:text-red-750 hover:bg-red-50 rounded-lg transition-all shadow-xs text-[10px] font-bold"
+                            >
+                              Delete
+                            </button>
+                          )}
                         </div>
                       </div>
-                      <div className="bg-white border border-black/5 p-3 rounded-xl text-[10px] leading-relaxed">
-                        <span className="text-[8px] uppercase tracking-wider text-black/50 font-extrabold block">Saved Addresses ({item.addresses?.length || 0})</span>
-                        {item.addresses && item.addresses.length > 0 ? (
-                          item.addresses.map((addr: any, idx: number) => (
-                            <div key={idx} className="mt-1 pb-1 border-b border-black/5 last:border-b-0 font-medium">
-                              {addr.street}, {addr.city}, {addr.state} - {addr.pincode} {addr.isDefault && <span className="text-emerald-800 font-extrabold text-[8px]">(Default)</span>}
-                            </div>
-                          ))
-                        ) : (
-                          <p className="text-black/40 font-normal">No addresses saved.</p>
-                        )}
-                      </div>
-                      <div className="flex gap-2 justify-end pt-2 border-t border-black/5">
-                        <button
-                          onClick={() => handleEditUserClick(item)}
-                          className="px-2.5 py-1.5 border border-black/10 hover:border-black bg-white rounded-lg transition-all text-[10px] font-bold"
-                        >
-                          Edit
-                        </button>
-                        {user?.role === 'SUPER_ADMIN' && user?.id !== item.id && (
-                          <button
-                            onClick={() => handleDeleteUserClick(item.id)}
-                            className="px-2.5 py-1.5 border border-black/10 hover:border-red-700 bg-white text-red-650 hover:text-red-750 hover:bg-red-50 rounded-lg transition-all shadow-xs text-[10px] font-bold"
-                          >
-                            Delete
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))
-              )}
+                    ))
+                )}
             </div>
 
             {/* EDIT USER OVERLAY MODAL */}
